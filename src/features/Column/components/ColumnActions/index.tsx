@@ -1,15 +1,19 @@
 import { IconButton } from "@/components/atoms/IconButton";
-import { useColumnActions } from "@/features/Column/hooks/useColumnActions";
 import styles from "./ColumnActions.module.css";
 
 type ColumnActionsProps = {
   status: string;
   meta: string;
+  onDelete?: () => void;
+  onEdit?: () => void;
 };
 
-export function ColumnActions({ status, meta }: ColumnActionsProps) {
-  const { renameColumn, deleteColumn } = useColumnActions();
-
+export function ColumnActions({
+  status,
+  meta,
+  onDelete,
+  onEdit,
+}: ColumnActionsProps) {
   return (
     <div className={styles.columnActions}>
       <span className={styles.status}>{status}</span>
@@ -20,7 +24,7 @@ export function ColumnActions({ status, meta }: ColumnActionsProps) {
           aria-label="Edit column"
           className={styles.actionButton}
           data-testid="edit-column-button"
-          onClick={renameColumn}
+          onClick={onEdit}
         >
           Edit
         </IconButton>
@@ -29,7 +33,7 @@ export function ColumnActions({ status, meta }: ColumnActionsProps) {
           aria-label="Delete column"
           className={styles.actionButtonDanger}
           data-testid="delete-column-button"
-          onClick={deleteColumn}
+          onClick={onDelete}
         >
           Delete
         </IconButton>

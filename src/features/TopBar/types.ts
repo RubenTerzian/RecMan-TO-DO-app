@@ -8,10 +8,19 @@ export type SelectionBulkActionsState = {
   }>;
 };
 
-export type TopBarState = {
+type TopBarBaseState = {
   searchTerm: string;
   activeFilter: TaskFilter;
-  isSelectionMode: boolean;
-  selectionCount: number;
-  bulkActions?: SelectionBulkActionsState;
 };
+
+export type DefaultTopBarState = TopBarBaseState & {
+  mode: "default";
+};
+
+export type SelectionTopBarState = TopBarBaseState & {
+  mode: "selection";
+  selectionCount: number;
+  bulkActions: SelectionBulkActionsState;
+};
+
+export type TopBarState = DefaultTopBarState | SelectionTopBarState;

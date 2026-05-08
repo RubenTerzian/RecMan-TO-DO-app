@@ -7,12 +7,10 @@ export function EmptyBoardState() {
       <p className={styles.kicker}>Guided start</p>
       <h2 className={styles.title}>Create the first column</h2>
       <p className={styles.description}>
-        Start with one empty column, then add tasks and move between mock states
-        to review the layout.
+        Start with one empty column, then add tasks and shape the board around
+        your workflow.
       </p>
-      <CreateColumnButton
-        label="Create your first column"
-      />
+      <CreateColumnButton label="Create your first column" />
     </div>
   );
 }

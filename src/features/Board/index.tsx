@@ -1,25 +1,39 @@
 import { CreateColumnButton } from "@/components/shared/CreateColumnButton";
 import { clsx } from "@/utils/clsx";
-import type { MockBoardState } from "@/app/mockScreens";
-import { useColumnActions } from "@/features/Column/hooks/useColumnActions";
+import type { BoardState } from "@/features/Board/types";
 import { Column } from "@/features/Column";
 import { EmptyBoardState } from "@/features/Board/components/EmptyBoardState";
 import styles from "./Board.module.css";
 
-type BoardProps = {
-  board: MockBoardState;
+const boardState: BoardState = {
+  selectionMode: false,
+  showCreateColumnCard: true,
+  columns: [
+    {
+      kind: "display",
+      id: "column-todo",
+      title: "To do",
+      tasks: [],
+      emptyState: {
+        variant: "empty",
+        title: "No tasks yet",
+        message: "Add your first task to start filling this column.",
+      },
+    },
+  ],
 };
 
-export function Board({ board }: BoardProps) {
-  const { createColumn } = useColumnActions();
+export function Board() {
+  const board = boardState;
+  const hasColumns = board.columns.length > 0;
 
   return (
     <main className={styles.board}>
       <section className={styles.boardCanvas} data-testid="board-canvas">
         <div className={styles.boardContent}>
-          {board.variant === "empty" ? <EmptyBoardState /> : null}
+          {!hasColumns ? <EmptyBoardState /> : null}
 
-          {board.variant !== "empty" ? (
+          {hasColumns ? (
             <div className={styles.boardViewport}>
               <div className={styles.mobileScrollHint} aria-hidden="true">
                 Swipe to see more columns →
@@ -27,23 +41,17 @@ export function Board({ board }: BoardProps) {
 
               <div
                 className={clsx(styles.boardGrid, {
-                  [styles.mobileBoardGrid]: board.columns?.some(
+                  [styles.mobileBoardGrid]: board.columns.some(
                     (column) => column.showMobileReorderMenu,
                   ),
                 })}
                 data-testid="board-grid"
               >
-                {board.columns?.map((column) => (
+                {board.columns.map((column) => (
                   <Column
                     key={column.id}
-                    title={column.title}
-                    subtitle={column.subtitle}
-                    tasks={column.tasks}
+                    column={column}
                     selectionMode={board.selectionMode}
-                    showMobileReorderMenu={column.showMobileReorderMenu}
-                    emptyState={column.emptyState}
-                    editorMode={column.editorMode}
-                    draftTitle={column.draftTitle}
                   />
                 ))}
 
@@ -64,7 +72,6 @@ export function Board({ board }: BoardProps) {
                     <CreateColumnButton
                       className={styles.createColumnButton}
                       data-testid="create-column-button"
-                      onClick={createColumn}
                     />
                   </section>
                 ) : null}

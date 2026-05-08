@@ -5,8 +5,16 @@ import styles from "./ActionIconButton.module.css";
 
 type BaseActionIconButtonProps = ComponentProps<typeof IconButton>;
 
-type ActionIconButtonProps = Omit<BaseActionIconButtonProps, "children"> & {
+type ActionIconButtonProps = Omit<
+  BaseActionIconButtonProps,
+  "children" | "aria-label"
+> & {
+  "aria-label": string;
   className?: string;
+};
+
+type BaseButtonProps = ActionIconButtonProps & {
+  children: BaseActionIconButtonProps["children"];
 };
 
 type IconProps = SVGProps<SVGSVGElement>;
@@ -108,7 +116,7 @@ function BaseActionIconButton({
   className,
   type = "button",
   ...props
-}: BaseActionIconButtonProps) {
+}: BaseButtonProps) {
   return (
     <IconButton
       className={clsx(styles.actionIconButton, className)}

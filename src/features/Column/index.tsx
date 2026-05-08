@@ -6,79 +6,72 @@ import { ColumnHeader } from "@/features/Column/components/ColumnHeader";
 import { EmptyColumnState } from "@/features/Column/components/EmptyColumnState";
 import { MobileReorderMenu } from "@/features/Column/components/MobileReorderMenu";
 import { TaskList } from "@/features/Column/components/TaskList";
-import type { ColumnEmptyState } from "@/features/Column/types";
-
-type ColumnTask = {
-  id: string;
-  title: string;
-  tag?: string;
-  isComplete?: boolean;
-  isSelected?: boolean;
-  editorMode?: "create" | "edit";
-};
+import type { ColumnData } from "@/features/Column/types";
 
 type ColumnProps = {
-  title?: string;
-  subtitle?: string;
-  tasks?: ColumnTask[];
+  column: ColumnData;
   selectionMode?: boolean;
-  showMobileReorderMenu?: boolean;
-  emptyState?: ColumnEmptyState;
-  editorMode?: "create" | "edit";
-  draftTitle?: string;
 };
 
-export function Column({
-  title = "Column",
-  tasks = [],
-  selectionMode = false,
-  showMobileReorderMenu = false,
-  emptyState,
-  editorMode,
-  draftTitle,
-}: ColumnProps) {
-  const hasTaskEditor = tasks.some((task) => task.editorMode);
-  const selectableTasks = tasks.filter((task) => !task.editorMode);
+export function Column({ column, selectionMode = false }: ColumnProps) {
+  const hasTaskEditor = column.tasks.some(
+    (task) => task.kind === "task-editor",
+  );
+  const selectableTasks = column.tasks.filter((task) => task.kind === "task");
   const selectedTasks = selectableTasks.filter((task) => task.isSelected);
   const allTasksSelected =
     selectableTasks.length > 0 &&
     selectedTasks.length === selectableTasks.length;
+  const isColumnEditor = column.kind === "editor";
+  const emptyState =
+    column.kind === "editor" && column.mode === "create"
+      ? {
+          variant: "empty" as const,
+          title: "New column",
+          message: "Save this column to start adding tasks.",
+        }
+      : column.emptyState;
 
   return (
     <section
       className={clsx(styles.column, { [styles.selectionMode]: selectionMode })}
       data-testid="column-card"
     >
-      {editorMode ? (
-        <ColumnEditor draftTitle={draftTitle ?? title} mode={editorMode} />
+      {isColumnEditor ? (
+        <ColumnEditor draftTitle={column.draftTitle} mode={column.mode} />
       ) : (
         <ColumnHeader
-          allSelected={allTasksSelected}
-          selectionMode={selectionMode}
-          showSelectionToggle={selectableTasks.length > 0}
-          title={title}
+          {...(selectionMode
+            ? {
+                mode: "selection" as const,
+                allSelected: allTasksSelected,
+                showSelectionToggle: selectableTasks.length > 0,
+                title: column.title,
+              }
+            : {
+                mode: "default" as const,
+                title: column.title,
+              })}
         />
       )}
 
-      {!selectionMode && !editorMode && !hasTaskEditor ? (
+      {!selectionMode && !isColumnEditor && !hasTaskEditor ? (
         <Button className={styles.addTaskButton} data-testid="add-task-button">
           Add task
         </Button>
       ) : null}
 
-      {showMobileReorderMenu && !editorMode ? <MobileReorderMenu /> : null}
+      {column.showMobileReorderMenu && !isColumnEditor ? (
+        <MobileReorderMenu />
+      ) : null}
 
-      {tasks.length > 0 ? (
-        <TaskList tasks={tasks} selectionMode={selectionMode} />
+      {column.tasks.length > 0 ? (
+        <TaskList tasks={column.tasks} selectionMode={selectionMode} />
       ) : (
         <EmptyColumnState
-          variant={editorMode === "create" ? "empty" : emptyState?.variant}
-          title={editorMode === "create" ? "New column" : emptyState?.title}
-          message={
-            editorMode === "create"
-              ? "Save this column to start adding tasks."
-              : emptyState?.message
-          }
+          variant={emptyState?.variant}
+          title={emptyState?.title}
+          message={emptyState?.message}
           testId="empty-column-drop-target"
         />
       )}

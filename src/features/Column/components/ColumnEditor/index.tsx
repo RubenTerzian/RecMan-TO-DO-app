@@ -6,14 +6,11 @@ import {
 import styles from "./ColumnEditor.module.css";
 
 type ColumnEditorProps = {
-  draftTitle?: string;
-  mode?: "create" | "edit";
+  draftTitle: string;
+  mode: "create" | "edit";
 };
 
-export function ColumnEditor({
-  draftTitle = "",
-  mode = "create",
-}: ColumnEditorProps) {
+export function ColumnEditor({ draftTitle, mode }: ColumnEditorProps) {
   const isCreateMode = mode === "create";
 
   return (

@@ -3,23 +3,30 @@ import {
   DeleteIconButton,
   EditIconButton,
 } from "@/components/shared/ActionIconButton";
-import { useColumnActions } from "@/features/Column/hooks/useColumnActions";
 import styles from "./ColumnHeader.module.css";
 
-type ColumnHeaderProps = {
+type BaseColumnHeaderProps = {
   title: string;
+};
+
+type DefaultColumnHeaderProps = BaseColumnHeaderProps & {
+  mode: "default";
+};
+
+type SelectionColumnHeaderProps = BaseColumnHeaderProps & {
+  mode: "selection";
   allSelected?: boolean;
-  selectionMode?: boolean;
   showSelectionToggle?: boolean;
 };
 
-export function ColumnHeader({
-  allSelected = false,
-  title,
-  selectionMode = false,
-  showSelectionToggle = false,
-}: ColumnHeaderProps) {
-  const { renameColumn, deleteColumn } = useColumnActions();
+type ColumnHeaderProps = DefaultColumnHeaderProps | SelectionColumnHeaderProps;
+
+export function ColumnHeader({ title, ...props }: ColumnHeaderProps) {
+  const selectionMode = props.mode === "selection";
+  const allSelected =
+    props.mode === "selection" ? (props.allSelected ?? false) : false;
+  const showSelectionToggle =
+    props.mode === "selection" ? (props.showSelectionToggle ?? false) : false;
 
   return (
     <header
@@ -44,13 +51,11 @@ export function ColumnHeader({
           <EditIconButton
             data-testid="edit-column-button"
             aria-label="Edit column"
-            onClick={renameColumn}
           />
 
           <DeleteIconButton
             data-testid="delete-column-button"
             aria-label="Delete column"
-            onClick={deleteColumn}
           />
         </div>
       ) : showSelectionToggle ? (

@@ -6,11 +6,11 @@ import {
 import styles from "./TaskEditor.module.css";
 
 type TaskEditorProps = {
-  title?: string;
-  mode?: "create" | "edit";
+  title: string;
+  mode: "create" | "edit";
 };
 
-export function TaskEditor({ title = "", mode = "create" }: TaskEditorProps) {
+export function TaskEditor({ title, mode }: TaskEditorProps) {
   const isCreateMode = mode === "create";
 
   return (

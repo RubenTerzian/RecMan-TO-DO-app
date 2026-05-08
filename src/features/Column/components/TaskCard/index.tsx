@@ -7,20 +7,30 @@ import {
   EditIconButton,
 } from "@/components/shared/ActionIconButton";
 
-type TaskCardProps = {
-  title?: string;
+type BaseTaskCardProps = {
+  title: string;
   tag?: string;
-  isComplete?: boolean;
-  isSelected?: boolean;
-  selectionMode?: boolean;
 };
 
-export function TaskCard({
-  title = "Task",
-  isComplete = false,
-  isSelected = false,
-  selectionMode = false,
-}: TaskCardProps) {
+type DefaultTaskCardProps = BaseTaskCardProps & {
+  mode: "default";
+  isComplete?: boolean;
+};
+
+type SelectionTaskCardProps = BaseTaskCardProps & {
+  mode: "selection";
+  isSelected?: boolean;
+};
+
+type TaskCardProps = DefaultTaskCardProps | SelectionTaskCardProps;
+
+export function TaskCard({ title, tag, ...props }: TaskCardProps) {
+  const selectionMode = props.mode === "selection";
+  const isComplete =
+    props.mode === "default" ? (props.isComplete ?? false) : false;
+  const isSelected =
+    props.mode === "selection" ? (props.isSelected ?? false) : false;
+
   return (
     <article
       className={clsx(styles.taskCard, {
@@ -58,6 +68,7 @@ export function TaskCard({
         <strong className={styles.title} data-testid="task-title">
           {title}
         </strong>
+        {tag ? <span className={styles.tag}>{tag}</span> : null}
       </div>
 
       {!selectionMode ? (
