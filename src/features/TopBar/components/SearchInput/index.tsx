@@ -1,5 +1,5 @@
 import styles from "./SearchInput.module.css";
-import { Input } from "@/components/atoms/Input/index";
+import { Input } from "@/components/atoms/Input";
 
 type SearchInputProps = {
   value: string;

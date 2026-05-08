@@ -1,10 +1,10 @@
-import { Button } from "@/components/atoms/Button/index";
+import { Button } from "@/components/atoms/Button";
 import styles from "./Column.module.css";
 import { clsx } from "@/utils/clsx";
-import { ColumnHeader } from "@/features/Column/components/ColumnHeader/index";
-import { EmptyColumnState } from "@/features/Column/components/EmptyColumnState/index";
-import { MobileReorderMenu } from "@/features/Column/components/MobileReorderMenu/index";
-import { TaskList } from "@/features/Column/components/TaskList/index";
+import { ColumnHeader } from "@/features/Column/components/ColumnHeader";
+import { EmptyColumnState } from "@/features/Column/components/EmptyColumnState";
+import { MobileReorderMenu } from "@/features/Column/components/MobileReorderMenu";
+import { TaskList } from "@/features/Column/components/TaskList";
 
 type ColumnTask = {
   id: string;

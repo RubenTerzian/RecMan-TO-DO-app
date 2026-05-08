@@ -1,4 +1,4 @@
-import { IconButton } from "@/components/atoms/IconButton/index";
+import { IconButton } from "@/components/atoms/IconButton";
 import { useColumnActions } from "@/features/Column/hooks/useColumnActions";
 import styles from "./ColumnActions.module.css";
 

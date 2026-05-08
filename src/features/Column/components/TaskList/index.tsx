@@ -1,5 +1,5 @@
 import styles from "./TaskList.module.css";
-import { TaskCard } from "@/features/Column/components/TaskCard/index";
+import { TaskCard } from "@/features/Column/components/TaskCard";
 
 type TaskListProps = {
   tasks: Array<{

@@ -5,8 +5,8 @@ import {
   getMockScreen,
   type MockScreenId,
 } from "./mockScreens";
-import { TopBar } from "@/features/TopBar/components/TopBar/index";
-import { BoardShell } from "@/features/Board/components/BoardShell/index";
+import { TopBar } from "@/features/TopBar";
+import { Board } from "@/features/Board";
 
 export default function App() {
   const [activeScreen, setActiveScreen] =
@@ -21,7 +21,7 @@ export default function App() {
           state={screen.topBar}
           onScreenChange={setActiveScreen}
         />
-        <BoardShell board={screen.board} />
+        <Board board={screen.board} />
       </div>
     </div>
   );

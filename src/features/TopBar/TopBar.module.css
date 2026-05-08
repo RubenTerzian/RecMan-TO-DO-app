@@ -75,10 +75,6 @@
   gap: 10px;
 }
 
-.createColumnButton {
-  justify-self: start;
-}
-
 @media (min-width: 768px) {
   .controls {
     grid-template-columns: minmax(0, 1fr) minmax(180px, 220px);
@@ -102,9 +98,5 @@
   .actionsGroup {
     grid-column: auto;
     justify-content: start;
-  }
-
-  .createColumnButton {
-    justify-self: start;
   }
 }

@@ -1,5 +1,5 @@
 import styles from "./EmptyBoardState.module.css";
-import { Button } from "@/components/atoms/Button/index";
+import { Button } from "@/components/atoms/Button";
 
 export function EmptyBoardState() {
   return (

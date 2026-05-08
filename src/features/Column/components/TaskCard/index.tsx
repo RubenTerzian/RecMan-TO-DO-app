@@ -3,8 +3,8 @@ import dragHandleIcon from "@/assets/icons/drag-handle.svg";
 import editIcon from "@/assets/icons/edit.svg";
 import deleteIcon from "@/assets/icons/delete.svg";
 import styles from "./TaskCard.module.css";
-import { Checkbox } from "@/components/atoms/Checkbox/index";
-import { IconButton } from "@/components/atoms/IconButton/index";
+import { Checkbox } from "@/components/atoms/Checkbox";
+import { IconButton } from "@/components/atoms/IconButton";
 
 type TaskCardProps = {
   title?: string;

@@ -1,7 +1,7 @@
 import dragHandleIcon from "@/assets/icons/drag-handle.svg";
 import deleteIcon from "@/assets/icons/delete.svg";
 import editIcon from "@/assets/icons/edit.svg";
-import { IconButton } from "@/components/atoms/IconButton/index";
+import { IconButton } from "@/components/atoms/IconButton";
 import { useColumnActions } from "@/features/Column/hooks/useColumnActions";
 import styles from "./ColumnHeader.module.css";
 

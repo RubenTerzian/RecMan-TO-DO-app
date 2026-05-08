@@ -1,13 +1,10 @@
-import {
-  MOCK_SCREEN_OPTIONS,
-  type MockScreenId,
-} from "../../../../app/mockScreens";
+import { MOCK_SCREEN_OPTIONS, type MockScreenId } from "@/app/mockScreens";
 import styles from "./TopBar.module.css";
-import { Button } from "@/components/atoms/Button/index";
 import { useColumnActions } from "@/features/Column/hooks/useColumnActions";
-import { SearchInput } from "@/features/TopBar/components/SearchInput/index";
-import { FilterControls } from "@/features/TopBar/components/FilterControls/index";
-import { SelectionModeToggle } from "@/features/TopBar/components/SelectionModeToggle/index";
+import { CreateColumnButton } from "@/features/TopBar/components/CreateColumnButton";
+import { SearchInput } from "@/features/TopBar/components/SearchInput";
+import { FilterControls } from "@/features/TopBar/components/FilterControls";
+import { SelectionModeToggle } from "@/features/TopBar/components/SelectionModeToggle";
 import type { TopBarState } from "@/features/TopBar/types";
 
 type TopBarProps = {
@@ -47,13 +44,7 @@ export function TopBar({ activeScreen, state, onScreenChange }: TopBarProps) {
             <SelectionModeToggle enabled={state.isSelectionMode} />
 
             {!state.isSelectionMode ? (
-              <Button
-                className={styles.createColumnButton}
-                data-testid="topbar-create-column-button"
-                onClick={createColumn}
-              >
-                New column
-              </Button>
+              <CreateColumnButton onClick={createColumn} />
             ) : null}
           </div>
         </div>
