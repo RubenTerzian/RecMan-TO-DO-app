@@ -261,7 +261,8 @@ const mockScreens: Record<MockScreenId, MockScreen> = {
       variant: "no-results",
       noResults: {
         title: "No visible tasks",
-        description: "Try another search term or clear the filter to show tasks again.",
+        description:
+          "Try another search term or clear the filter to show tasks again.",
         searchTerm: "backend architect",
         filter: "complete",
       },

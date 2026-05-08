@@ -5,7 +5,10 @@ type BulkSelectBarProps = {
   totalCount: number;
 };
 
-export function BulkSelectBar({ selectedCount, totalCount }: BulkSelectBarProps) {
+export function BulkSelectBar({
+  selectedCount,
+  totalCount,
+}: BulkSelectBarProps) {
   return (
     <div className={styles.bulkSelectBar} data-testid="bulk-select-bar">
       <span>{selectedCount} selected</span>

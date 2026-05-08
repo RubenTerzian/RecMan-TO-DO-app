@@ -1,5 +1,5 @@
 import { clsx } from "@/utils/clsx";
-import type { MockBoardState } from "@/app/mockScreens";
+import type { MockBoardState } from "../../../../app/mockScreens";
 import styles from "./BoardShell.module.css";
 import { BoardCanvas } from "@/features/Board/components/BoardCanvas/index";
 import { Column } from "@/features/Column/components/Column/index";
@@ -28,7 +28,9 @@ export function BoardShell({ board }: BoardShellProps) {
         {board.variant === "board" ? (
           <div
             className={clsx(styles.boardGrid, {
-              [styles.mobileBoardGrid]: board.columns?.some((column) => column.showMobileReorderMenu),
+              [styles.mobileBoardGrid]: board.columns?.some(
+                (column) => column.showMobileReorderMenu,
+              ),
             })}
             data-testid="board-grid"
           >

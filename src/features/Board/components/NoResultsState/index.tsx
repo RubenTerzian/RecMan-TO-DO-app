@@ -7,7 +7,12 @@ type NoResultsStateProps = {
   filter: string;
 };
 
-export function NoResultsState({ title, description, searchTerm, filter }: NoResultsStateProps) {
+export function NoResultsState({
+  title,
+  description,
+  searchTerm,
+  filter,
+}: NoResultsStateProps) {
   return (
     <div className={styles.noResultsState} data-testid="no-results-state">
       <p className={styles.kicker}>No results</p>

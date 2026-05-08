@@ -30,7 +30,12 @@ export function TaskCard({
       data-testid="task-card"
     >
       {!selectionMode ? (
-        <button className={styles.dragHandle} data-testid="task-drag-handle" type="button" aria-label="Drag task">
+        <button
+          className={styles.dragHandle}
+          data-testid="task-drag-handle"
+          type="button"
+          aria-label="Drag task"
+        >
           ⋮⋮
         </button>
       ) : null}
@@ -44,7 +49,9 @@ export function TaskCard({
 
       <div className={styles.content}>
         <div className={styles.row}>
-          <strong className={styles.title} data-testid="task-title">{title}</strong>
+          <strong className={styles.title} data-testid="task-title">
+            {title}
+          </strong>
           <span className={styles.tag}>{tag}</span>
         </div>
         <span className={styles.meta}>{meta}</span>

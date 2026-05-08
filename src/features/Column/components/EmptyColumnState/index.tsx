@@ -9,5 +9,9 @@ export function EmptyColumnState({
   message = "Empty column",
   testId,
 }: EmptyColumnStateProps) {
-  return <div className={styles.emptyColumnState} data-testid={testId}>{message}</div>;
+  return (
+    <div className={styles.emptyColumnState} data-testid={testId}>
+      {message}
+    </div>
+  );
 }

@@ -49,7 +49,10 @@ export function Column({
       <ColumnHeader title={title} subtitle={subtitle} taskCount={taskCount} />
 
       {selectionMode ? (
-        <BulkSelectBar selectedCount={selectedCount} totalCount={tasks.length} />
+        <BulkSelectBar
+          selectedCount={selectedCount}
+          totalCount={tasks.length}
+        />
       ) : null}
 
       {showMobileReorderMenu ? <MobileReorderMenu /> : null}
@@ -59,7 +62,10 @@ export function Column({
       {tasks.length > 0 ? (
         <TaskList tasks={tasks} selectionMode={selectionMode} />
       ) : (
-        <EmptyColumnState message={emptyMessage} testId="empty-column-drop-target" />
+        <EmptyColumnState
+          message={emptyMessage}
+          testId="empty-column-drop-target"
+        />
       )}
     </section>
   );

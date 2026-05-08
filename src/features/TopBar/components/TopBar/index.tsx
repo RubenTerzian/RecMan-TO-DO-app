@@ -1,4 +1,7 @@
-import { MOCK_SCREEN_OPTIONS, type MockScreenId } from "@/app/mockScreens";
+import {
+  MOCK_SCREEN_OPTIONS,
+  type MockScreenId,
+} from "../../../../app/mockScreens";
 import styles from "./TopBar.module.css";
 import { SearchInput } from "@/features/TopBar/components/SearchInput/index";
 import { FilterControls } from "@/features/TopBar/components/FilterControls/index";
@@ -13,14 +16,22 @@ type TopBarProps = {
   onScreenChange: (screen: MockScreenId) => void;
 };
 
-export function TopBar({ activeScreen, screenLabel, state, onScreenChange }: TopBarProps) {
+export function TopBar({
+  activeScreen,
+  screenLabel,
+  state,
+  onScreenChange,
+}: TopBarProps) {
   return (
     <header className={styles.topBar} data-testid="top-bar">
       <div className={styles.headerRow}>
         <div className={styles.brandBlock}>
           <p className={styles.kicker}>RecMan TODO</p>
           <h1 className={styles.title}>Responsive mock states</h1>
-          <p className={styles.description}>Static screens for layout review before store and drag logic are wired.</p>
+          <p className={styles.description}>
+            Static screens for layout review before store and drag logic are
+            wired.
+          </p>
         </div>
 
         <div className={styles.stateSwitcher} data-testid="mock-state-switcher">

@@ -1,11 +1,16 @@
 import { useState } from "react";
 import styles from "./AppShell.module.css";
-import { DEFAULT_MOCK_SCREEN, getMockScreen, type MockScreenId } from "@/app/mockScreens";
+import {
+  DEFAULT_MOCK_SCREEN,
+  getMockScreen,
+  type MockScreenId,
+} from "./mockScreens";
 import { TopBar } from "@/features/TopBar/components/TopBar/index";
 import { BoardShell } from "@/features/Board/components/BoardShell/index";
 
 export default function App() {
-  const [activeScreen, setActiveScreen] = useState<MockScreenId>(DEFAULT_MOCK_SCREEN);
+  const [activeScreen, setActiveScreen] =
+    useState<MockScreenId>(DEFAULT_MOCK_SCREEN);
   const screen = getMockScreen(activeScreen);
 
   return (
