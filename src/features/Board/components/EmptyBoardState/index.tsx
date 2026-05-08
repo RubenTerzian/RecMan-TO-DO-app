@@ -1,5 +1,5 @@
+import { CreateColumnButton } from "@/components/shared/CreateColumnButton";
 import styles from "./EmptyBoardState.module.css";
-import { Button } from "@/components/atoms/Button";
 
 export function EmptyBoardState() {
   return (
@@ -10,9 +10,9 @@ export function EmptyBoardState() {
         Start with one empty column, then add tasks and move between mock states
         to review the layout.
       </p>
-      <Button className={styles.cta} data-testid="create-first-column-cta">
-        Create first column
-      </Button>
+      <CreateColumnButton
+        label="Create your first column"
+      />
     </div>
   );
 }

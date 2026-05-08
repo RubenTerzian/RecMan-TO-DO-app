@@ -38,12 +38,6 @@
   line-height: 1.65;
 }
 
-.cta {
-  justify-self: stretch;
-  width: min(100%, 24rem);
-  margin-top: auto;
-}
-
 @media (max-width: 480px) {
   .cta {
     width: 100%;

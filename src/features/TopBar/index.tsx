@@ -1,7 +1,7 @@
 import { MOCK_SCREEN_OPTIONS, type MockScreenId } from "@/app/mockScreens";
+import { CreateColumnButton } from "@/components/shared/CreateColumnButton";
 import styles from "./TopBar.module.css";
 import { useColumnActions } from "@/features/Column/hooks/useColumnActions";
-import { CreateColumnButton } from "@/features/TopBar/components/CreateColumnButton";
 import { SearchInput } from "@/features/TopBar/components/SearchInput";
 import { FilterControls } from "@/features/TopBar/components/FilterControls";
 import { SelectionModeToggle } from "@/features/TopBar/components/SelectionModeToggle";

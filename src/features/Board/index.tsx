@@ -1,4 +1,4 @@
-import { Button } from "@/components/atoms/Button";
+import { CreateColumnButton } from "@/components/shared/CreateColumnButton";
 import { clsx } from "@/utils/clsx";
 import type { MockBoardState } from "@/app/mockScreens";
 import { useColumnActions } from "@/features/Column/hooks/useColumnActions";
@@ -68,13 +68,11 @@ export function Board({ board }: BoardProps) {
                       Add another lane to the board for new work, handoffs, or
                       done items.
                     </p>
-                    <Button
+                    <CreateColumnButton
                       className={styles.createColumnButton}
                       data-testid="create-column-button"
                       onClick={createColumn}
-                    >
-                      New column
-                    </Button>
+                    />
                   </section>
                 ) : null}
               </div>
