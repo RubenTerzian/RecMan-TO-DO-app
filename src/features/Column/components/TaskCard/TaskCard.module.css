@@ -1,7 +1,7 @@
 .taskCard {
   display: grid;
   grid-template-columns: auto auto minmax(0, 1fr) auto;
-  align-items: start;
+  align-items: center;
   gap: 12px;
   padding: 14px;
   border: 1px solid rgba(32, 50, 79, 0.08);
@@ -14,7 +14,8 @@
 }
 
 .completed {
-  background: rgba(245, 249, 255, 0.96);
+  background: rgba(244, 246, 250, 0.96);
+  color: rgba(23, 32, 51, 0.48);
 }
 
 .selected {
@@ -25,54 +26,93 @@
 .dragHandle {
   appearance: none;
   min-height: 34px;
-  padding: 0 6px;
+  min-width: 24px;
+  padding: 0;
   border: 0;
   background: transparent;
   color: var(--color-text-muted);
   cursor: grab;
-  font-size: 1rem;
-  letter-spacing: -0.1em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dragIcon {
+  width: 12px;
+  height: 16px;
 }
 
 .content {
   display: grid;
-  gap: 6px;
   min-width: 0;
-}
-
-.row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
 }
 
 .title {
   color: var(--color-text);
   font-size: 0.96rem;
   line-height: 1.35;
+  word-break: normal;
+  overflow-wrap: break-word;
 }
 
-.meta {
-  color: var(--color-text-muted);
-  font-size: 0.84rem;
-  line-height: 1.5;
+.iconAction {
+  min-width: 34px;
+  padding: 0;
 }
 
-.tag {
-  display: inline-flex;
-  align-items: center;
-  min-height: 26px;
-  padding: 0 10px;
-  border-radius: 999px;
-  background: var(--color-brand-soft);
-  color: var(--color-brand);
-  font-size: 0.76rem;
-  font-weight: 700;
+.icon {
+  width: 14px;
+  height: 14px;
+  display: block;
 }
 
-.actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+.completed .title {
+  color: rgba(23, 32, 51, 0.48);
+  text-decoration: line-through;
+}
+
+.completed .dragHandle,
+.completed .iconAction {
+  color: rgba(23, 32, 51, 0.48);
+}
+
+@media (max-width: 640px) {
+  .taskCard {
+    grid-template-columns: auto auto minmax(0, 1fr);
+    grid-template-areas:
+      "drag toggle title"
+      ". . actions";
+    gap: 10px;
+  }
+
+  .dragHandle {
+    grid-area: drag;
+    align-self: start;
+    margin-top: 2px;
+  }
+
+  .content {
+    grid-area: title;
+  }
+
+  .actions {
+    grid-area: actions;
+    justify-self: start;
+    margin-top: -2px;
+  }
+}
+
+@media (max-width: 420px) {
+  .taskCard {
+    padding: 12px;
+  }
+
+  .title {
+    font-size: 0.92rem;
+    line-height: 1.3;
+  }
+
+  .iconAction {
+    min-width: 32px;
+  }
 }

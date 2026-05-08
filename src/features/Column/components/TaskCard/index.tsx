@@ -1,4 +1,7 @@
 import { clsx } from "@/utils/clsx";
+import dragHandleIcon from "@/assets/icons/drag-handle.svg";
+import editIcon from "@/assets/icons/edit.svg";
+import deleteIcon from "@/assets/icons/delete.svg";
 import styles from "./TaskCard.module.css";
 import { Checkbox } from "@/components/atoms/Checkbox/index";
 import { IconButton } from "@/components/atoms/IconButton/index";
@@ -14,8 +17,6 @@ type TaskCardProps = {
 
 export function TaskCard({
   title = "Task",
-  meta = "No details",
-  tag = "New",
   isComplete = false,
   isSelected = false,
   selectionMode = false,
@@ -36,7 +37,12 @@ export function TaskCard({
           type="button"
           aria-label="Drag task"
         >
-          ⋮⋮
+          <img
+            src={dragHandleIcon}
+            alt=""
+            aria-hidden="true"
+            className={styles.dragIcon}
+          />
         </button>
       ) : null}
 
@@ -48,19 +54,38 @@ export function TaskCard({
       />
 
       <div className={styles.content}>
-        <div className={styles.row}>
-          <strong className={styles.title} data-testid="task-title">
-            {title}
-          </strong>
-          <span className={styles.tag}>{tag}</span>
-        </div>
-        <span className={styles.meta}>{meta}</span>
+        <strong className={styles.title} data-testid="task-title">
+          {title}
+        </strong>
       </div>
 
       {!selectionMode ? (
         <div className={styles.actions}>
-          <IconButton data-testid="task-edit">Edit</IconButton>
-          <IconButton data-testid="task-delete">Delete</IconButton>
+          <IconButton
+            className={styles.iconAction}
+            data-testid="task-edit"
+            aria-label="Edit task"
+          >
+            <img
+              src={editIcon}
+              alt=""
+              aria-hidden="true"
+              className={styles.icon}
+            />
+          </IconButton>
+
+          <IconButton
+            className={styles.iconAction}
+            data-testid="task-delete"
+            aria-label="Delete task"
+          >
+            <img
+              src={deleteIcon}
+              alt=""
+              aria-hidden="true"
+              className={styles.icon}
+            />
+          </IconButton>
         </div>
       ) : null}
     </article>

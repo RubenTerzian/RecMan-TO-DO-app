@@ -71,10 +71,24 @@ const populatedColumns: MockColumn[] = [
         tag: "Follow-up",
       },
       {
+        id: "task-long-backlog-1",
+        title:
+          "Draft a detailed follow-up summary for every shortlisted candidate before tomorrow morning standup",
+        meta: "Long title layout check",
+        tag: "Long",
+      },
+      {
         id: "task-brief",
         title: "Prepare intake brief",
         meta: "Draft shared with team",
         tag: "Draft",
+      },
+      {
+        id: "task-long-backlog-2",
+        title:
+          "Coordinate final interview availability across hiring managers, recruiter notes, and candidate calendar windows",
+        meta: "Cross-column preview",
+        tag: "Long",
       },
       {
         id: "task-copy",
@@ -96,6 +110,13 @@ const populatedColumns: MockColumn[] = [
         title: "Screen inbound applicants",
         meta: "6 profiles ready",
         tag: "Priority",
+      },
+      {
+        id: "task-long-progress-1",
+        title:
+          "Prepare a structured interview feedback packet for the shortlisted platform engineering candidates",
+        meta: "Active long-name test",
+        tag: "Long",
       },
       {
         id: "task-complete",
@@ -176,15 +197,24 @@ const mobileColumns: MockColumn[] = [
     tasks: [
       {
         id: "task-mobile-1",
-        title: "Move task to screening",
+        title:
+          "Move the shortlisted customer success onboarding task to screening",
         meta: "Mobile-safe control",
         tag: "Move",
       },
       {
         id: "task-mobile-2",
-        title: "Reorder follow-up list",
+        title:
+          "Reorder the follow-up list for candidates waiting on hiring manager feedback",
         meta: "No direct drag needed",
         tag: "Mobile",
+      },
+      {
+        id: "task-mobile-4",
+        title:
+          "Share a long mobile-friendly handoff note with the recruiter before end of day",
+        meta: "Small-width check",
+        tag: "Long",
       },
     ],
   },
