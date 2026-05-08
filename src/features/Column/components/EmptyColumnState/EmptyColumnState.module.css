@@ -1,7 +1,9 @@
 .emptyColumnState {
   display: grid;
+  flex: 1;
   place-items: center;
-  min-height: 6rem;
+  min-height: 0;
+  height: 100%;
   padding: 16px;
   border: 1px dashed var(--color-border-strong);
   border-radius: 18px;

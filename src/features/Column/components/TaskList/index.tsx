@@ -5,7 +5,6 @@ type TaskListProps = {
   tasks: Array<{
     id: string;
     title: string;
-    meta: string;
     tag: string;
     isComplete?: boolean;
     isSelected?: boolean;
@@ -20,7 +19,6 @@ export function TaskList({ tasks, selectionMode = false }: TaskListProps) {
         <TaskCard
           key={task.id}
           title={task.title}
-          meta={task.meta}
           tag={task.tag}
           isComplete={task.isComplete}
           isSelected={task.isSelected}

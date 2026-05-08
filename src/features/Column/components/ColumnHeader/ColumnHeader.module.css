@@ -1,38 +1,65 @@
 .columnHeader {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 10px;
 }
 
-.subtitle,
+.draggableHeader {
+  cursor: grab;
+}
+
+.draggableHeader:active {
+  cursor: grabbing;
+}
+
+.titleGroup {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex: 1;
+}
+
+.dragCue {
+  display: inline-flex;
+  align-items: center;
+  color: var(--color-text-muted);
+  opacity: 0.75;
+  cursor: grab;
+  flex-shrink: 0;
+}
+
+.dragIcon {
+  width: 10px;
+  height: 14px;
+  display: block;
+}
+
 .title {
   margin: 0;
 }
 
-.subtitle {
-  color: var(--color-text-muted);
-  font-size: 0.74rem;
-  font-weight: 700;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-}
-
 .title {
-  margin-top: 4px;
-  font-size: 1.1rem;
+  font-size: 1rem;
   line-height: 1.2;
+  color: var(--color-text);
 }
 
-.count {
+.actions {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  min-width: 36px;
-  min-height: 36px;
-  padding: 0 10px;
-  border-radius: 999px;
-  background: var(--color-brand-soft);
-  color: var(--color-brand);
-  font-weight: 700;
+  gap: 6px;
+}
+
+.iconAction {
+  min-width: 30px;
+  padding: 0;
+  cursor: pointer;
+}
+
+.icon {
+  width: 12px;
+  height: 12px;
+  display: block;
 }

@@ -5,6 +5,13 @@
   gap: 8px;
 }
 
+.actionButtons {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-left: auto;
+}
+
 .status,
 .meta {
   display: inline-flex;
@@ -24,4 +31,25 @@
 .meta {
   background: rgba(255, 255, 255, 0.84);
   color: var(--color-text-muted);
+}
+
+.actionButton,
+.actionButtonDanger {
+  min-height: 30px;
+}
+
+.actionButtonDanger {
+  border-color: rgba(176, 56, 56, 0.18);
+  color: #a33f3f;
+}
+
+.actionButtonDanger:hover {
+  border-color: rgba(176, 56, 56, 0.28);
+}
+
+@media (max-width: 640px) {
+  .actionButtons {
+    width: 100%;
+    margin-left: 0;
+  }
 }

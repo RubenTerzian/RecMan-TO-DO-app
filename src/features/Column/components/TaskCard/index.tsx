@@ -8,7 +8,6 @@ import { IconButton } from "@/components/atoms/IconButton/index";
 
 type TaskCardProps = {
   title?: string;
-  meta?: string;
   tag?: string;
   isComplete?: boolean;
   isSelected?: boolean;
@@ -25,6 +24,7 @@ export function TaskCard({
     <article
       className={clsx(styles.taskCard, {
         [styles.completed]: isComplete,
+        [styles.draggableCard]: !selectionMode,
         [styles.selected]: isSelected,
         [styles.selectionMode]: selectionMode,
       })}

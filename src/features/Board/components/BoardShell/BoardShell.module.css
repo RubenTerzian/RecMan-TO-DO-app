@@ -3,23 +3,138 @@
   min-height: 0;
 }
 
+.boardViewport {
+  position: relative;
+  display: block;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 4px;
+  scrollbar-gutter: stable both-edges;
+}
+
+.mobileScrollHint {
+  display: none;
+}
+
 .boardGrid {
   display: grid;
-  gap: 18px;
-  width: 100%;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(280px, 320px);
+  gap: 14px;
+  width: max-content;
+  min-width: 100%;
+  height: 100%;
+  align-items: stretch;
+}
+
+.createColumnCard {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  height: 100%;
+  min-height: 0;
+  padding: 16px;
+  border: 1px dashed rgba(32, 50, 79, 0.18);
+  border-radius: 20px;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.9),
+    rgba(246, 248, 252, 0.96)
+  );
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72);
+}
+
+.createColumnEyebrow {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.createColumnTitle {
+  margin: 0;
+  font-size: 1.02rem;
+  line-height: 1.2;
+  color: var(--color-text-strong);
+}
+
+.createColumnDescription {
+  margin: 0;
+  color: var(--color-text-muted);
+  line-height: 1.42;
+  font-size: 0.9rem;
+}
+
+.createColumnButton {
+  justify-self: start;
+  margin-top: 4px;
 }
 
 .mobileBoardGrid {
-  grid-template-columns: minmax(0, 1fr);
+  grid-auto-columns: minmax(260px, 300px);
 }
 
-@media (min-width: 1120px) {
+@media (min-width: 1680px) {
   .boardGrid {
-    grid-template-columns: repeat(3, minmax(240px, 1fr));
-    align-items: start;
+    grid-auto-columns: minmax(300px, 340px);
+    gap: 16px;
   }
 
-  .mobileBoardGrid {
-    grid-template-columns: repeat(2, minmax(240px, 1fr));
+  .createColumnCard {
+    padding: 18px;
+  }
+}
+
+@media (max-width: 767px) {
+  .boardViewport {
+    padding-top: 40px;
+  }
+
+  .boardViewport::after {
+    content: "";
+    position: sticky;
+    right: 0;
+    top: 40px;
+    display: block;
+    float: right;
+    width: 36px;
+    height: calc(100% - 40px);
+    margin-left: -36px;
+    background: linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0),
+      rgba(255, 255, 255, 0.92)
+    );
+    pointer-events: none;
+    z-index: 2;
+  }
+
+  .boardGrid {
+    grid-auto-columns: minmax(240px, 82vw);
+  }
+
+  .mobileScrollHint {
+    position: absolute;
+    left: 50%;
+    top: 10px;
+    transform: translateX(-50%);
+    z-index: 3;
+    display: block;
+    width: max-content;
+    max-width: calc(100% - 32px);
+    color: var(--color-accent-strong);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: center;
+    pointer-events: none;
   }
 }

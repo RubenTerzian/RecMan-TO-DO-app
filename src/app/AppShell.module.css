@@ -45,3 +45,14 @@
   align-content: start;
   gap: clamp(18px, 2.4vw, 30px);
 }
+
+@media (min-width: 1680px) {
+  .appShell {
+    padding-inline: clamp(24px, 3vw, 48px);
+  }
+
+  .appFrame {
+    width: min(100%, 92vw);
+    max-width: var(--app-shell-max-width);
+  }
+}

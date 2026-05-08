@@ -1,4 +1,6 @@
 import { clsx } from "@/utils/clsx";
+import { Button } from "@/components/atoms/Button/index";
+import { useColumnActions } from "@/features/Column/hooks/useColumnActions";
 import type { MockBoardState } from "../../../../app/mockScreens";
 import styles from "./BoardShell.module.css";
 import { BoardCanvas } from "@/features/Board/components/BoardCanvas/index";
@@ -11,6 +13,8 @@ type BoardShellProps = {
 };
 
 export function BoardShell({ board }: BoardShellProps) {
+  const { createColumn } = useColumnActions();
+
   return (
     <main className={styles.boardShell}>
       <BoardCanvas>
@@ -26,28 +30,54 @@ export function BoardShell({ board }: BoardShellProps) {
         ) : null}
 
         {board.variant === "board" ? (
-          <div
-            className={clsx(styles.boardGrid, {
-              [styles.mobileBoardGrid]: board.columns?.some(
-                (column) => column.showMobileReorderMenu,
-              ),
-            })}
-            data-testid="board-grid"
-          >
-            {board.columns?.map((column) => (
-              <Column
-                key={column.id}
-                title={column.title}
-                subtitle={column.subtitle}
-                taskCount={column.tasks.length}
-                status={column.status}
-                meta={column.meta}
-                tasks={column.tasks}
-                selectionMode={board.selectionMode}
-                showMobileReorderMenu={column.showMobileReorderMenu}
-                emptyMessage={column.emptyMessage}
-              />
-            ))}
+          <div className={styles.boardViewport}>
+            <div className={styles.mobileScrollHint} aria-hidden="true">
+              Swipe to see more columns →
+            </div>
+
+            <div
+              className={clsx(styles.boardGrid, {
+                [styles.mobileBoardGrid]: board.columns?.some(
+                  (column) => column.showMobileReorderMenu,
+                ),
+              })}
+              data-testid="board-grid"
+            >
+              {board.columns?.map((column) => (
+                <Column
+                  key={column.id}
+                  title={column.title}
+                  subtitle={column.subtitle}
+                  tasks={column.tasks}
+                  selectionMode={board.selectionMode}
+                  showMobileReorderMenu={column.showMobileReorderMenu}
+                  emptyMessage={column.emptyMessage}
+                />
+              ))}
+
+              {!board.selectionMode ? (
+                <section
+                  className={styles.createColumnCard}
+                  data-testid="create-column-card"
+                >
+                  <p className={styles.createColumnEyebrow}>Board actions</p>
+                  <h2 className={styles.createColumnTitle}>
+                    Create new column
+                  </h2>
+                  <p className={styles.createColumnDescription}>
+                    Add another lane to the board for new work, handoffs, or
+                    done items.
+                  </p>
+                  <Button
+                    className={styles.createColumnButton}
+                    data-testid="create-column-button"
+                    onClick={createColumn}
+                  >
+                    New column
+                  </Button>
+                </section>
+              ) : null}
+            </div>
           </div>
         ) : null}
       </BoardCanvas>

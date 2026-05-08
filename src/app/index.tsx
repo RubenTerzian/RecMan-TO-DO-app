@@ -18,7 +18,6 @@ export default function App() {
       <div className={styles.appFrame}>
         <TopBar
           activeScreen={activeScreen}
-          screenLabel={screen.label}
           state={screen.topBar}
           onScreenChange={setActiveScreen}
         />

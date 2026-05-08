@@ -10,7 +10,6 @@ export type MockScreenId =
 export type MockTask = {
   id: string;
   title: string;
-  meta: string;
   tag: string;
   isComplete?: boolean;
   isSelected?: boolean;
@@ -20,8 +19,6 @@ export type MockColumn = {
   id: string;
   title: string;
   subtitle: string;
-  status: string;
-  meta: string;
   tasks: MockTask[];
   emptyMessage?: string;
   showMobileReorderMenu?: boolean;
@@ -61,39 +58,32 @@ const populatedColumns: MockColumn[] = [
     id: "column-backlog",
     title: "Backlog",
     subtitle: "Ready to triage",
-    status: "Regular mode",
-    meta: "3 visible tasks",
     tasks: [
       {
         id: "task-follow-up",
         title: "Follow up with shortlisted candidates",
-        meta: "2 unread notes · Today",
         tag: "Follow-up",
       },
       {
         id: "task-long-backlog-1",
         title:
           "Draft a detailed follow-up summary for every shortlisted candidate before tomorrow morning standup",
-        meta: "Long title layout check",
         tag: "Long",
       },
       {
         id: "task-brief",
         title: "Prepare intake brief",
-        meta: "Draft shared with team",
         tag: "Draft",
       },
       {
         id: "task-long-backlog-2",
         title:
           "Coordinate final interview availability across hiring managers, recruiter notes, and candidate calendar windows",
-        meta: "Cross-column preview",
         tag: "Long",
       },
       {
         id: "task-copy",
         title: "Refresh job ad copy",
-        meta: "Waiting for review",
         tag: "Review",
       },
     ],
@@ -102,26 +92,21 @@ const populatedColumns: MockColumn[] = [
     id: "column-in-progress",
     title: "In progress",
     subtitle: "Active work",
-    status: "Focused",
-    meta: "2 visible tasks",
     tasks: [
       {
         id: "task-screening",
         title: "Screen inbound applicants",
-        meta: "6 profiles ready",
         tag: "Priority",
       },
       {
         id: "task-long-progress-1",
         title:
           "Prepare a structured interview feedback packet for the shortlisted platform engineering candidates",
-        meta: "Active long-name test",
         tag: "Long",
       },
       {
         id: "task-complete",
         title: "Confirm interview agenda",
-        meta: "Candidate notified",
         tag: "Done",
         isComplete: true,
       },
@@ -131,10 +116,54 @@ const populatedColumns: MockColumn[] = [
     id: "column-done",
     title: "Done",
     subtitle: "Completed work",
-    status: "Stable",
-    meta: "Empty drop target",
     tasks: [],
     emptyMessage: "Drop tasks here or add a new one.",
+  },
+  {
+    id: "column-screening",
+    title: "Screening",
+    subtitle: "Initial review",
+    tasks: [
+      {
+        id: "task-screening-1",
+        title: "Review inbound product designer applications",
+        tag: "Review",
+      },
+      {
+        id: "task-screening-2",
+        title: "Shortlist recruiter call candidates",
+        tag: "Shortlist",
+      },
+    ],
+  },
+  {
+    id: "column-interviews",
+    title: "Interviews",
+    subtitle: "Panel stage",
+    tasks: [
+      {
+        id: "task-interview-1",
+        title: "Confirm panel schedule for backend role",
+        tag: "Schedule",
+      },
+      {
+        id: "task-interview-2",
+        title: "Send interview prep note to shortlisted candidate",
+        tag: "Share",
+      },
+    ],
+  },
+  {
+    id: "column-offers",
+    title: "Offers",
+    subtitle: "Final handoff",
+    tasks: [
+      {
+        id: "task-offer-1",
+        title: "Prepare final compensation summary",
+        tag: "Offer",
+      },
+    ],
   },
 ];
 
@@ -143,20 +172,16 @@ const selectionColumns: MockColumn[] = [
     id: "column-review",
     title: "Review",
     subtitle: "Visible tasks",
-    status: "Selection mode",
-    meta: "2 selected",
     tasks: [
       {
         id: "task-selected-1",
         title: "Send shortlist summary",
-        meta: "Ready for bulk move",
         tag: "Selected",
         isSelected: true,
       },
       {
         id: "task-selected-2",
         title: "Collect interview feedback",
-        meta: "Waiting for panel",
         tag: "Selected",
         isSelected: true,
       },
@@ -166,20 +191,16 @@ const selectionColumns: MockColumn[] = [
     id: "column-next",
     title: "Next steps",
     subtitle: "Visible tasks",
-    status: "Selection mode",
-    meta: "1 selected",
     tasks: [
       {
         id: "task-selected-3",
         title: "Book final interview",
-        meta: "Move to client handoff",
         tag: "Selected",
         isSelected: true,
       },
       {
         id: "task-selected-4",
         title: "Update candidate notes",
-        meta: "Not selected",
         tag: "Open",
       },
     ],
@@ -191,29 +212,24 @@ const mobileColumns: MockColumn[] = [
     id: "column-mobile-today",
     title: "Today",
     subtitle: "Mobile reorder",
-    status: "Tap actions",
-    meta: "Use buttons instead of drag",
     showMobileReorderMenu: true,
     tasks: [
       {
         id: "task-mobile-1",
         title:
           "Move the shortlisted customer success onboarding task to screening",
-        meta: "Mobile-safe control",
         tag: "Move",
       },
       {
         id: "task-mobile-2",
         title:
           "Reorder the follow-up list for candidates waiting on hiring manager feedback",
-        meta: "No direct drag needed",
         tag: "Mobile",
       },
       {
         id: "task-mobile-4",
         title:
           "Share a long mobile-friendly handoff note with the recruiter before end of day",
-        meta: "Small-width check",
         tag: "Long",
       },
     ],
@@ -222,13 +238,10 @@ const mobileColumns: MockColumn[] = [
     id: "column-mobile-up-next",
     title: "Up next",
     subtitle: "Compact lane",
-    status: "Visible",
-    meta: "1 task",
     tasks: [
       {
         id: "task-mobile-3",
         title: "Share interview recap",
-        meta: "Ready to move",
         tag: "Share",
       },
     ],
