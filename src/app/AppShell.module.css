@@ -1,0 +1,47 @@
+.appShell {
+  position: relative;
+  isolation: isolate;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  padding: clamp(18px, 2vw, 32px);
+  color: var(--color-text);
+}
+
+.appShell::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  background:
+    radial-gradient(circle at 0% 10%, rgba(36, 90, 240, 0.14), transparent 30%),
+    radial-gradient(
+      circle at 100% 0%,
+      rgba(84, 109, 158, 0.12),
+      transparent 24%
+    ),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0));
+}
+
+.appShell::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.45;
+  background-image:
+    linear-gradient(rgba(32, 50, 79, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(32, 50, 79, 0.035) 1px, transparent 1px);
+  background-size:
+    100% 100%,
+    32px 32px;
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.4), transparent 94%);
+}
+
+.appFrame {
+  width: min(100%, var(--app-shell-max-width));
+  display: grid;
+  align-content: start;
+  gap: clamp(18px, 2.4vw, 30px);
+}

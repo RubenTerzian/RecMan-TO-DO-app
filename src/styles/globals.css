@@ -1,0 +1,44 @@
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+html {
+  background: var(--color-bg);
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  color: var(--color-text);
+  background:
+    radial-gradient(
+      circle at top left,
+      rgba(36, 90, 240, 0.14),
+      transparent 28%
+    ),
+    radial-gradient(
+      circle at 100% 0%,
+      rgba(68, 92, 137, 0.12),
+      transparent 20%
+    ),
+    linear-gradient(180deg, #fbf7f1 0%, #f7f2e9 42%, #f4eee2 100%);
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+*::selection {
+  background: rgba(36, 90, 240, 0.22);
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}

@@ -1,0 +1,137 @@
+.topBar {
+  display: grid;
+  gap: 16px;
+  padding: clamp(18px, 2vw, 26px);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  background:
+    radial-gradient(
+      circle at top left,
+      rgba(36, 90, 240, 0.1),
+      transparent 26%
+    ),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(255, 255, 255, 0.9));
+  box-shadow: var(--shadow-lg);
+  backdrop-filter: blur(18px);
+}
+
+.headerRow {
+  display: grid;
+  gap: 14px;
+}
+
+.brandBlock {
+  display: grid;
+  gap: 8px;
+}
+
+.kicker {
+  margin: 0;
+  color: var(--color-accent-strong);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+}
+
+.title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.8rem, 3vw, 2.8rem);
+  line-height: 1.02;
+  letter-spacing: -0.05em;
+  max-width: 14ch;
+}
+
+.description {
+  margin: 0;
+  max-width: 38rem;
+  color: var(--color-text-muted);
+  line-height: 1.55;
+}
+
+.stateSwitcher {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.stateButton {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 0 14px;
+  border: 1px solid rgba(32, 50, 79, 0.1);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.66);
+  color: var(--color-brand);
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    border-color 160ms ease,
+    background 160ms ease,
+    color 160ms ease;
+}
+
+.stateButton[data-active="true"] {
+  border-color: rgba(36, 90, 240, 0.2);
+  background: rgba(36, 90, 240, 0.1);
+  color: var(--color-accent-strong);
+}
+
+.stateButton:focus-visible {
+  outline: none;
+  border-color: rgba(36, 90, 240, 0.38);
+  box-shadow: 0 0 0 4px rgba(36, 90, 240, 0.12);
+}
+
+.controlsCard {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid rgba(32, 50, 79, 0.08);
+  border-radius: calc(var(--radius-xl) - 4px);
+  background: rgba(255, 255, 255, 0.64);
+}
+
+.controlsMeta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.controlsEyebrow {
+  color: var(--color-accent-strong);
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.controlsCopy {
+  margin: 0;
+  color: var(--color-brand);
+  font-size: 0.96rem;
+}
+
+.controls {
+  display: grid;
+  gap: 12px;
+}
+
+@media (min-width: 960px) {
+  .headerRow {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+  }
+
+  .controls {
+    grid-template-columns: minmax(240px, 1.2fr) minmax(180px, 0.6fr) auto auto;
+    align-items: center;
+  }
+}

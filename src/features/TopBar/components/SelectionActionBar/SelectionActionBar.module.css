@@ -1,0 +1,12 @@
+.selectionActionBar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 52px;
+  padding: 0 16px;
+  border: 1px solid rgba(32, 50, 79, 0.08);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.82);
+  color: var(--color-brand);
+  font-weight: 700;
+}

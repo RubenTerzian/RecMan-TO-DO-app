@@ -1,0 +1,27 @@
+.columnActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.status,
+.meta {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 0 10px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.status {
+  background: var(--color-accent-soft);
+  color: var(--color-accent-strong);
+}
+
+.meta {
+  background: rgba(255, 255, 255, 0.84);
+  color: var(--color-text-muted);
+}

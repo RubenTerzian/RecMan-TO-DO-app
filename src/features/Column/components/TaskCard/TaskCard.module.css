@@ -1,0 +1,78 @@
+.taskCard {
+  display: grid;
+  grid-template-columns: auto auto minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid rgba(32, 50, 79, 0.08);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.88);
+}
+
+.selectionMode {
+  grid-template-columns: auto minmax(0, 1fr);
+}
+
+.completed {
+  background: rgba(245, 249, 255, 0.96);
+}
+
+.selected {
+  border-color: rgba(36, 90, 240, 0.22);
+  box-shadow: 0 0 0 4px rgba(36, 90, 240, 0.08);
+}
+
+.dragHandle {
+  appearance: none;
+  min-height: 34px;
+  padding: 0 6px;
+  border: 0;
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: grab;
+  font-size: 1rem;
+  letter-spacing: -0.1em;
+}
+
+.content {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.title {
+  color: var(--color-text);
+  font-size: 0.96rem;
+  line-height: 1.35;
+}
+
+.meta {
+  color: var(--color-text-muted);
+  font-size: 0.84rem;
+  line-height: 1.5;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: var(--color-brand-soft);
+  color: var(--color-brand);
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}

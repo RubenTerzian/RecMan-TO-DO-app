@@ -1,0 +1,6 @@
+import styles from "./TaskEditor.module.css";
+import { Input } from "@/components/atoms/Input/index";
+
+export function TaskEditor() {
+  return <Input className={styles.taskEditor} defaultValue="" />;
+}

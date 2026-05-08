@@ -1,0 +1,24 @@
+:root {
+  color-scheme: light;
+  --font-sans: "Avenir Next", "Segoe UI", "Helvetica Neue", sans-serif;
+  --font-display: "Avenir Next", "Segoe UI", "Helvetica Neue", sans-serif;
+  --color-bg: #f7f2e9;
+  --color-bg-elevated: rgba(255, 255, 255, 0.88);
+  --color-surface: rgba(255, 255, 255, 0.78);
+  --color-surface-strong: #ffffff;
+  --color-surface-muted: #f5efe5;
+  --color-border: rgba(36, 45, 65, 0.1);
+  --color-border-strong: rgba(36, 45, 65, 0.18);
+  --color-text: #172033;
+  --color-text-muted: rgba(23, 32, 51, 0.66);
+  --color-accent: #245af0;
+  --color-accent-strong: #0a2c9a;
+  --color-accent-soft: rgba(36, 90, 240, 0.12);
+  --color-brand: #20324f;
+  --color-brand-soft: rgba(32, 50, 79, 0.08);
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --shadow-md: 0 20px 60px rgba(24, 34, 53, 0.08);
+  --shadow-lg: 0 30px 100px rgba(24, 34, 53, 0.12);
+  --app-shell-max-width: 1360px;
+}

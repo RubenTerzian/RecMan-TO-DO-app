@@ -1,6 +1,11 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
+import "@/styles/tokens.css";
+import "@/styles/globals.css";
+import App from "@/app/index";
 
 createRoot(document.getElementById("root")!).render(
-  <StrictMode>Hello!</StrictMode>,
+  <StrictMode>
+    <App />
+  </StrictMode>,
 );
