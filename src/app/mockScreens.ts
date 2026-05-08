@@ -1,8 +1,10 @@
-import type { TaskFilter, TopBarState } from "@/features/TopBar/types";
+import type { TopBarState } from "@/features/TopBar/types";
+import type { ColumnEmptyState } from "@/features/Column/types";
 
 export type MockScreenId =
   | "empty"
   | "populated"
+  | "editing"
   | "selection"
   | "no-results"
   | "mobile-reorder";
@@ -10,9 +12,10 @@ export type MockScreenId =
 export type MockTask = {
   id: string;
   title: string;
-  tag: string;
+  tag?: string;
   isComplete?: boolean;
   isSelected?: boolean;
+  editorMode?: "create" | "edit";
 };
 
 export type MockColumn = {
@@ -20,20 +23,17 @@ export type MockColumn = {
   title: string;
   subtitle: string;
   tasks: MockTask[];
-  emptyMessage?: string;
+  emptyState?: ColumnEmptyState;
   showMobileReorderMenu?: boolean;
+  editorMode?: "create" | "edit";
+  draftTitle?: string;
 };
 
 export type MockBoardState = {
   variant: "empty" | "board" | "no-results";
   selectionMode?: boolean;
   columns?: MockColumn[];
-  noResults?: {
-    title: string;
-    description: string;
-    searchTerm: string;
-    filter: TaskFilter;
-  };
+  showCreateColumnCard?: boolean;
 };
 
 export type MockScreen = {
@@ -46,6 +46,7 @@ export type MockScreen = {
 export const MOCK_SCREEN_OPTIONS: Array<Pick<MockScreen, "id" | "label">> = [
   { id: "empty", label: "Empty" },
   { id: "populated", label: "Board" },
+  { id: "editing", label: "Editing" },
   { id: "selection", label: "Selection" },
   { id: "no-results", label: "No results" },
   { id: "mobile-reorder", label: "Mobile" },
@@ -117,7 +118,11 @@ const populatedColumns: MockColumn[] = [
     title: "Done",
     subtitle: "Completed work",
     tasks: [],
-    emptyMessage: "Drop tasks here or add a new one.",
+    emptyState: {
+      variant: "empty",
+      title: "Nothing here yet",
+      message: "Drop tasks here or add a new one.",
+    },
   },
   {
     id: "column-screening",
@@ -207,6 +212,52 @@ const selectionColumns: MockColumn[] = [
   },
 ];
 
+const editingColumns: MockColumn[] = [
+  {
+    id: "column-planning",
+    title: "Planning",
+    subtitle: "Draft states",
+    tasks: [
+      {
+        id: "task-planning-1",
+        title: "Review hiring manager notes",
+        tag: "Review",
+      },
+      {
+        id: "task-planning-edit",
+        title: "Prepare onboarding checklist",
+        editorMode: "edit",
+      },
+      {
+        id: "task-planning-create",
+        title: "",
+        editorMode: "create",
+      },
+    ],
+  },
+  {
+    id: "column-feedback",
+    title: "Candidate feedback",
+    subtitle: "Renaming lane",
+    draftTitle: "Feedback & next steps",
+    editorMode: "edit",
+    tasks: [],
+    emptyState: {
+      variant: "empty",
+      title: "Column is empty",
+      message: "Drop tasks here after you save the renamed column.",
+    },
+  },
+  {
+    id: "column-new",
+    title: "",
+    subtitle: "New lane",
+    draftTitle: "Offer approvals",
+    editorMode: "create",
+    tasks: [],
+  },
+];
+
 const mobileColumns: MockColumn[] = [
   {
     id: "column-mobile-today",
@@ -248,6 +299,24 @@ const mobileColumns: MockColumn[] = [
   },
 ];
 
+function createNoResultsColumns(columns: MockColumn[]): MockColumn[] {
+  return columns.map((column) => {
+    if (column.tasks.length === 0) {
+      return column;
+    }
+
+    return {
+      ...column,
+      tasks: [],
+      emptyState: {
+        variant: "no-results",
+        title: "No matching tasks",
+        message: "Try another search term or clear the filter to show matching tasks in this column.",
+      },
+    };
+  });
+}
+
 const mockScreens: Record<MockScreenId, MockScreen> = {
   empty: {
     id: "empty",
@@ -276,6 +345,21 @@ const mockScreens: Record<MockScreenId, MockScreen> = {
       columns: populatedColumns,
     },
   },
+  editing: {
+    id: "editing",
+    label: "Create and edit",
+    topBar: {
+      searchTerm: "",
+      activeFilter: "all",
+      isSelectionMode: false,
+      selectionCount: 0,
+    },
+    board: {
+      variant: "board",
+      columns: editingColumns,
+      showCreateColumnCard: false,
+    },
+  },
   selection: {
     id: "selection",
     label: "Selection mode",
@@ -284,6 +368,15 @@ const mockScreens: Record<MockScreenId, MockScreen> = {
       activeFilter: "incomplete",
       isSelectionMode: true,
       selectionCount: 3,
+      bulkActions: {
+        moveTargetId: "column-next",
+        availableColumns: [
+          { id: "column-review", label: "Review" },
+          { id: "column-next", label: "Next steps" },
+          { id: "column-backlog", label: "Backlog" },
+          { id: "column-done", label: "Done" },
+        ],
+      },
     },
     board: {
       variant: "board",
@@ -301,14 +394,8 @@ const mockScreens: Record<MockScreenId, MockScreen> = {
       selectionCount: 0,
     },
     board: {
-      variant: "no-results",
-      noResults: {
-        title: "No visible tasks",
-        description:
-          "Try another search term or clear the filter to show tasks again.",
-        searchTerm: "backend architect",
-        filter: "complete",
-      },
+      variant: "board",
+      columns: createNoResultsColumns(populatedColumns),
     },
   },
   "mobile-reorder": {

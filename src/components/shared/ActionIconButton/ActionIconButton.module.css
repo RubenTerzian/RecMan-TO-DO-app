@@ -1,0 +1,78 @@
+.actionIconButton {
+  --action-color: var(--color-accent);
+  --action-background: var(--color-accent-soft);
+  --action-border: transparent;
+  --action-hover-color: #ffffff;
+  --action-hover-background: var(--color-accent);
+  --action-hover-border: var(--color-accent);
+  width: 32px;
+  min-width: 32px;
+  height: 32px;
+  min-height: 32px;
+  padding: 0;
+  border-color: var(--action-border);
+  border-radius: 999px;
+  background: var(--action-background);
+  color: var(--action-color);
+  flex-shrink: 0;
+}
+
+.actionIconButton:hover {
+  border-color: var(--action-hover-border);
+  background: var(--action-hover-background);
+  color: var(--action-hover-color);
+}
+
+.actionIconButton:focus-visible {
+  outline: 2px solid
+    color-mix(in srgb, var(--action-hover-background) 30%, white);
+  outline-offset: 2px;
+}
+
+.edit {
+  --action-color: var(--color-accent-strong);
+  --action-background: var(--color-accent-soft);
+  --action-hover-background: var(--color-accent);
+  --action-hover-border: var(--color-accent);
+}
+
+.delete {
+  --action-color: var(--color-danger);
+  --action-background: var(--color-danger-soft);
+  --action-hover-background: var(--color-danger);
+  --action-hover-border: var(--color-danger);
+}
+
+.cancel {
+  --action-color: var(--color-text-muted);
+  --action-background: var(--color-brand-soft);
+  --action-hover-background: var(--color-brand);
+  --action-hover-border: var(--color-brand);
+}
+
+.save {
+  --action-color: var(--color-success);
+  --action-background: var(--color-success-soft);
+  --action-hover-background: var(--color-success);
+  --action-hover-border: var(--color-success);
+}
+
+.icon {
+  width: 14px;
+  height: 14px;
+  display: block;
+}
+
+@media (max-width: 420px) {
+  .actionIconButton {
+    width: 28px;
+    min-width: 28px;
+    height: 28px;
+    min-height: 28px;
+  }
+
+  .icon {
+    width: 12px;
+    height: 12px;
+  }
+}

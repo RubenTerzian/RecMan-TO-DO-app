@@ -12,7 +12,7 @@ type CreateColumnButtonProps = Omit<
 
 export function CreateColumnButton({
   className,
-  label = "Add a New Column",
+  label = "Add New Column",
   type = "button",
   ...props
 }: CreateColumnButtonProps) {

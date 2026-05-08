@@ -4,6 +4,7 @@ import styles from "./TopBar.module.css";
 import { useColumnActions } from "@/features/Column/hooks/useColumnActions";
 import { SearchInput } from "@/features/TopBar/components/SearchInput";
 import { FilterControls } from "@/features/TopBar/components/FilterControls";
+import { SelectionActionBar } from "@/features/TopBar/components/SelectionActionBar";
 import { SelectionModeToggle } from "@/features/TopBar/components/SelectionModeToggle";
 import type { TopBarState } from "@/features/TopBar/types";
 
@@ -48,6 +49,13 @@ export function TopBar({ activeScreen, state, onScreenChange }: TopBarProps) {
             ) : null}
           </div>
         </div>
+
+        {state.isSelectionMode && state.bulkActions ? (
+          <SelectionActionBar
+            bulkActions={state.bulkActions}
+            selectionCount={state.selectionCount}
+          />
+        ) : null}
       </div>
     </header>
   );

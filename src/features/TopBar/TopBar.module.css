@@ -63,6 +63,8 @@
   border: 1px solid rgba(32, 50, 79, 0.08);
   border-radius: calc(var(--radius-xl) - 4px);
   background: rgba(255, 255, 255, 0.64);
+  display: grid;
+  gap: 12px;
 }
 
 .controls {

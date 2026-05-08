@@ -16,6 +16,10 @@
   --color-accent-soft: rgba(36, 90, 240, 0.12);
   --color-brand: #20324f;
   --color-brand-soft: rgba(32, 50, 79, 0.08);
+  --color-danger: #d84c4c;
+  --color-danger-soft: rgba(216, 76, 76, 0.12);
+  --color-success: #1f9b62;
+  --color-success-soft: rgba(31, 155, 98, 0.12);
   --radius-lg: 20px;
   --radius-xl: 28px;
   --shadow-md: 0 20px 60px rgba(24, 34, 53, 0.08);

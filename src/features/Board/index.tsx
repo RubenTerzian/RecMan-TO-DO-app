@@ -4,7 +4,6 @@ import type { MockBoardState } from "@/app/mockScreens";
 import { useColumnActions } from "@/features/Column/hooks/useColumnActions";
 import { Column } from "@/features/Column";
 import { EmptyBoardState } from "@/features/Board/components/EmptyBoardState";
-import { NoResultsState } from "@/features/Board/components/NoResultsState";
 import styles from "./Board.module.css";
 
 type BoardProps = {
@@ -20,16 +19,7 @@ export function Board({ board }: BoardProps) {
         <div className={styles.boardContent}>
           {board.variant === "empty" ? <EmptyBoardState /> : null}
 
-          {board.variant === "no-results" && board.noResults ? (
-            <NoResultsState
-              description={board.noResults.description}
-              filter={board.noResults.filter}
-              searchTerm={board.noResults.searchTerm}
-              title={board.noResults.title}
-            />
-          ) : null}
-
-          {board.variant === "board" ? (
+          {board.variant !== "empty" ? (
             <div className={styles.boardViewport}>
               <div className={styles.mobileScrollHint} aria-hidden="true">
                 Swipe to see more columns →
@@ -51,11 +41,14 @@ export function Board({ board }: BoardProps) {
                     tasks={column.tasks}
                     selectionMode={board.selectionMode}
                     showMobileReorderMenu={column.showMobileReorderMenu}
-                    emptyMessage={column.emptyMessage}
+                    emptyState={column.emptyState}
+                    editorMode={column.editorMode}
+                    draftTitle={column.draftTitle}
                   />
                 ))}
 
-                {!board.selectionMode ? (
+                {!board.selectionMode &&
+                board.showCreateColumnCard !== false ? (
                   <section
                     className={styles.createColumnCard}
                     data-testid="create-column-card"

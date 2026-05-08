@@ -1,10 +1,11 @@
 import { clsx } from "@/utils/clsx";
 import dragHandleIcon from "@/assets/icons/drag-handle.svg";
-import editIcon from "@/assets/icons/edit.svg";
-import deleteIcon from "@/assets/icons/delete.svg";
 import styles from "./TaskCard.module.css";
 import { Checkbox } from "@/components/atoms/Checkbox";
-import { IconButton } from "@/components/atoms/IconButton";
+import {
+  DeleteIconButton,
+  EditIconButton,
+} from "@/components/shared/ActionIconButton";
 
 type TaskCardProps = {
   title?: string;
@@ -61,31 +62,12 @@ export function TaskCard({
 
       {!selectionMode ? (
         <div className={styles.actions}>
-          <IconButton
-            className={styles.iconAction}
-            data-testid="task-edit"
-            aria-label="Edit task"
-          >
-            <img
-              src={editIcon}
-              alt=""
-              aria-hidden="true"
-              className={styles.icon}
-            />
-          </IconButton>
+          <EditIconButton data-testid="task-edit" aria-label="Edit task" />
 
-          <IconButton
-            className={styles.iconAction}
+          <DeleteIconButton
             data-testid="task-delete"
             aria-label="Delete task"
-          >
-            <img
-              src={deleteIcon}
-              alt=""
-              aria-hidden="true"
-              className={styles.icon}
-            />
-          </IconButton>
+          />
         </div>
       ) : null}
     </article>
