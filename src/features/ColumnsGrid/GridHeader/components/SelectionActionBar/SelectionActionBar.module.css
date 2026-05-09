@@ -1,10 +1,10 @@
 .selectionActionBar {
   display: grid;
-  gap: 12px;
-  width: min(100%, 980px);
-  padding: 12px;
+  gap: 10px 14px;
+  width: 100%;
+  padding: 12px 14px;
   border: 1px solid rgba(32, 50, 79, 0.08);
-  border-radius: 18px;
+  border-radius: 16px;
   background: rgba(255, 255, 255, 0.82);
 }
 
@@ -45,20 +45,27 @@
 
 .content {
   display: grid;
-  gap: 10px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 12px 18px;
 }
 
 .actionGroup {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  justify-content: flex-end;
+  align-items: center;
+  justify-content: flex-start;
+  min-width: 0;
 }
 
 .moveGroup {
   display: grid;
+  grid-template-columns: auto minmax(180px, 220px) auto;
+  align-items: center;
   gap: 8px;
   justify-content: end;
+  justify-self: end;
 }
 
 .moveLabel {
@@ -72,7 +79,7 @@
 .secondaryAction,
 .dangerAction,
 .moveAction {
-  min-height: 40px;
+  min-height: 36px;
   padding-inline: 14px;
   box-shadow: none;
 }
@@ -100,30 +107,34 @@
 }
 
 .moveAction {
-  min-width: 92px;
+  min-width: 84px;
 }
 
 .moveSelect {
   min-width: 0;
+  width: 100%;
 }
 
-@media (min-width: 900px) {
+@media (min-width: 901px) {
+  .moveLabel {
+    margin-right: 2px;
+  }
+}
+
+@media (max-width: 900px) {
   .content {
-    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
-    align-items: end;
+    grid-template-columns: minmax(0, 1fr);
+    align-items: stretch;
   }
 
-  .actionGroup {
-    justify-content: end;
+  .actionGroup,
+  .moveGroup {
+    justify-content: flex-start;
   }
 
   .moveGroup {
-    grid-template-columns: auto minmax(180px, 1fr) auto;
-    align-items: center;
-  }
-
-  .moveLabel {
-    margin-right: 2px;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    justify-self: stretch;
   }
 }
 
@@ -134,8 +145,9 @@
   }
 
   .selectionActionBar {
-    padding: 14px;
-    gap: 14px;
+    width: 100%;
+    padding: 12px;
+    gap: 12px;
   }
 
   .selectionPill {
@@ -155,6 +167,8 @@
   }
 
   .moveGroup {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
     justify-content: stretch;
   }
 
@@ -162,10 +176,14 @@
   .dangerAction,
   .moveAction {
     width: 100%;
-    min-height: 44px;
+    min-height: 40px;
   }
 
   .moveAction {
     min-width: 0;
+  }
+
+  .moveSelect {
+    width: 100%;
   }
 }
