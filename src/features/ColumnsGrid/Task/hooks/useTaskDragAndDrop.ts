@@ -55,6 +55,11 @@ type UseTaskDragAndDropOptions = {
 
 type Listener = () => void;
 
+type LastTaskDropTarget = {
+  edge: TaskDropEdge;
+  taskId: string;
+};
+
 const DEFAULT_DROP_STATE: TaskDropState = {
   draggingTaskId: null,
   previewColumnId: null,
@@ -132,6 +137,8 @@ export function useTaskDragAndDrop({
   const tasksRef = useRef(useStore.getState().tasks);
   const moveTaskRef = useRef(moveTask);
   const selectionModeRef = useRef(selectionMode);
+  const dragTaskMidpointsRef = useRef(new Map<string, number>());
+  const lastTaskDropTargetRef = useRef<LastTaskDropTarget | null>(null);
   const taskElementsRef = useRef(new Map<string, HTMLElement>());
   const taskDragHandleElementsRef = useRef(new Map<string, HTMLElement>());
   const taskListElementsRef = useRef(new Map<string, HTMLElement>());
@@ -146,6 +153,8 @@ export function useTaskDragAndDrop({
     selectionModeRef.current = selectionMode;
 
     if (selectionMode) {
+      dragTaskMidpointsRef.current.clear();
+      lastTaskDropTargetRef.current = null;
       taskDragStateStore.reset();
       setDraggingDocumentState(false);
     }
@@ -221,6 +230,8 @@ export function useTaskDragAndDrop({
       clientY: number,
       draggingTaskId: string,
     ): PointerTaskDropTarget | null => {
+      const midpointDeadZone = 10;
+
       for (const task of tasksRef.current) {
         if (task.id === draggingTaskId) {
           continue;
@@ -233,7 +244,9 @@ export function useTaskDragAndDrop({
         }
 
         const rect = element.getBoundingClientRect();
-        const midpointY = rect.top + rect.height / 2;
+        const midpointY =
+          dragTaskMidpointsRef.current.get(task.id) ??
+          rect.top + rect.height / 2;
 
         if (
           clientX < rect.left ||
@@ -244,10 +257,27 @@ export function useTaskDragAndDrop({
           continue;
         }
 
+        let edge: TaskDropEdge;
+
+        if (clientY <= midpointY - midpointDeadZone) {
+          edge = "top";
+        } else if (clientY >= midpointY + midpointDeadZone) {
+          edge = "bottom";
+        } else if (lastTaskDropTargetRef.current?.taskId === task.id) {
+          edge = lastTaskDropTargetRef.current.edge;
+        } else {
+          edge = clientY < midpointY ? "top" : "bottom";
+        }
+
+        lastTaskDropTargetRef.current = {
+          edge,
+          taskId: task.id,
+        };
+
         return {
           type: "task",
           columnId: task.columnId,
-          edge: clientY < midpointY ? "top" : "bottom",
+          edge,
           taskId: task.id,
         };
       }
@@ -272,6 +302,8 @@ export function useTaskDragAndDrop({
           columnId,
         };
       }
+
+      lastTaskDropTargetRef.current = null;
 
       return null;
     },
@@ -380,6 +412,28 @@ export function useTaskDragAndDrop({
           }
 
           isDragging = true;
+          dragTaskMidpointsRef.current.clear();
+
+          for (const task of tasksRef.current) {
+            if (task.id === currentTask.id) {
+              continue;
+            }
+
+            const taskElement = taskElementsRef.current.get(task.id);
+
+            if (!taskElement) {
+              continue;
+            }
+
+            const rect = taskElement.getBoundingClientRect();
+
+            dragTaskMidpointsRef.current.set(
+              task.id,
+              rect.top + rect.height / 2,
+            );
+          }
+
+          lastTaskDropTargetRef.current = null;
           setDraggingDocumentState(true);
           taskDragStateStore.setState({
             draggingTaskId: currentTask.id,
@@ -458,6 +512,8 @@ export function useTaskDragAndDrop({
           }
 
           cleanupPointerSession();
+          dragTaskMidpointsRef.current.clear();
+          lastTaskDropTargetRef.current = null;
           taskDragStateStore.reset();
         };
 
@@ -469,6 +525,8 @@ export function useTaskDragAndDrop({
           cleanupPointerSession();
 
           if (isDragging) {
+            dragTaskMidpointsRef.current.clear();
+            lastTaskDropTargetRef.current = null;
             taskDragStateStore.reset();
           }
         };
@@ -523,10 +581,13 @@ export function useTaskDragAndDrop({
 
   useEffect(() => {
     const taskHandleCleanupMap = taskHandleCleanupRef.current;
+    const dragTaskMidpoints = dragTaskMidpointsRef.current;
 
     return () => {
       taskHandleCleanupMap.forEach((cleanup) => cleanup());
       taskHandleCleanupMap.clear();
+      dragTaskMidpoints.clear();
+      lastTaskDropTargetRef.current = null;
       setDraggingDocumentState(false);
     };
   }, []);
