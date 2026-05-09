@@ -50,8 +50,8 @@ function TaskCardComponent({ taskId, ...props }: TaskCardProps) {
 
   const { registerTaskDragHandle } = useTaskDragAndDropContext();
   const isDragging = useIsTaskDragging(taskId);
-  const handleDragHandleRef = useCallback(
-    (element: HTMLButtonElement | null) => {
+  const handleCardRef = useCallback(
+    (element: HTMLElement | null) => {
       registerTaskDragHandle(taskId, element);
     },
     [registerTaskDragHandle, taskId],
@@ -90,6 +90,7 @@ function TaskCardComponent({ taskId, ...props }: TaskCardProps) {
 
   return (
     <article
+      ref={!selectionMode ? handleCardRef : undefined}
       className={clsx(styles.taskCard, {
         [styles.completed]: isComplete,
         [styles.dragging]: isDragging,
@@ -101,8 +102,8 @@ function TaskCardComponent({ taskId, ...props }: TaskCardProps) {
     >
       {!selectionMode ? (
         <button
-          ref={handleDragHandleRef}
           className={styles.dragHandle}
+          data-drag-handle="true"
           data-testid="task-drag-handle"
           type="button"
           aria-label="Drag task"

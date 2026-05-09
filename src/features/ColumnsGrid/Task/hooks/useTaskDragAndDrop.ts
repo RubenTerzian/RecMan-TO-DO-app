@@ -68,6 +68,25 @@ const DEFAULT_DROP_STATE: TaskDropState = {
   previewTitle: null,
 };
 
+function shouldIgnoreDragStart(
+  target: EventTarget | null,
+  handleElement: HTMLElement,
+) {
+  if (!(target instanceof Element)) {
+    return false;
+  }
+
+  const interactiveElement = target.closest(
+    'button, input, textarea, select, option, a, label, [role="button"], [contenteditable="true"], [data-no-drag="true"]',
+  );
+
+  if (!interactiveElement || !handleElement.contains(interactiveElement)) {
+    return false;
+  }
+
+  return interactiveElement.getAttribute("data-drag-handle") !== "true";
+}
+
 function createTaskDragStateStore() {
   let state = DEFAULT_DROP_STATE;
   const listeners = new Set<Listener>();
@@ -386,6 +405,10 @@ export function useTaskDragAndDrop({
         }
 
         if (event.pointerType === "mouse" && event.button !== 0) {
+          return;
+        }
+
+        if (shouldIgnoreDragStart(event.target, element)) {
           return;
         }
 

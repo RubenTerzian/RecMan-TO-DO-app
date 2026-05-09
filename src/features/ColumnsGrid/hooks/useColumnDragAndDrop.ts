@@ -40,6 +40,25 @@ const DEFAULT_DRAG_STATE: ColumnDragState = {
   dropTargetEdge: null,
 };
 
+function shouldIgnoreDragStart(
+  target: EventTarget | null,
+  handleElement: HTMLElement,
+) {
+  if (!(target instanceof Element)) {
+    return false;
+  }
+
+  const interactiveElement = target.closest(
+    'button, input, textarea, select, option, a, label, [role="button"], [contenteditable="true"], [data-no-drag="true"]',
+  );
+
+  if (!interactiveElement || !handleElement.contains(interactiveElement)) {
+    return false;
+  }
+
+  return interactiveElement.getAttribute("data-drag-handle") !== "true";
+}
+
 function createColumnDragStateStore() {
   let state = DEFAULT_DRAG_STATE;
   const listeners = new Set<Listener>();
@@ -233,6 +252,10 @@ export function useColumnDragAndDrop({
 
       const onPointerDown = (event: PointerEvent) => {
         if (event.pointerType === "mouse" && event.button !== 0) {
+          return;
+        }
+
+        if (shouldIgnoreDragStart(event.target, handleElement)) {
           return;
         }
 

@@ -16,7 +16,7 @@ type ColumnHeaderProps = {
   onDelete?(): void;
   onEdit?(): void;
   onToggleAllSelection?(): void;
-  dragHandleRef?: Ref<HTMLButtonElement>;
+  dragHandleRef?: Ref<HTMLElement>;
 };
 
 function ColumnHeaderComponent({
@@ -33,6 +33,7 @@ function ColumnHeaderComponent({
 
   return (
     <header
+      ref={!selectionMode ? dragHandleRef : undefined}
       className={clsx(styles.columnHeader, {
         [styles.draggableHeader]: !selectionMode,
       })}
@@ -40,8 +41,8 @@ function ColumnHeaderComponent({
       <div className={styles.titleGroup}>
         {!selectionMode ? (
           <button
-            ref={dragHandleRef}
             className={styles.dragCue}
+            data-drag-handle="true"
             data-testid="column-drag-handle"
             type="button"
             aria-label="Drag column"

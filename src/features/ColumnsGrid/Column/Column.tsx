@@ -22,7 +22,7 @@ type ColumnProps = {
   title: string;
   selectionMode?: boolean;
   columnRef?: Ref<HTMLElement>;
-  dragHandleRef?: Ref<HTMLButtonElement>;
+  dragHandleRef?: Ref<HTMLElement>;
 };
 
 function ColumnComponent({
