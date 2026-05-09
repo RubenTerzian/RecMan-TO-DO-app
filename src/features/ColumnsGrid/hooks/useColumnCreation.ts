@@ -1,3 +1,4 @@
+import type { FocusEventHandler } from "react";
 import { useCallback, useState } from "react";
 import { useStore } from "@/store/store";
 import { selectCreateColumn } from "@/store/selectors";
@@ -74,6 +75,24 @@ export function useColumnCreation() {
     resetCreationState();
   }, [resetCreationState]);
 
+  const handleCreateEditorBlur = useCallback<
+    FocusEventHandler<HTMLFormElement>
+  >(
+    (event) => {
+      const nextFocusedElement = event.relatedTarget;
+
+      if (
+        nextFocusedElement instanceof Node &&
+        event.currentTarget.contains(nextFocusedElement)
+      ) {
+        return;
+      }
+
+      resetCreationState();
+    },
+    [resetCreationState],
+  );
+
   const handleSaveColumnCreation = useCallback(() => {
     createColumn(normalizeColumnTitle(creationState.draftTitle));
     resetCreationState();
@@ -82,6 +101,7 @@ export function useColumnCreation() {
   return {
     draftTitle: creationState.draftTitle,
     isCreatingColumn: creationState.isCreatingColumn,
+    handleCreateEditorBlur,
     handleDraftTitleChange,
     handleCancelColumnCreation,
     handleSaveColumnCreation,

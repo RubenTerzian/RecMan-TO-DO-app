@@ -20,6 +20,11 @@
   background: rgba(244, 248, 255, 0.9);
 }
 
+.dropActive {
+  border-color: rgba(36, 90, 240, 0.32);
+  background: rgba(244, 248, 255, 0.92);
+}
+
 .title,
 .message {
   margin: 0;

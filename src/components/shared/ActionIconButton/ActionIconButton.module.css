@@ -29,6 +29,11 @@
   outline-offset: 2px;
 }
 
+.actionIconButton:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
 .edit {
   --action-color: var(--color-accent-strong);
   --action-background: var(--color-accent-soft);

@@ -1,3 +1,4 @@
+import type { Ref } from "react";
 import { memo } from "react";
 import dragHandleIcon from "@/assets/icons/drag-handle.svg";
 import {
@@ -15,6 +16,7 @@ type ColumnHeaderProps = {
   onDelete?(): void;
   onEdit?(): void;
   onToggleAllSelection?(): void;
+  dragHandleRef?: Ref<HTMLButtonElement>;
 };
 
 function ColumnHeaderComponent({
@@ -25,6 +27,7 @@ function ColumnHeaderComponent({
   onDelete,
   onEdit,
   onToggleAllSelection,
+  dragHandleRef,
 }: ColumnHeaderProps) {
   const selectionMode = mode === "selection";
 
@@ -36,27 +39,35 @@ function ColumnHeaderComponent({
     >
       <div className={styles.titleGroup}>
         {!selectionMode ? (
-          <div className={styles.dragCue} aria-hidden="true">
+          <button
+            ref={dragHandleRef}
+            className={styles.dragCue}
+            data-testid="column-drag-handle"
+            type="button"
+            aria-label="Drag column"
+          >
             <img src={dragHandleIcon} alt="" className={styles.dragIcon} />
-          </div>
+          </button>
         ) : null}
 
         <h3 className={styles.title}>{title}</h3>
       </div>
 
       {!selectionMode ? (
-        <div className={styles.actions}>
-          <EditIconButton
-            data-testid="edit-column-button"
-            aria-label="Edit column"
-            onClick={onEdit}
-          />
+        <div className={styles.controls}>
+          <div className={styles.actions}>
+            <EditIconButton
+              data-testid="edit-column-button"
+              aria-label="Edit column"
+              onClick={onEdit}
+            />
 
-          <DeleteIconButton
-            data-testid="delete-column-button"
-            aria-label="Delete column"
-            onClick={onDelete}
-          />
+            <DeleteIconButton
+              data-testid="delete-column-button"
+              aria-label="Delete column"
+              onClick={onDelete}
+            />
+          </div>
         </div>
       ) : showSelectionToggle ? (
         <button

@@ -22,18 +22,29 @@
 }
 
 .dragCue {
+  appearance: none;
+  padding: 0;
+  border: 0;
+  background: transparent;
   display: inline-flex;
   align-items: center;
   color: var(--color-text-muted);
   opacity: 0.75;
   cursor: grab;
   flex-shrink: 0;
+  touch-action: none;
 }
 
 .dragIcon {
   width: 10px;
   height: 14px;
   display: block;
+}
+
+.dragCue:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--color-accent) 30%, white);
+  outline-offset: 4px;
+  border-radius: 8px;
 }
 
 .title {
@@ -44,6 +55,12 @@
   font-size: 1rem;
   line-height: 1.2;
   color: var(--color-text);
+}
+
+.controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .actions {

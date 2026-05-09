@@ -2,12 +2,22 @@ import { create } from "zustand";
 import type { TaskFilter } from "@/features/TopBar/types";
 import type { StoreState } from "./types";
 import { createUniquePrefixedId } from "@/utils/ids";
+import { loadStoredState, saveStoredState } from "./persistence";
 
 type Actions = {
   resetStore(): void;
   createColumn(title: string): void;
   updateColumnTitle(columnId: string, title: string): void;
   deleteColumn(columnId: string): void;
+  moveColumn(columnId: string, targetIndex: number): void;
+  moveTask(
+    taskId: string,
+    destination: {
+      columnId: string;
+      targetTaskId?: string;
+      position?: "before" | "after";
+    },
+  ): void;
   createTask(columnId: string, title: string): void;
   updateTaskTitle(taskId: string, title: string): void;
   deleteTask(taskId: string): void;
@@ -25,9 +35,34 @@ type Actions = {
 
 export type AppStore = StoreState & Actions;
 
+function moveItem<TItem>(
+  items: TItem[],
+  startIndex: number,
+  finishIndex: number,
+) {
+  if (
+    startIndex < 0 ||
+    finishIndex < 0 ||
+    startIndex >= items.length ||
+    finishIndex >= items.length ||
+    startIndex === finishIndex
+  ) {
+    return items;
+  }
+
+  const nextItems = [...items];
+  const [movedItem] = nextItems.splice(startIndex, 1);
+
+  nextItems.splice(finishIndex, 0, movedItem);
+
+  return nextItems;
+}
+
 function createInitialState(): StoreState {
+  const persistedState = loadStoredState();
+
   return {
-    columns: [
+    columns: persistedState?.columns ?? [
       {
         id: "column-1",
         title: "Column 1",
@@ -37,7 +72,7 @@ function createInitialState(): StoreState {
         title: "Column 2",
       },
     ],
-    tasks: [
+    tasks: persistedState?.tasks ?? [
       {
         id: "task-1",
         columnId: "column-1",
@@ -165,6 +200,104 @@ function removeTaskAndSelection(state: AppStore, taskId: string) {
   };
 }
 
+function getColumnBoundaryInsertionIndex(
+  tasks: StoreState["tasks"],
+  columns: StoreState["columns"],
+  columnId: string,
+) {
+  const lastTaskIndex = tasks.reduce((result, task, index) => {
+    if (task.columnId !== columnId) {
+      return result;
+    }
+
+    return index;
+  }, -1);
+
+  if (lastTaskIndex >= 0) {
+    return lastTaskIndex + 1;
+  }
+
+  const columnIndex = columns.findIndex((column) => column.id === columnId);
+
+  if (columnIndex < 0) {
+    return tasks.length;
+  }
+
+  for (
+    let nextColumnIndex = columnIndex + 1;
+    nextColumnIndex < columns.length;
+    nextColumnIndex += 1
+  ) {
+    const nextColumnId = columns[nextColumnIndex]?.id;
+
+    if (!nextColumnId) {
+      continue;
+    }
+
+    const nextTaskIndex = tasks.findIndex(
+      (task) => task.columnId === nextColumnId,
+    );
+
+    if (nextTaskIndex >= 0) {
+      return nextTaskIndex;
+    }
+  }
+
+  return tasks.length;
+}
+
+function moveTaskToDestination(
+  tasks: StoreState["tasks"],
+  columns: StoreState["columns"],
+  taskId: string,
+  destination: {
+    columnId: string;
+    targetTaskId?: string;
+    position?: "before" | "after";
+  },
+) {
+  const movingTask = tasks.find((task) => task.id === taskId);
+
+  if (!movingTask) {
+    return tasks;
+  }
+
+  const remainingTasks = tasks.filter((task) => task.id !== taskId);
+  const movedTask = {
+    ...movingTask,
+    columnId: destination.columnId,
+  };
+
+  if (destination.targetTaskId) {
+    const targetIndex = remainingTasks.findIndex(
+      (task) => task.id === destination.targetTaskId,
+    );
+
+    if (targetIndex >= 0) {
+      const insertionIndex =
+        destination.position === "after" ? targetIndex + 1 : targetIndex;
+
+      return [
+        ...remainingTasks.slice(0, insertionIndex),
+        movedTask,
+        ...remainingTasks.slice(insertionIndex),
+      ];
+    }
+  }
+
+  const insertionIndex = getColumnBoundaryInsertionIndex(
+    remainingTasks,
+    columns,
+    destination.columnId,
+  );
+
+  return [
+    ...remainingTasks.slice(0, insertionIndex),
+    movedTask,
+    ...remainingTasks.slice(insertionIndex),
+  ];
+}
+
 export const useStore = create<AppStore>()((set) => ({
   ...createInitialState(),
   resetStore() {
@@ -204,6 +337,35 @@ export const useStore = create<AppStore>()((set) => ({
         ),
       };
     });
+  },
+  moveColumn(columnId, targetIndex) {
+    set((state) => {
+      const startIndex = state.columns.findIndex(
+        (column) => column.id === columnId,
+      );
+
+      if (
+        startIndex < 0 ||
+        targetIndex < 0 ||
+        targetIndex >= state.columns.length
+      ) {
+        return state;
+      }
+
+      return {
+        columns: moveItem(state.columns, startIndex, targetIndex),
+      };
+    });
+  },
+  moveTask(taskId, destination) {
+    set((state) => ({
+      tasks: moveTaskToDestination(
+        state.tasks,
+        state.columns,
+        taskId,
+        destination,
+      ),
+    }));
   },
   createTask(columnId, title) {
     set((state) => {
@@ -348,3 +510,10 @@ export const useStore = create<AppStore>()((set) => ({
     });
   },
 }));
+
+useStore.subscribe((state) => {
+  saveStoredState({
+    columns: state.columns,
+    tasks: state.tasks,
+  });
+});

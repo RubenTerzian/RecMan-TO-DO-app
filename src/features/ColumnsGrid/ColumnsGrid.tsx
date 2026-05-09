@@ -1,8 +1,10 @@
-import type { FocusEvent } from "react";
 import { Column } from "@/features/ColumnsGrid/Column/Column";
 import { ColumnEditor } from "@/features/ColumnsGrid/Column/components/ColumnEditor/ColumnEditor";
 import { GridHeader } from "@/features/ColumnsGrid/GridHeader/GridHeader";
 import { useColumnCreation } from "@/features/ColumnsGrid/hooks/useColumnCreation";
+import { useColumnDragAndDrop } from "@/features/ColumnsGrid/hooks/useColumnDragAndDrop";
+import { TaskDragAndDropProvider } from "@/features/ColumnsGrid/Task/components/TaskDragAndDropProvider/TaskDragAndDropProvider";
+import { useTaskDragAndDrop } from "@/features/ColumnsGrid/Task/hooks/useTaskDragAndDrop";
 import { selectBoardGridState } from "../../store/selectors";
 import { useStore } from "@/store/store";
 import { useShallow } from "zustand/react/shallow";
@@ -11,27 +13,23 @@ import styles from "./ColumnsGrid.module.css";
 
 export function ColumnsGrid() {
   const { columns, selectionMode } = useStore(useShallow(selectBoardGridState));
+
+  const { boardViewportRef, setColumnDragHandle, setColumnElement } =
+    useColumnDragAndDrop({ columns, selectionMode });
+  const taskDragAndDrop = useTaskDragAndDrop({
+    boardViewportRef,
+    selectionMode,
+  });
+
   const {
     draftTitle,
     isCreatingColumn,
+    handleCreateEditorBlur,
     handleDraftTitleChange,
     handleCancelColumnCreation,
     handleSaveColumnCreation,
     handleStartColumnCreation,
   } = useColumnCreation();
-
-  const handleCreateEditorBlur = (event: FocusEvent<HTMLFormElement>) => {
-    const nextFocusedElement = event.relatedTarget;
-
-    if (
-      nextFocusedElement instanceof Node &&
-      event.currentTarget.contains(nextFocusedElement)
-    ) {
-      return;
-    }
-
-    handleCancelColumnCreation();
-  };
 
   return (
     <main className={styles.board}>
@@ -42,38 +40,50 @@ export function ColumnsGrid() {
             onCreateColumn={handleStartColumnCreation}
           />
 
-          <div className={styles.boardViewport}>
+          <div ref={boardViewportRef} className={styles.boardViewport}>
             <div className={styles.mobileScrollHint} aria-hidden="true">
               Swipe to see more columns →
             </div>
 
-            <div className={styles.boardGrid} data-testid="board-grid">
-              {columns.map((column) => (
-                <Column
-                  key={column.id}
-                  columnId={column.id}
-                  title={column.title}
-                  selectionMode={selectionMode}
-                />
-              ))}
-
-              {isCreatingColumn ? (
-                <section
-                  className={columnStyles.column}
-                  data-testid="create-column-card"
-                >
-                  <ColumnEditor
-                    autoFocus
-                    draftTitle={draftTitle}
-                    mode="create"
-                    onBlur={handleCreateEditorBlur}
-                    onCancel={handleCancelColumnCreation}
-                    onDraftTitleChange={handleDraftTitleChange}
-                    onSave={handleSaveColumnCreation}
+            <TaskDragAndDropProvider value={taskDragAndDrop}>
+              <div
+                className={styles.boardGrid}
+                data-testid="board-column-track"
+                data-column-track="true"
+              >
+                {columns.map((column) => (
+                  <Column
+                    key={column.id}
+                    columnId={column.id}
+                    columnRef={(element) => {
+                      setColumnElement(column.id, element);
+                    }}
+                    dragHandleRef={(element) => {
+                      setColumnDragHandle(column.id, element);
+                    }}
+                    title={column.title}
+                    selectionMode={selectionMode}
                   />
-                </section>
-              ) : null}
-            </div>
+                ))}
+
+                {isCreatingColumn ? (
+                  <section
+                    className={columnStyles.column}
+                    data-testid="create-column-card"
+                  >
+                    <ColumnEditor
+                      autoFocus
+                      draftTitle={draftTitle}
+                      mode="create"
+                      onBlur={handleCreateEditorBlur}
+                      onCancel={handleCancelColumnCreation}
+                      onDraftTitleChange={handleDraftTitleChange}
+                      onSave={handleSaveColumnCreation}
+                    />
+                  </section>
+                ) : null}
+              </div>
+            </TaskDragAndDropProvider>
           </div>
         </div>
       </section>

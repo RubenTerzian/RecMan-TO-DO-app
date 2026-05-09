@@ -7,18 +7,35 @@
   border: 1px solid rgba(32, 50, 79, 0.08);
   border-radius: 16px;
   background: rgba(255, 255, 255, 0.88);
+  box-shadow: 0 4px 16px rgba(24, 34, 53, 0.04);
+  transition:
+    box-shadow 160ms ease,
+    border-color 160ms ease,
+    transform 160ms ease,
+    background 160ms ease;
 }
 
 .draggableCard {
   cursor: grab;
 }
 
+.draggableCard:hover {
+  border-color: rgba(36, 90, 240, 0.14);
+  box-shadow: 0 8px 22px rgba(24, 34, 53, 0.07);
+}
+
 .draggableCard:active {
   cursor: grabbing;
+  transform: scale(0.992);
 }
 
 .selectionMode {
   grid-template-columns: auto minmax(0, 1fr);
+}
+
+.dragging {
+  opacity: 0.38;
+  pointer-events: none;
 }
 
 .completed {
@@ -47,6 +64,13 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  touch-action: none;
+}
+
+.dragHandle:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--color-accent) 30%, white);
+  outline-offset: 3px;
+  border-radius: 8px;
 }
 
 .dragIcon {

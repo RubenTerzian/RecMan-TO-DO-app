@@ -97,6 +97,10 @@
   align-items: stretch;
 }
 
+.boardGrid[data-column-track="true"] {
+  position: relative;
+}
+
 @media (min-width: 1680px) {
   .boardGrid {
     grid-auto-columns: minmax(300px, 340px);

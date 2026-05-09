@@ -1,7 +1,9 @@
 .column {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 10px;
+  min-width: 0;
   min-height: 0;
   height: 100%;
   max-height: 100%;
@@ -11,10 +13,47 @@
   background: rgba(255, 255, 255, 0.72);
   box-shadow: 0 8px 24px rgba(24, 34, 53, 0.04);
   overflow: hidden;
+  transition:
+    opacity 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
+}
+
+.column:hover {
+  box-shadow: 0 12px 28px rgba(24, 34, 53, 0.08);
 }
 
 .selectionMode {
   background: rgba(255, 255, 255, 0.82);
+}
+
+.column[data-dragging="true"] {
+  opacity: 0.56;
+  transform: scale(0.985) translateY(2px);
+}
+
+.dropIndicator {
+  position: absolute;
+  top: 14px;
+  bottom: 14px;
+  width: 4px;
+  border-radius: 999px;
+  background: linear-gradient(
+    180deg,
+    var(--color-accent),
+    color-mix(in srgb, var(--color-accent) 72%, white)
+  );
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.92);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.dropIndicatorLeft {
+  left: 4px;
+}
+
+.dropIndicatorRight {
+  right: 4px;
 }
 
 .addTaskButton {
@@ -31,13 +70,104 @@
   flex-shrink: 0;
 }
 
+.taskViewport {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 0;
+  overflow: hidden;
+}
+
 .taskList {
   display: grid;
   gap: 12px;
   flex: 1;
   min-height: 0;
-  max-height: 100%;
   align-content: start;
   overflow-y: auto;
   padding-right: 2px;
+  overscroll-behavior: contain;
+}
+
+.taskItem {
+  display: grid;
+  gap: 0;
+}
+
+.taskDropSlot {
+  display: grid;
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  pointer-events: none;
+  transition:
+    max-height 160ms ease,
+    opacity 120ms ease,
+    margin 160ms ease;
+}
+
+.taskDropSlotActive {
+  max-height: 120px;
+  opacity: 1;
+}
+
+.taskDropSlotTop.taskDropSlotActive {
+  margin-bottom: 12px;
+}
+
+.taskDropSlotBottom.taskDropSlotActive {
+  margin-top: 12px;
+}
+
+.taskDropSlotInner {
+  display: grid;
+  gap: 6px;
+  min-height: 0;
+}
+
+.taskDropIndicator {
+  width: 100%;
+  height: 3px;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    var(--color-accent),
+    color-mix(in srgb, var(--color-accent) 72%, white)
+  );
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.9);
+}
+
+.taskDropPreview {
+  display: grid;
+  gap: 2px;
+  width: 100%;
+  padding: 12px;
+  border: 1px dashed rgba(36, 90, 240, 0.28);
+  border-radius: 16px;
+  background: rgba(244, 248, 255, 0.98);
+  box-shadow: 0 10px 24px rgba(36, 90, 240, 0.12);
+  opacity: 0.92;
+}
+
+.taskDropLabel {
+  color: var(--color-accent-strong);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.taskDropTitle {
+  color: var(--color-text);
+  font-size: 0.92rem;
+  line-height: 1.3;
+  word-break: normal;
+  overflow-wrap: break-word;
+}
+
+@media (max-width: 767px) {
+  .taskViewport {
+    flex-basis: auto;
+  }
 }

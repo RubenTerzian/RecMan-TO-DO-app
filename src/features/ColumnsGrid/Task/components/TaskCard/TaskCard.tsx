@@ -1,5 +1,5 @@
 import type { FocusEvent } from "react";
-import { memo } from "react";
+import { memo, useCallback } from "react";
 import { clsx } from "@/utils/clsx";
 import dragHandleIcon from "@/assets/icons/drag-handle.svg";
 import styles from "./TaskCard.module.css";
@@ -9,6 +9,10 @@ import {
   DeleteIconButton,
   EditIconButton,
 } from "@/components/shared/ActionIconButton/ActionIconButton";
+import {
+  useIsTaskDragging,
+  useTaskDragAndDropContext,
+} from "@/features/ColumnsGrid/Task/hooks/useTaskDragAndDrop";
 import { useTaskEditing } from "@/features/ColumnsGrid/Task/hooks/useTaskEditing";
 import { useTask } from "@/features/ColumnsGrid/Task/hooks/useTask";
 
@@ -43,6 +47,15 @@ function TaskCardComponent({ taskId, ...props }: TaskCardProps) {
     handleStartEditing,
     handleTitleChange,
   } = useTaskEditing({ taskId, title: task?.title ?? "" });
+
+  const { registerTaskDragHandle } = useTaskDragAndDropContext();
+  const isDragging = useIsTaskDragging(taskId);
+  const handleDragHandleRef = useCallback(
+    (element: HTMLButtonElement | null) => {
+      registerTaskDragHandle(taskId, element);
+    },
+    [registerTaskDragHandle, taskId],
+  );
 
   if (!task) {
     return null;
@@ -79,6 +92,7 @@ function TaskCardComponent({ taskId, ...props }: TaskCardProps) {
     <article
       className={clsx(styles.taskCard, {
         [styles.completed]: isComplete,
+        [styles.dragging]: isDragging,
         [styles.draggableCard]: !selectionMode,
         [styles.selected]: isSelected,
         [styles.selectionMode]: selectionMode,
@@ -87,6 +101,7 @@ function TaskCardComponent({ taskId, ...props }: TaskCardProps) {
     >
       {!selectionMode ? (
         <button
+          ref={handleDragHandleRef}
           className={styles.dragHandle}
           data-testid="task-drag-handle"
           type="button"
