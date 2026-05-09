@@ -1,5 +1,5 @@
 .createColumnButton {
-  justify-self: stretch;
-  width: 100%;
-  margin-top: auto;
+  justify-self: start;
+  width: fit-content;
+  max-width: 100%;
 }

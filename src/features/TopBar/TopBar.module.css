@@ -1,6 +1,5 @@
 .topBar {
   display: grid;
-  gap: 12px;
   padding: clamp(14px, 1.6vw, 20px);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-xl);
@@ -13,49 +12,6 @@
     linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(255, 255, 255, 0.9));
   box-shadow: var(--shadow-lg);
   backdrop-filter: blur(18px);
-}
-
-.headerRow {
-  display: flex;
-  justify-content: flex-end;
-}
-
-.stateSwitcher {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.stateButton {
-  appearance: none;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 34px;
-  padding: 0 12px;
-  border: 1px solid rgba(32, 50, 79, 0.1);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.66);
-  color: var(--color-brand);
-  font-size: 0.82rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition:
-    border-color 160ms ease,
-    background 160ms ease,
-    color 160ms ease;
-}
-
-.stateButton[data-active="true"] {
-  border-color: rgba(36, 90, 240, 0.2);
-  background: rgba(36, 90, 240, 0.1);
-  color: var(--color-accent-strong);
-}
-
-.stateButton:focus-visible {
-  outline: none;
-  border-color: rgba(36, 90, 240, 0.38);
-  box-shadow: 0 0 0 4px rgba(36, 90, 240, 0.12);
 }
 
 .controlsCard {
@@ -72,33 +28,9 @@
   gap: 10px;
 }
 
-.actionsGroup {
-  display: grid;
-  gap: 10px;
-}
-
 @media (min-width: 768px) {
   .controls {
     grid-template-columns: minmax(0, 1fr) minmax(180px, 220px);
     align-items: center;
-  }
-
-  .actionsGroup {
-    grid-column: 1 / -1;
-    grid-auto-flow: column;
-    grid-auto-columns: max-content;
-    justify-content: end;
-  }
-}
-
-@media (min-width: 1120px) {
-  .controls {
-    grid-template-columns: minmax(260px, 1.4fr) minmax(180px, 220px) auto;
-    align-items: center;
-  }
-
-  .actionsGroup {
-    grid-column: auto;
-    justify-content: start;
   }
 }

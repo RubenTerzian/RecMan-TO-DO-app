@@ -1,21 +1,40 @@
-import { CreateColumnButton } from "@/components/shared/CreateColumnButton/CreateColumnButton";
+import { useMemo } from "react";
 import { Column } from "@/features/ColumnsGrid/Column/Column";
-import { useColumnsGridData } from "@/hooks/useColumnsGridData";
+import { GridHeader } from "@/features/ColumnsGrid/GridHeader/GridHeader";
+import { useStore } from "@/store/store";
 import styles from "./ColumnsGrid.module.css";
+
+function groupTasksByColumnId(
+  tasks: ReturnType<typeof useStore.getState>["tasks"],
+) {
+  return tasks.reduce<Record<string, typeof tasks>>((groups, task) => {
+    const tasksForColumn = groups[task.columnId] ?? [];
+
+    return {
+      ...groups,
+      [task.columnId]: [...tasksForColumn, task],
+    };
+  }, {});
+}
 
 export function ColumnsGrid() {
   const {
     columns,
+    tasks,
     selectionMode,
-    onTaskSelectionToggle,
-    onColumnTaskSelectionToggle,
-    onTaskCompletionToggle,
-  } = useColumnsGridData();
+    toggleTaskSelection,
+    toggleColumnTaskSelection,
+    toggleTaskCompletion,
+  } = useStore();
+
+  const tasksByColumnId = useMemo(() => groupTasksByColumnId(tasks), [tasks]);
 
   return (
     <main className={styles.board}>
       <section className={styles.boardCanvas} data-testid="board-canvas">
         <div className={styles.boardContent}>
+          <GridHeader />
+
           <div className={styles.boardViewport}>
             <div className={styles.mobileScrollHint} aria-hidden="true">
               Swipe to see more columns →
@@ -25,33 +44,14 @@ export function ColumnsGrid() {
               {columns.map((column) => (
                 <Column
                   key={column.id}
-                  column={column}
+                  title={column.title}
+                  tasks={tasksByColumnId[column.id] ?? []}
                   selectionMode={selectionMode}
-                  onToggleTaskCompletion={onTaskCompletionToggle}
-                  onToggleTaskSelection={onTaskSelectionToggle}
-                  onToggleColumnTaskSelection={onColumnTaskSelectionToggle}
+                  onToggleTaskCompletion={toggleTaskCompletion}
+                  onToggleTaskSelection={toggleTaskSelection}
+                  onToggleColumnTaskSelection={toggleColumnTaskSelection}
                 />
               ))}
-
-              {!selectionMode ? (
-                <section
-                  className={styles.createColumnCard}
-                  data-testid="create-column-card"
-                >
-                  <p className={styles.createColumnEyebrow}>Board actions</p>
-                  <h2 className={styles.createColumnTitle}>
-                    Create new column
-                  </h2>
-                  <p className={styles.createColumnDescription}>
-                    Add another lane to the board for new work, handoffs, or
-                    done items.
-                  </p>
-                  <CreateColumnButton
-                    className={styles.createColumnButton}
-                    data-testid="create-column-button"
-                  />
-                </section>
-              ) : null}
             </div>
           </div>
         </div>

@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { Input } from "@/components/atoms/Input/Input";
 import {
   CancelIconButton,
@@ -10,7 +11,7 @@ type TaskEditorProps = {
   mode: "create" | "edit";
 };
 
-export function TaskEditor({ title, mode }: TaskEditorProps) {
+function TaskEditorComponent({ title, mode }: TaskEditorProps) {
   const isCreateMode = mode === "create";
 
   return (
@@ -35,3 +36,5 @@ export function TaskEditor({ title, mode }: TaskEditorProps) {
     </article>
   );
 }
+
+export const TaskEditor = memo(TaskEditorComponent);

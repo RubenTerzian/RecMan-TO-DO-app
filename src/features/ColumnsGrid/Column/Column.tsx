@@ -1,62 +1,134 @@
+import { memo, useCallback, useMemo } from "react";
 import { Button } from "@/components/atoms/Button/Button";
 import styles from "./Column.module.css";
 import { clsx } from "@/utils/clsx";
-import { ColumnEditor } from "@/features/ColumnsGrid/Column/components/ColumnEditor/ColumnEditor";
 import { ColumnHeader } from "@/features/ColumnsGrid/Column/components/ColumnHeader/ColumnHeader";
 import { EmptyColumnState } from "@/features/ColumnsGrid/Column/components/EmptyColumnState/EmptyColumnState";
 import { TaskCard } from "@/features/ColumnsGrid/Task/components/TaskCard/TaskCard";
-import { TaskEditor } from "@/features/ColumnsGrid/Task/components/TaskEditor/TaskEditor";
-import type { ColumnData } from "@/features/ColumnsGrid/Column/types";
+import type { ColumnEmptyState } from "@/features/ColumnsGrid/Column/types";
+import { useStore } from "@/store/store";
+import type { Task } from "@/store/types";
 
 type ColumnProps = {
-  column: ColumnData;
+  title: string;
+  tasks: Task[];
   selectionMode?: boolean;
   onToggleTaskCompletion(taskId: string): void;
   onToggleTaskSelection(taskId: string): void;
   onToggleColumnTaskSelection(taskIds: string[]): void;
 };
 
-export function Column({
-  column,
+const DEFAULT_EMPTY_STATE: ColumnEmptyState = {
+  variant: "empty",
+  title: "No tasks yet",
+  message: "Add your first task to start filling this column.",
+};
+
+const NO_RESULTS_EMPTY_STATE: ColumnEmptyState = {
+  variant: "no-results",
+  title: "No matching tasks",
+  message: "Try a different search or filter to see tasks here.",
+};
+
+function matchesSearchTerm(title: string, searchTerm: string) {
+  const normalizedSearchTerm = searchTerm.trim().toLowerCase();
+
+  if (!normalizedSearchTerm) {
+    return true;
+  }
+
+  return title.toLowerCase().includes(normalizedSearchTerm);
+}
+
+function matchesActiveFilter(
+  isComplete: boolean,
+  activeFilter: ReturnType<typeof useStore.getState>["activeFilter"],
+) {
+  if (activeFilter === "complete") {
+    return isComplete;
+  }
+
+  if (activeFilter === "incomplete") {
+    return !isComplete;
+  }
+
+  return true;
+}
+
+function getEmptyState(
+  totalTaskCount: number,
+  visibleTaskCount: number,
+  hasActiveTaskFilters: boolean,
+) {
+  if (totalTaskCount > 0 && visibleTaskCount === 0 && hasActiveTaskFilters) {
+    return NO_RESULTS_EMPTY_STATE;
+  }
+
+  return DEFAULT_EMPTY_STATE;
+}
+
+function ColumnComponent({
+  title,
+  tasks,
   selectionMode = false,
   onToggleTaskCompletion,
   onToggleTaskSelection,
   onToggleColumnTaskSelection,
 }: ColumnProps) {
-  const hasTaskEditor = Boolean(column.taskEditor);
-  const selectedTasks = column.tasks.filter((task) => task.isSelected);
+  const activeFilter = useStore((state) => state.activeFilter);
+  const searchTerm = useStore((state) => state.searchTerm);
+  const selectedTaskIds = useStore((state) => state.selectedTaskIds);
+
+  const selectedTaskIdSet = useMemo(
+    () => new Set(selectedTaskIds),
+    [selectedTaskIds],
+  );
+  const visibleTasks = useMemo(
+    () =>
+      tasks.filter(
+        (task) =>
+          matchesActiveFilter(task.isComplete, activeFilter) &&
+          matchesSearchTerm(task.title, searchTerm),
+      ),
+    [tasks, activeFilter, searchTerm],
+  );
+  const hasTaskContent = visibleTasks.length > 0;
+
+  const selectedTaskCount = useMemo(
+    () => visibleTasks.filter((task) => selectedTaskIdSet.has(task.id)).length,
+    [visibleTasks, selectedTaskIdSet],
+  );
   const allTasksSelected =
-    column.tasks.length > 0 && selectedTasks.length === column.tasks.length;
-  const isColumnEditor = column.kind === "editor";
-  const hasTaskContent = column.tasks.length > 0 || hasTaskEditor;
-  const visibleTaskIds = column.tasks.map((task) => task.id);
-  const emptyState =
-    column.kind === "editor" && column.mode === "create"
-      ? {
-          variant: "empty" as const,
-          title: "New column",
-          message: "Save this column to start adding tasks.",
-        }
-      : column.emptyState;
+    visibleTasks.length > 0 && selectedTaskCount === visibleTasks.length;
+  const visibleTaskIds = useMemo(
+    () => visibleTasks.map((task) => task.id),
+    [visibleTasks],
+  );
+  const handleColumnTaskSelection = useCallback(() => {
+    onToggleColumnTaskSelection(visibleTaskIds);
+  }, [onToggleColumnTaskSelection, visibleTaskIds]);
+  const hasActiveTaskFilters =
+    activeFilter !== "all" || searchTerm.trim().length > 0;
+  const emptyState = useMemo(
+    () =>
+      getEmptyState(tasks.length, visibleTasks.length, hasActiveTaskFilters),
+    [tasks.length, visibleTasks.length, hasActiveTaskFilters],
+  );
 
   return (
     <section
       className={clsx(styles.column, { [styles.selectionMode]: selectionMode })}
       data-testid="column-card"
     >
-      {isColumnEditor ? (
-        <ColumnEditor draftTitle={column.draftTitle} mode={column.mode} />
-      ) : (
-        <ColumnHeader
-          mode={selectionMode ? "selection" : "default"}
-          allSelected={allTasksSelected}
-          showSelectionToggle={column.tasks.length > 0}
-          onToggleSelection={() => onToggleColumnTaskSelection(visibleTaskIds)}
-          title={column.title}
-        />
-      )}
+      <ColumnHeader
+        mode={selectionMode ? "selection" : "default"}
+        allSelected={allTasksSelected}
+        showSelectionToggle={visibleTasks.length > 0}
+        onToggleSelection={handleColumnTaskSelection}
+        title={title}
+      />
 
-      {!selectionMode && !isColumnEditor && !hasTaskEditor ? (
+      {!selectionMode ? (
         <Button className={styles.addTaskButton} data-testid="add-task-button">
           Add task
         </Button>
@@ -64,26 +136,18 @@ export function Column({
 
       {hasTaskContent ? (
         <div className={styles.taskList}>
-          {column.tasks.map((task) => (
+          {visibleTasks.map((task) => (
             <TaskCard
               key={task.id}
+              taskId={task.id}
               mode={selectionMode ? "selection" : "default"}
               title={task.title}
-              tag={task.tag}
               isComplete={task.isComplete}
-              isSelected={task.isSelected}
-              onToggleComplete={() => onToggleTaskCompletion(task.id)}
-              onToggleSelection={() => onToggleTaskSelection(task.id)}
+              isSelected={selectedTaskIdSet.has(task.id)}
+              onToggleComplete={onToggleTaskCompletion}
+              onToggleSelection={onToggleTaskSelection}
             />
           ))}
-
-          {column.taskEditor ? (
-            <TaskEditor
-              key={column.taskEditor.id}
-              title={column.taskEditor.title}
-              mode={column.taskEditor.mode}
-            />
-          ) : null}
         </div>
       ) : (
         <EmptyColumnState
@@ -96,3 +160,5 @@ export function Column({
     </section>
   );
 }
+
+export const Column = memo(ColumnComponent);

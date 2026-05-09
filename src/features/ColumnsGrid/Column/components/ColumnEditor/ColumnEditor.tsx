@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { Input } from "@/components/atoms/Input/Input";
 import {
   CancelIconButton,
@@ -10,7 +11,7 @@ type ColumnEditorProps = {
   mode: "create" | "edit";
 };
 
-export function ColumnEditor({ draftTitle, mode }: ColumnEditorProps) {
+function ColumnEditorComponent({ draftTitle, mode }: ColumnEditorProps) {
   const isCreateMode = mode === "create";
 
   return (
@@ -47,3 +48,5 @@ export function ColumnEditor({ draftTitle, mode }: ColumnEditorProps) {
     </header>
   );
 }
+
+export const ColumnEditor = memo(ColumnEditorComponent);

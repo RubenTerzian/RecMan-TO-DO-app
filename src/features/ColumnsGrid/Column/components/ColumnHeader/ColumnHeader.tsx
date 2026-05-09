@@ -1,3 +1,4 @@
+import { memo } from "react";
 import dragHandleIcon from "@/assets/icons/drag-handle.svg";
 import {
   DeleteIconButton,
@@ -14,7 +15,7 @@ type ColumnHeaderProps = {
   onToggleSelection?(): void;
 };
 
-export function ColumnHeader({
+function ColumnHeaderComponent({
   title,
   mode,
   allSelected = false,
@@ -63,3 +64,5 @@ export function ColumnHeader({
     </header>
   );
 }
+
+export const ColumnHeader = memo(ColumnHeaderComponent);

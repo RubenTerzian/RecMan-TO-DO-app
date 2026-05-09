@@ -1,12 +1,15 @@
+import type { HTMLAttributes } from "react";
 import { Button } from "@/components/atoms/Button/Button";
 import { Select } from "@/components/atoms/Select/Select";
+import { clsx } from "@/utils/clsx";
 import styles from "./SelectionActionBar.module.css";
-import type { AvailableColumnOption } from "@/features/TopBar/types";
+import type { AvailableColumnOption } from "@/features/ColumnsGrid/GridHeader/types";
 
 type SelectionActionBarProps = {
   selectionCount: number;
   availableColumns: AvailableColumnOption[];
   moveTargetId?: string;
+  className?: HTMLAttributes<HTMLElement>["className"];
   onMoveTargetChange(columnId: string): void;
   onMarkComplete(): void;
   onMarkIncomplete(): void;
@@ -18,6 +21,7 @@ export function SelectionActionBar({
   selectionCount,
   availableColumns,
   moveTargetId,
+  className,
   onMoveTargetChange,
   onMarkComplete,
   onMarkIncomplete,
@@ -28,7 +32,7 @@ export function SelectionActionBar({
 
   return (
     <section
-      className={styles.selectionActionBar}
+      className={clsx(styles.selectionActionBar, className)}
       data-testid="selection-action-bar"
     >
       <div className={styles.headerRow}>

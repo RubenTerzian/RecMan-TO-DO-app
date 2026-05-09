@@ -63,6 +63,8 @@
   position: relative;
   z-index: 1;
   display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 14px;
   min-height: 0;
   height: 100%;
   align-items: stretch;
@@ -95,87 +97,40 @@
   align-items: stretch;
 }
 
-.createColumnCard {
-  display: grid;
-  align-content: start;
-  gap: 10px;
-  height: 100%;
-  min-height: 0;
-  padding: 16px;
-  border: 1px dashed rgba(32, 50, 79, 0.18);
-  border-radius: 20px;
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.9),
-    rgba(246, 248, 252, 0.96)
-  );
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72);
-}
-
-.createColumnEyebrow {
-  margin: 0;
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--color-text-muted);
-}
-
-.createColumnTitle {
-  margin: 0;
-  font-size: 1.02rem;
-  line-height: 1.2;
-  color: var(--color-text-strong);
-}
-
-.createColumnDescription {
-  margin: 0;
-  color: var(--color-text-muted);
-  line-height: 1.42;
-  font-size: 0.9rem;
-}
-
-.createColumnButton {
-  margin-top: 4px;
-}
-
 @media (min-width: 1680px) {
   .boardGrid {
     grid-auto-columns: minmax(300px, 340px);
     gap: 16px;
   }
-
-  .createColumnCard {
-    padding: 18px;
-  }
 }
 
 @media (max-width: 767px) {
+  .boardCanvas {
+    height: auto;
+    min-height: 0;
+    overflow: visible;
+    padding: 12px;
+  }
+
+  .boardContent {
+    grid-template-rows: auto auto;
+    height: auto;
+  }
+
   .boardViewport {
+    height: auto;
+    overflow-y: visible;
     padding-top: 40px;
   }
 
   .boardViewport::after {
-    content: "";
-    position: sticky;
-    right: 0;
-    top: 40px;
-    display: block;
-    float: right;
-    width: 36px;
-    height: calc(100% - 40px);
-    margin-left: -36px;
-    background: linear-gradient(
-      90deg,
-      rgba(255, 255, 255, 0),
-      rgba(255, 255, 255, 0.92)
-    );
-    pointer-events: none;
-    z-index: 2;
+    display: none;
   }
 
   .boardGrid {
     grid-auto-columns: minmax(240px, 82vw);
+    height: auto;
+    align-items: start;
   }
 
   .mobileScrollHint {

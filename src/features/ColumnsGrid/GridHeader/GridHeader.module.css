@@ -1,0 +1,60 @@
+.gridHeader {
+  display: grid;
+  gap: 12px;
+  justify-items: stretch;
+}
+
+.actionsRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  justify-self: end;
+}
+
+.selectionModeButton,
+.createColumnButton {
+  min-width: 0;
+}
+
+.selectionModeButton {
+  min-height: 42px;
+  padding-inline: 16px;
+}
+
+.createColumnButton {
+  min-width: 220px;
+  min-height: 42px;
+  padding-inline: 22px;
+}
+
+.selectionActionBar {
+  width: 100%;
+  justify-self: stretch;
+}
+
+@media (max-width: 767px) {
+  .gridHeader,
+  .selectionActionBar {
+    justify-items: stretch;
+    justify-self: stretch;
+  }
+
+  .actionsRow {
+    justify-content: stretch;
+  }
+
+  .actionsRow > * {
+    flex: 1 1 100%;
+  }
+
+  .selectionModeButton,
+  .createColumnButton {
+    width: 100%;
+  }
+
+  .createColumnButton {
+    min-width: 0;
+  }
+}

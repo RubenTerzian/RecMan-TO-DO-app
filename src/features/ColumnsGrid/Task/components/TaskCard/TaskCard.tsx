@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { clsx } from "@/utils/clsx";
 import dragHandleIcon from "@/assets/icons/drag-handle.svg";
 import styles from "./TaskCard.module.css";
@@ -8,34 +9,39 @@ import {
 } from "@/components/shared/ActionIconButton/ActionIconButton";
 
 type BaseTaskCardProps = {
+  taskId: string;
   title: string;
   tag?: string;
+  isComplete?: boolean;
 };
 
 type DefaultTaskCardProps = BaseTaskCardProps & {
   mode: "default";
-  isComplete?: boolean;
-  onToggleComplete?(): void;
+  onToggleComplete?(taskId: string): void;
 };
 
 type SelectionTaskCardProps = BaseTaskCardProps & {
   mode: "selection";
   isSelected?: boolean;
-  onToggleSelection?(): void;
+  onToggleSelection?(taskId: string): void;
 };
 
 type TaskCardProps = DefaultTaskCardProps | SelectionTaskCardProps;
 
-export function TaskCard({ title, tag, ...props }: TaskCardProps) {
+function TaskCardComponent({ taskId, title, tag, ...props }: TaskCardProps) {
   const selectionMode = props.mode === "selection";
-  const isComplete =
-    props.mode === "default" ? (props.isComplete ?? false) : false;
+  const isComplete = props.isComplete ?? false;
   const isSelected =
     props.mode === "selection" ? (props.isSelected ?? false) : false;
-  const handleToggle =
-    props.mode === "selection"
-      ? props.onToggleSelection
-      : props.onToggleComplete;
+  const handleToggle = () => {
+    if (props.mode === "selection") {
+      props.onToggleSelection?.(taskId);
+
+      return;
+    }
+
+    props.onToggleComplete?.(taskId);
+  };
 
   return (
     <article
@@ -90,3 +96,5 @@ export function TaskCard({ title, tag, ...props }: TaskCardProps) {
     </article>
   );
 }
+
+export const TaskCard = memo(TaskCardComponent);

@@ -31,6 +31,10 @@
   background: rgba(248, 250, 255, 0.94);
 }
 
+.completed.selected {
+  background: rgba(244, 246, 250, 0.96);
+}
+
 .dragHandle {
   appearance: none;
   min-height: 30px;

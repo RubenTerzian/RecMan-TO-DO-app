@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { clsx } from "@/utils/clsx";
 import styles from "./EmptyColumnState.module.css";
 
@@ -8,7 +9,7 @@ type EmptyColumnStateProps = {
   testId?: string;
 };
 
-export function EmptyColumnState({
+function EmptyColumnStateComponent({
   variant = "empty",
   title,
   message,
@@ -34,3 +35,5 @@ export function EmptyColumnState({
     </div>
   );
 }
+
+export const EmptyColumnState = memo(EmptyColumnStateComponent);

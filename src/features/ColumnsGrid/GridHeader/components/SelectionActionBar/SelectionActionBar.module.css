@@ -1,6 +1,7 @@
 .selectionActionBar {
   display: grid;
   gap: 12px;
+  width: min(100%, 980px);
   padding: 12px;
   border: 1px solid rgba(32, 50, 79, 0.08);
   border-radius: 18px;
@@ -51,11 +52,13 @@
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+  justify-content: flex-end;
 }
 
 .moveGroup {
   display: grid;
   gap: 8px;
+  justify-content: end;
 }
 
 .moveLabel {
@@ -111,7 +114,7 @@
   }
 
   .actionGroup {
-    justify-content: start;
+    justify-content: end;
   }
 
   .moveGroup {
@@ -127,5 +130,42 @@
 @media (max-width: 640px) {
   .headerRow {
     flex-direction: column;
+    align-items: stretch;
+  }
+
+  .selectionActionBar {
+    padding: 14px;
+    gap: 14px;
+  }
+
+  .selectionPill {
+    align-self: flex-start;
+  }
+
+  .content,
+  .actionGroup,
+  .moveGroup {
+    gap: 10px;
+  }
+
+  .actionGroup {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    justify-content: stretch;
+  }
+
+  .moveGroup {
+    justify-content: stretch;
+  }
+
+  .secondaryAction,
+  .dangerAction,
+  .moveAction {
+    width: 100%;
+    min-height: 44px;
+  }
+
+  .moveAction {
+    min-width: 0;
   }
 }

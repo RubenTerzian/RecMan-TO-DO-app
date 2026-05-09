@@ -66,6 +66,8 @@ When working in this repository, follow these rules by default.
 - Presentational components should not call Zustand directly unless there is a strong reason.
 - Feature/container components may read from store and map data into presentational props.
 - Shared view logic that is reused across multiple components should live in a small hook or pure helper.
+- `GridHeader` is the current reference implementation for this architecture and should be treated as done unless a task explicitly asks to change it.
+- Use the `GridHeader` split across component, hook, and store as the example to follow: UI in the component, orchestration/derived handlers in the hook, and source data mutations in Zustand actions.
 - Before finishing a change, check whether any state, selector, prop, or memo can be simplified or moved closer to where it is used.
 
 For more detail and examples, see `docs/react-architecture-skill.md`.
