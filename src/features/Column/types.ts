@@ -29,7 +29,6 @@ type ColumnBase = {
   title: string;
   tasks: ColumnTask[];
   emptyState?: ColumnEmptyState;
-  showMobileReorderMenu?: boolean;
 };
 
 export type DisplayColumn = ColumnBase & {

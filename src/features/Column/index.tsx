@@ -4,7 +4,6 @@ import { clsx } from "@/utils/clsx";
 import { ColumnEditor } from "@/features/Column/components/ColumnEditor";
 import { ColumnHeader } from "@/features/Column/components/ColumnHeader";
 import { EmptyColumnState } from "@/features/Column/components/EmptyColumnState";
-import { MobileReorderMenu } from "@/features/Column/components/MobileReorderMenu";
 import { TaskList } from "@/features/Column/components/TaskList";
 import type { ColumnData } from "@/features/Column/types";
 
@@ -59,10 +58,6 @@ export function Column({ column, selectionMode = false }: ColumnProps) {
         <Button className={styles.addTaskButton} data-testid="add-task-button">
           Add task
         </Button>
-      ) : null}
-
-      {column.showMobileReorderMenu && !isColumnEditor ? (
-        <MobileReorderMenu />
       ) : null}
 
       {column.tasks.length > 0 ? (

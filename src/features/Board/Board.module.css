@@ -139,10 +139,6 @@
   margin-top: 4px;
 }
 
-.mobileBoardGrid {
-  grid-auto-columns: minmax(260px, 300px);
-}
-
 @media (min-width: 1680px) {
   .boardGrid {
     grid-auto-columns: minmax(300px, 340px);

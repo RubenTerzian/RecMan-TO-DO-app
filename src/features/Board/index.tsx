@@ -39,14 +39,7 @@ export function Board() {
                 Swipe to see more columns →
               </div>
 
-              <div
-                className={clsx(styles.boardGrid, {
-                  [styles.mobileBoardGrid]: board.columns.some(
-                    (column) => column.showMobileReorderMenu,
-                  ),
-                })}
-                data-testid="board-grid"
-              >
+              <div className={styles.boardGrid} data-testid="board-grid">
                 {board.columns.map((column) => (
                   <Column
                     key={column.id}
