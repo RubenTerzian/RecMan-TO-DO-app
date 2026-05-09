@@ -15,11 +15,13 @@ type BaseTaskCardProps = {
 type DefaultTaskCardProps = BaseTaskCardProps & {
   mode: "default";
   isComplete?: boolean;
+  onToggleComplete?(): void;
 };
 
 type SelectionTaskCardProps = BaseTaskCardProps & {
   mode: "selection";
   isSelected?: boolean;
+  onToggleSelection?(): void;
 };
 
 type TaskCardProps = DefaultTaskCardProps | SelectionTaskCardProps;
@@ -30,6 +32,10 @@ export function TaskCard({ title, tag, ...props }: TaskCardProps) {
     props.mode === "default" ? (props.isComplete ?? false) : false;
   const isSelected =
     props.mode === "selection" ? (props.isSelected ?? false) : false;
+  const handleToggle =
+    props.mode === "selection"
+      ? props.onToggleSelection
+      : props.onToggleComplete;
 
   return (
     <article
@@ -61,7 +67,7 @@ export function TaskCard({ title, tag, ...props }: TaskCardProps) {
         checked={selectionMode ? isSelected : isComplete}
         data-testid="task-complete-toggle"
         aria-label={selectionMode ? "Select task" : "Toggle task completion"}
-        readOnly
+        onChange={handleToggle}
       />
 
       <div className={styles.content}>

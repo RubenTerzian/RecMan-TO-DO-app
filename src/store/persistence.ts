@@ -1,11 +1,11 @@
 import type { StoreState } from "./types";
 
-export const BOARD_STORAGE_KEY = "recman-todo-board:v1";
+export const APP_STORAGE_KEY = "recman-todo:v1";
 
-export function loadBoardState() {
+export function loadStoredState() {
   return null as StoreState | null;
 }
 
-export function saveBoardState(state: StoreState) {
+export function saveStoredState(state: StoreState) {
   void state;
 }

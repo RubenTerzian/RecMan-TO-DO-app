@@ -1,17 +1,31 @@
 import { Button } from "@/components/atoms/Button/Button";
 import { Select } from "@/components/atoms/Select/Select";
 import styles from "./SelectionActionBar.module.css";
-import type { SelectionBulkActionsState } from "@/features/TopBar/types";
+import type { AvailableColumnOption } from "@/features/TopBar/types";
 
 type SelectionActionBarProps = {
   selectionCount: number;
-  bulkActions: SelectionBulkActionsState;
+  availableColumns: AvailableColumnOption[];
+  moveTargetId?: string;
+  onMoveTargetChange(columnId: string): void;
+  onMarkComplete(): void;
+  onMarkIncomplete(): void;
+  onDelete(): void;
+  onMove(): void;
 };
 
 export function SelectionActionBar({
   selectionCount,
-  bulkActions,
+  availableColumns,
+  moveTargetId,
+  onMoveTargetChange,
+  onMarkComplete,
+  onMarkIncomplete,
+  onDelete,
+  onMove,
 }: SelectionActionBarProps) {
+  const hasSelection = selectionCount > 0;
+
   return (
     <section
       className={styles.selectionActionBar}
@@ -27,27 +41,52 @@ export function SelectionActionBar({
 
       <div className={styles.content}>
         <div className={styles.actionGroup}>
-          <Button className={styles.secondaryAction}>Mark complete</Button>
-          <Button className={styles.secondaryAction}>Mark incomplete</Button>
-          <Button className={styles.dangerAction}>Delete</Button>
+          <Button
+            className={styles.secondaryAction}
+            disabled={!hasSelection}
+            onClick={onMarkComplete}
+          >
+            Mark complete
+          </Button>
+          <Button
+            className={styles.secondaryAction}
+            disabled={!hasSelection}
+            onClick={onMarkIncomplete}
+          >
+            Mark incomplete
+          </Button>
+          <Button
+            className={styles.dangerAction}
+            disabled={!hasSelection}
+            onClick={onDelete}
+          >
+            Delete
+          </Button>
         </div>
 
         <div className={styles.moveGroup}>
           <span className={styles.moveLabel}>Move to</span>
           <Select
             className={styles.moveSelect}
-            defaultValue={bulkActions.moveTargetId ?? ""}
+            value={moveTargetId ?? ""}
+            onChange={(event) => onMoveTargetChange(event.target.value)}
           >
             <option value="" disabled>
               Select column
             </option>
-            {bulkActions.availableColumns.map((column) => (
+            {availableColumns.map((column) => (
               <option key={column.id} value={column.id}>
                 {column.label}
               </option>
             ))}
           </Select>
-          <Button className={styles.moveAction}>Move</Button>
+          <Button
+            className={styles.moveAction}
+            disabled={!hasSelection || !moveTargetId}
+            onClick={onMove}
+          >
+            Move
+          </Button>
         </div>
       </div>
     </section>

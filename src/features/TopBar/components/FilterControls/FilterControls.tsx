@@ -4,13 +4,18 @@ import type { TaskFilter } from "@/features/TopBar/types";
 
 type FilterControlsProps = {
   activeFilter: TaskFilter;
+  onChange(activeFilter: TaskFilter): void;
 };
 
-export function FilterControls({ activeFilter }: FilterControlsProps) {
+export function FilterControls({
+  activeFilter,
+  onChange,
+}: FilterControlsProps) {
   return (
     <Select
       className={styles.filterControls}
-      defaultValue={activeFilter}
+      value={activeFilter}
+      onChange={(event) => onChange(event.target.value as TaskFilter)}
       aria-label="Task filter"
       data-testid="filter-controls"
     >

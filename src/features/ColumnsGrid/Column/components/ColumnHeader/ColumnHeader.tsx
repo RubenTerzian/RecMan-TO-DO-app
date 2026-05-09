@@ -3,38 +3,31 @@ import {
   DeleteIconButton,
   EditIconButton,
 } from "@/components/shared/ActionIconButton/ActionIconButton";
+import { clsx } from "@/utils/clsx";
 import styles from "./ColumnHeader.module.css";
 
-type BaseColumnHeaderProps = {
+type ColumnHeaderProps = {
   title: string;
-};
-
-type DefaultColumnHeaderProps = BaseColumnHeaderProps & {
-  mode: "default";
-};
-
-type SelectionColumnHeaderProps = BaseColumnHeaderProps & {
-  mode: "selection";
+  mode: "default" | "selection";
   allSelected?: boolean;
   showSelectionToggle?: boolean;
+  onToggleSelection?(): void;
 };
 
-type ColumnHeaderProps = DefaultColumnHeaderProps | SelectionColumnHeaderProps;
-
-export function ColumnHeader({ title, ...props }: ColumnHeaderProps) {
-  const selectionMode = props.mode === "selection";
-  const allSelected =
-    props.mode === "selection" ? (props.allSelected ?? false) : false;
-  const showSelectionToggle =
-    props.mode === "selection" ? (props.showSelectionToggle ?? false) : false;
+export function ColumnHeader({
+  title,
+  mode,
+  allSelected = false,
+  showSelectionToggle = false,
+  onToggleSelection,
+}: ColumnHeaderProps) {
+  const selectionMode = mode === "selection";
 
   return (
     <header
-      className={
-        selectionMode
-          ? styles.columnHeader
-          : `${styles.columnHeader} ${styles.draggableHeader}`
-      }
+      className={clsx(styles.columnHeader, {
+        [styles.draggableHeader]: !selectionMode,
+      })}
     >
       <div className={styles.titleGroup}>
         {!selectionMode ? (
@@ -59,7 +52,11 @@ export function ColumnHeader({ title, ...props }: ColumnHeaderProps) {
           />
         </div>
       ) : showSelectionToggle ? (
-        <button className={styles.selectionToggle} type="button">
+        <button
+          className={styles.selectionToggle}
+          type="button"
+          onClick={onToggleSelection}
+        >
           {allSelected ? "Deselect all" : "Select all"}
         </button>
       ) : null}

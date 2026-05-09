@@ -11,18 +11,25 @@ import type { ColumnData } from "@/features/ColumnsGrid/Column/types";
 type ColumnProps = {
   column: ColumnData;
   selectionMode?: boolean;
+  onToggleTaskCompletion(taskId: string): void;
+  onToggleTaskSelection(taskId: string): void;
+  onToggleColumnTaskSelection(taskIds: string[]): void;
 };
 
-export function Column({ column, selectionMode = false }: ColumnProps) {
-  const hasTaskEditor = column.tasks.some(
-    (task) => task.kind === "task-editor",
-  );
-  const selectableTasks = column.tasks.filter((task) => task.kind === "task");
-  const selectedTasks = selectableTasks.filter((task) => task.isSelected);
+export function Column({
+  column,
+  selectionMode = false,
+  onToggleTaskCompletion,
+  onToggleTaskSelection,
+  onToggleColumnTaskSelection,
+}: ColumnProps) {
+  const hasTaskEditor = Boolean(column.taskEditor);
+  const selectedTasks = column.tasks.filter((task) => task.isSelected);
   const allTasksSelected =
-    selectableTasks.length > 0 &&
-    selectedTasks.length === selectableTasks.length;
+    column.tasks.length > 0 && selectedTasks.length === column.tasks.length;
   const isColumnEditor = column.kind === "editor";
+  const hasTaskContent = column.tasks.length > 0 || hasTaskEditor;
+  const visibleTaskIds = column.tasks.map((task) => task.id);
   const emptyState =
     column.kind === "editor" && column.mode === "create"
       ? {
@@ -43,7 +50,8 @@ export function Column({ column, selectionMode = false }: ColumnProps) {
         <ColumnHeader
           mode={selectionMode ? "selection" : "default"}
           allSelected={allTasksSelected}
-          showSelectionToggle={selectableTasks.length > 0}
+          showSelectionToggle={column.tasks.length > 0}
+          onToggleSelection={() => onToggleColumnTaskSelection(visibleTaskIds)}
           title={column.title}
         />
       )}
@@ -54,22 +62,28 @@ export function Column({ column, selectionMode = false }: ColumnProps) {
         </Button>
       ) : null}
 
-      {column.tasks.length > 0 ? (
+      {hasTaskContent ? (
         <div className={styles.taskList}>
-          {column.tasks.map((task) =>
-            task.kind === "task-editor" ? (
-              <TaskEditor key={task.id} title={task.title} mode={task.mode} />
-            ) : (
-              <TaskCard
-                key={task.id}
-                mode={selectionMode ? "selection" : "default"}
-                title={task.title}
-                tag={task.tag}
-                isComplete={task.isComplete}
-                isSelected={task.isSelected}
-              />
-            ),
-          )}
+          {column.tasks.map((task) => (
+            <TaskCard
+              key={task.id}
+              mode={selectionMode ? "selection" : "default"}
+              title={task.title}
+              tag={task.tag}
+              isComplete={task.isComplete}
+              isSelected={task.isSelected}
+              onToggleComplete={() => onToggleTaskCompletion(task.id)}
+              onToggleSelection={() => onToggleTaskSelection(task.id)}
+            />
+          ))}
+
+          {column.taskEditor ? (
+            <TaskEditor
+              key={column.taskEditor.id}
+              title={column.taskEditor.title}
+              mode={column.taskEditor.mode}
+            />
+          ) : null}
         </div>
       ) : (
         <EmptyColumnState

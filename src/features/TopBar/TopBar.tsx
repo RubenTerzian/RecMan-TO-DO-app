@@ -4,35 +4,56 @@ import { SearchInput } from "@/features/TopBar/components/SearchInput/SearchInpu
 import { FilterControls } from "@/features/TopBar/components/FilterControls/FilterControls";
 import { SelectionActionBar } from "@/features/TopBar/components/SelectionActionBar/SelectionActionBar";
 import { SelectionModeToggle } from "@/features/TopBar/components/SelectionModeToggle/SelectionModeToggle";
-import type { TopBarState } from "@/features/TopBar/types";
-
-const topBarState: TopBarState = {
-  mode: "default",
-  searchTerm: "",
-  activeFilter: "all",
-};
+import { useTopBarControls } from "@/hooks/useTopBarControls";
 
 export function TopBar() {
-  const isSelectionMode = topBarState.mode === "selection";
+  const {
+    selectionMode,
+    searchTerm,
+    activeFilter,
+    selectionCount,
+    availableColumns,
+    moveTargetId,
+    onSearchTermChange,
+    onActiveFilterChange,
+    onSelectionModeToggle,
+    onMoveTargetChange,
+    onMarkSelectedTasksComplete,
+    onMarkSelectedTasksIncomplete,
+    onDeleteSelectedTasks,
+    onMoveSelectedTasks,
+  } = useTopBarControls();
 
   return (
     <header className={styles.topBar} data-testid="top-bar">
       <div className={styles.controlsCard}>
         <div className={styles.controls}>
-          <SearchInput value={topBarState.searchTerm} />
-          <FilterControls activeFilter={topBarState.activeFilter} />
+          <SearchInput value={searchTerm} onChange={onSearchTermChange} />
+          <FilterControls
+            activeFilter={activeFilter}
+            onChange={onActiveFilterChange}
+          />
 
           <div className={styles.actionsGroup}>
-            <SelectionModeToggle enabled={isSelectionMode} />
+            <SelectionModeToggle
+              enabled={selectionMode}
+              onToggle={onSelectionModeToggle}
+            />
 
-            {!isSelectionMode ? <CreateColumnButton /> : null}
+            {!selectionMode ? <CreateColumnButton /> : null}
           </div>
         </div>
 
-        {isSelectionMode ? (
+        {selectionMode ? (
           <SelectionActionBar
-            bulkActions={topBarState.bulkActions}
-            selectionCount={topBarState.selectionCount}
+            availableColumns={availableColumns}
+            moveTargetId={moveTargetId}
+            selectionCount={selectionCount}
+            onMoveTargetChange={onMoveTargetChange}
+            onMarkComplete={onMarkSelectedTasksComplete}
+            onMarkIncomplete={onMarkSelectedTasksIncomplete}
+            onDelete={onDeleteSelectedTasks}
+            onMove={onMoveSelectedTasks}
           />
         ) : null}
       </div>

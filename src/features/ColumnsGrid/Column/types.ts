@@ -1,6 +1,9 @@
 export type ColumnEmptyStateVariant = "empty" | "no-results";
 
-import type { TaskData } from "@/features/ColumnsGrid/Task/types";
+import type {
+  TaskCardData,
+  TaskEditorData,
+} from "@/features/ColumnsGrid/Task/types";
 
 export type ColumnEmptyState = {
   variant: ColumnEmptyStateVariant;
@@ -11,7 +14,8 @@ export type ColumnEmptyState = {
 type ColumnBase = {
   id: string;
   title: string;
-  tasks: TaskData[];
+  tasks: TaskCardData[];
+  taskEditor?: TaskEditorData;
   emptyState?: ColumnEmptyState;
 };
 
