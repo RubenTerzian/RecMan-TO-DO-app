@@ -15,6 +15,11 @@ export const selectActiveFilter = (state: AppStore) => state.activeFilter;
 
 export const selectCreateColumn = (state: AppStore) => state.createColumn;
 
+export const selectUpdateColumnTitle = (state: AppStore) =>
+  state.updateColumnTitle;
+
+export const selectDeleteColumn = (state: AppStore) => state.deleteColumn;
+
 export const selectSetSearchTerm = (state: AppStore) => state.setSearchTerm;
 
 export const selectSetActiveFilter = (state: AppStore) => state.setActiveFilter;

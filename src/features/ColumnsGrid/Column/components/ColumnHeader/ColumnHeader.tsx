@@ -12,6 +12,8 @@ type ColumnHeaderProps = {
   mode: "default" | "selection";
   allSelected?: boolean;
   showSelectionToggle?: boolean;
+  onDelete?(): void;
+  onEdit?(): void;
   onToggleAllSelection?(): void;
 };
 
@@ -20,6 +22,8 @@ function ColumnHeaderComponent({
   mode,
   allSelected = false,
   showSelectionToggle = false,
+  onDelete,
+  onEdit,
   onToggleAllSelection,
 }: ColumnHeaderProps) {
   const selectionMode = mode === "selection";
@@ -45,11 +49,13 @@ function ColumnHeaderComponent({
           <EditIconButton
             data-testid="edit-column-button"
             aria-label="Edit column"
+            onClick={onEdit}
           />
 
           <DeleteIconButton
             data-testid="delete-column-button"
             aria-label="Delete column"
+            onClick={onDelete}
           />
         </div>
       ) : showSelectionToggle ? (

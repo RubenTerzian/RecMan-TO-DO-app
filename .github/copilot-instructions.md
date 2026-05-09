@@ -25,6 +25,7 @@ When working in this repository, follow these rules by default.
 - Prefer local component state over Zustand by default.
 - Use Zustand only when state is shared by multiple distant components, props would need to be drilled more than 1-2 levels, or the state truly represents board-wide application state.
 - Never keep the same source of truth in both local state and store state.
+- For create/edit sessions, keep unsaved draft UI state local and commit to Zustand only on save. Store persisted entities in Zustand, not transient form sessions.
 
 ## Store rules
 
@@ -53,6 +54,8 @@ When working in this repository, follow these rules by default.
 - When performance matters, move store subscriptions as far down the tree as practical so parent layout components can stay static.
 - Prefer passing stable IDs like `taskId` or `columnId` down the tree and letting leaf hooks subscribe to the exact record they need.
 - Treat search and filter updates as board-wide by default; optimize selection, counts, and per-item updates first because those are easier to localize.
+- When a transient UI flow has multiple fields that usually change together, prefer one cohesive local state object over several parallel `useState` calls if that avoids multi-step resets and redundant rerenders.
+- Guard local state setters to return the current state when nothing changes, especially in transient creation/edit hooks that can be re-entered or cancelled repeatedly.
 
 ## Effects and derived data
 
@@ -60,6 +63,9 @@ When working in this repository, follow these rules by default.
 - If a value can be derived from props, store state, or local state, derive it instead of storing it again.
 - Keep effects focused on external side effects only: DOM integration, network, subscriptions, timers, persistence, and similar boundaries.
 - For debounced inputs, prefer local input state plus a debounced callback that writes to shared state later. Do not mirror store state back into local state on every store update just to support debouncing.
+- Do not call local `setState` synchronously inside an effect just to reset transient UI in response to another React state change. Prefer explicit event transitions, reducer/state-machine logic, or explicit reset callbacks/registries; use deliberate remount boundaries keyed by the controlling mode only as a last resort.
+- For blur-to-close editors, treat focus changes inside the same editor surface as internal transitions. Only close when focus leaves the editor entirely.
+- Disabled controls next to active editors must not steal focus or behave like outside-click targets; prevent pointer/focus transitions when that would collapse the active editor.
 
 ## API shape and typing
 
@@ -69,6 +75,7 @@ When working in this repository, follow these rules by default.
 - Name derived data after what it really does; avoid names like `visibleColumns` when columns are always rendered and only tasks are filtered.
 - Avoid generic names like `Board`, `BoardStore`, or `useBoard...` when a more specific name describes the feature better.
 - Prefer stable IDs from source data; do not use array indexes as keys when rendering dynamic lists.
+- Prefer current React DOM handler types such as `SubmitEventHandler` over deprecated aliases like `FormEvent` or `FormEventHandler`.
 
 ## Practical defaults for this repo
 
@@ -80,5 +87,6 @@ When working in this repository, follow these rules by default.
 - Before finishing a change, check whether any state, selector, prop, or memo can be simplified or moved closer to where it is used.
 - Use `ColumnsGrid` + `Column` + `TaskCard` as the main performance reference: parent layout reads should stay narrow, item lookups should happen through focused selectors, and leaf hooks should own task-level subscriptions.
 - Use `TopBar` as the input-performance reference: the layout component stays stateless, each control owns only its own subscription, and debounced store writes should not introduce value-mirroring effects.
+- Use the create-column flow as the reference for transient entity creation: trigger from a narrow header prop, keep the in-progress draft local in a focused hook, render inline editor UI near the owning feature, save through a single store action, and make blur/disabled-button behavior focus-safe.
 
 For more detail and examples, see `docs/react-architecture-skill.md`.

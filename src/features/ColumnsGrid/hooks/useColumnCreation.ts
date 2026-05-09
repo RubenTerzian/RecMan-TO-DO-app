@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { useStore } from "@/store/store";
-import { selectCreateColumn, selectSelectionMode } from "@/store/selectors";
+import { selectCreateColumn } from "@/store/selectors";
 
 const DEFAULT_COLUMN_TITLE = "New Column";
 
@@ -22,7 +22,6 @@ function normalizeColumnTitle(title: string) {
 
 export function useColumnCreation() {
   const createColumn = useStore(selectCreateColumn);
-  const selectionMode = useStore(selectSelectionMode);
 
   const [creationState, setCreationState] = useState<ColumnCreationState>(
     DEFAULT_CREATION_STATE,
@@ -79,14 +78,6 @@ export function useColumnCreation() {
     createColumn(normalizeColumnTitle(creationState.draftTitle));
     resetCreationState();
   }, [createColumn, creationState.draftTitle, resetCreationState]);
-
-  useEffect(() => {
-    if (!selectionMode) {
-      return;
-    }
-
-    resetCreationState();
-  }, [resetCreationState, selectionMode]);
 
   return {
     draftTitle: creationState.draftTitle,

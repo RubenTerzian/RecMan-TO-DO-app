@@ -6,6 +6,8 @@ import { createUniquePrefixedId } from "@/utils/ids";
 type Actions = {
   resetStore(): void;
   createColumn(title: string): void;
+  updateColumnTitle(columnId: string, title: string): void;
+  deleteColumn(columnId: string): void;
   setSearchTerm(searchTerm: string): void;
   setActiveFilter(activeFilter: TaskFilter): void;
   toggleSelectionMode(): void;
@@ -24,30 +26,30 @@ function createInitialState(): StoreState {
   return {
     columns: [
       {
-        id: "column-todo",
-        title: "To do",
+        id: "column-1",
+        title: "Column 1",
       },
       {
-        id: "column-done",
-        title: "Done",
+        id: "column-2",
+        title: "Column 2",
       },
     ],
     tasks: [
       {
         id: "task-1",
-        columnId: "column-todo",
+        columnId: "column-1",
         title: "Plan board architecture",
         isComplete: false,
       },
       {
         id: "task-2",
-        columnId: "column-todo",
+        columnId: "column-1",
         title: "Review rerender patterns",
         isComplete: false,
       },
       {
         id: "task-3",
-        columnId: "column-done",
+        columnId: "column-2",
         title: "Normalize board state",
         isComplete: true,
       },
@@ -89,6 +91,30 @@ export const useStore = create<AppStore>()((set) => ({
         },
       ],
     }));
+  },
+  updateColumnTitle(columnId, title) {
+    set((state) => ({
+      columns: state.columns.map((column) =>
+        column.id === columnId ? { ...column, title } : column,
+      ),
+    }));
+  },
+  deleteColumn(columnId) {
+    set((state) => {
+      const removedTaskIds = new Set(
+        state.tasks
+          .filter((task) => task.columnId === columnId)
+          .map((task) => task.id),
+      );
+
+      return {
+        columns: state.columns.filter((column) => column.id !== columnId),
+        tasks: state.tasks.filter((task) => task.columnId !== columnId),
+        selectedTaskIds: state.selectedTaskIds.filter(
+          (taskId) => !removedTaskIds.has(taskId),
+        ),
+      };
+    });
   },
   setSearchTerm(searchTerm) {
     set({ searchTerm });

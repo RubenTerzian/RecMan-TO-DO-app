@@ -10,7 +10,7 @@ import {
   selectToggleAllTaskSelection,
 } from "@/store/selectors";
 
-type UseColumnOptions = {
+type UseColumnTasksOptions = {
   columnId: string;
 };
 
@@ -63,7 +63,7 @@ function getEmptyState(
   return DEFAULT_EMPTY_STATE;
 }
 
-export function useColumn({ columnId }: UseColumnOptions) {
+export function useColumnTasks({ columnId }: UseColumnTasksOptions) {
   const selectTasks = useMemo(
     () => makeSelectTasksByColumnId(columnId),
     [columnId],
