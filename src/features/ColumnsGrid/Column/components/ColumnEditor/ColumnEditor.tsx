@@ -1,8 +1,8 @@
-import { Input } from "@/components/atoms/Input";
+import { Input } from "@/components/atoms/Input/Input";
 import {
   CancelIconButton,
   SaveIconButton,
-} from "@/components/shared/ActionIconButton";
+} from "@/components/shared/ActionIconButton/ActionIconButton";
 import styles from "./ColumnEditor.module.css";
 
 type ColumnEditorProps = {

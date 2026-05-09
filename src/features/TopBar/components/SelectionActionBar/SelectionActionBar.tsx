@@ -1,5 +1,5 @@
-import { Button } from "@/components/atoms/Button";
-import { Select } from "@/components/atoms/Select";
+import { Button } from "@/components/atoms/Button/Button";
+import { Select } from "@/components/atoms/Select/Select";
 import styles from "./SelectionActionBar.module.css";
 import type { SelectionBulkActionsState } from "@/features/TopBar/types";
 

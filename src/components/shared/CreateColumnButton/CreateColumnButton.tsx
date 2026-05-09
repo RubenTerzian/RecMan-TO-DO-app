@@ -1,5 +1,5 @@
 import type { ButtonHTMLAttributes } from "react";
-import { Button } from "@/components/atoms/Button";
+import { Button } from "@/components/atoms/Button/Button";
 import { clsx } from "@/utils/clsx";
 import styles from "./CreateColumnButton.module.css";
 

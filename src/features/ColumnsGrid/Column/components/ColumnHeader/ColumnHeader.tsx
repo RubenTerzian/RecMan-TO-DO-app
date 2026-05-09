@@ -2,7 +2,7 @@ import dragHandleIcon from "@/assets/icons/drag-handle.svg";
 import {
   DeleteIconButton,
   EditIconButton,
-} from "@/components/shared/ActionIconButton";
+} from "@/components/shared/ActionIconButton/ActionIconButton";
 import styles from "./ColumnHeader.module.css";
 
 type BaseColumnHeaderProps = {

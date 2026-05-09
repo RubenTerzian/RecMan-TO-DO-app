@@ -1,5 +1,5 @@
 import type { ComponentProps, SVGProps } from "react";
-import { IconButton } from "@/components/atoms/IconButton";
+import { IconButton } from "@/components/atoms/IconButton/IconButton";
 import { clsx } from "@/utils/clsx";
 import styles from "./ActionIconButton.module.css";
 

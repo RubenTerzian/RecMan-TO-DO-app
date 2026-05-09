@@ -1,5 +1,5 @@
 import styles from "./FilterControls.module.css";
-import { Select } from "@/components/atoms/Select";
+import { Select } from "@/components/atoms/Select/Select";
 import type { TaskFilter } from "@/features/TopBar/types";
 
 type FilterControlsProps = {

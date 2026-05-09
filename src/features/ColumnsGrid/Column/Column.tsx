@@ -1,11 +1,11 @@
-import { Button } from "@/components/atoms/Button";
+import { Button } from "@/components/atoms/Button/Button";
 import styles from "./Column.module.css";
 import { clsx } from "@/utils/clsx";
-import { ColumnEditor } from "@/features/ColumnsGrid/Column/components/ColumnEditor";
-import { ColumnHeader } from "@/features/ColumnsGrid/Column/components/ColumnHeader";
-import { EmptyColumnState } from "@/features/ColumnsGrid/Column/components/EmptyColumnState";
-import { TaskCard } from "@/features/ColumnsGrid/Task/components/TaskCard";
-import { TaskEditor } from "@/features/ColumnsGrid/Task/components/TaskEditor";
+import { ColumnEditor } from "@/features/ColumnsGrid/Column/components/ColumnEditor/ColumnEditor";
+import { ColumnHeader } from "@/features/ColumnsGrid/Column/components/ColumnHeader/ColumnHeader";
+import { EmptyColumnState } from "@/features/ColumnsGrid/Column/components/EmptyColumnState/EmptyColumnState";
+import { TaskCard } from "@/features/ColumnsGrid/Task/components/TaskCard/TaskCard";
+import { TaskEditor } from "@/features/ColumnsGrid/Task/components/TaskEditor/TaskEditor";
 import type { ColumnData } from "@/features/ColumnsGrid/Column/types";
 
 type ColumnProps = {

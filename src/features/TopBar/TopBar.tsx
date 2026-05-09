@@ -1,9 +1,9 @@
-import { CreateColumnButton } from "@/components/shared/CreateColumnButton";
+import { CreateColumnButton } from "@/components/shared/CreateColumnButton/CreateColumnButton";
 import styles from "./TopBar.module.css";
-import { SearchInput } from "@/features/TopBar/components/SearchInput";
-import { FilterControls } from "@/features/TopBar/components/FilterControls";
-import { SelectionActionBar } from "@/features/TopBar/components/SelectionActionBar";
-import { SelectionModeToggle } from "@/features/TopBar/components/SelectionModeToggle";
+import { SearchInput } from "@/features/TopBar/components/SearchInput/SearchInput";
+import { FilterControls } from "@/features/TopBar/components/FilterControls/FilterControls";
+import { SelectionActionBar } from "@/features/TopBar/components/SelectionActionBar/SelectionActionBar";
+import { SelectionModeToggle } from "@/features/TopBar/components/SelectionModeToggle/SelectionModeToggle";
 import type { TopBarState } from "@/features/TopBar/types";
 
 const topBarState: TopBarState = {

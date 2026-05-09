@@ -1,5 +1,5 @@
 import styles from "./SelectionModeToggle.module.css";
-import { Button } from "@/components/atoms/Button";
+import { Button } from "@/components/atoms/Button/Button";
 
 type SelectionModeToggleProps = {
   enabled: boolean;

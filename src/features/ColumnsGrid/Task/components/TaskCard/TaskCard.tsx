@@ -1,11 +1,11 @@
 import { clsx } from "@/utils/clsx";
 import dragHandleIcon from "@/assets/icons/drag-handle.svg";
 import styles from "./TaskCard.module.css";
-import { Checkbox } from "@/components/atoms/Checkbox";
+import { Checkbox } from "@/components/atoms/Checkbox/Checkbox";
 import {
   DeleteIconButton,
   EditIconButton,
-} from "@/components/shared/ActionIconButton";
+} from "@/components/shared/ActionIconButton/ActionIconButton";
 
 type BaseTaskCardProps = {
   title: string;

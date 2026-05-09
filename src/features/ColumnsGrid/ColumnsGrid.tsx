@@ -1,5 +1,5 @@
-import { CreateColumnButton } from "@/components/shared/CreateColumnButton";
-import { Column } from "@/features/ColumnsGrid/Column";
+import { CreateColumnButton } from "@/components/shared/CreateColumnButton/CreateColumnButton";
+import { Column } from "@/features/ColumnsGrid/Column/Column";
 import type { ColumnData } from "@/features/ColumnsGrid/Column/types";
 import styles from "./ColumnsGrid.module.css";
 
