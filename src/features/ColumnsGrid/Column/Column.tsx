@@ -1,4 +1,4 @@
-import type { FocusEvent, Ref } from "react";
+import type { Ref } from "react";
 import { memo } from "react";
 import { Button } from "@/components/atoms/Button/Button";
 import styles from "./Column.module.css";
@@ -47,6 +47,7 @@ function ColumnComponent({
     handleCancelEditing,
     handleDeleteColumn,
     handleDraftTitleChange,
+    handleEditorBlur,
     handleSaveEditing,
     handleStartEditing,
   } = useColumnEditing({ columnId, title });
@@ -57,6 +58,7 @@ function ColumnComponent({
     handleCancelTaskCreation,
     handleSaveTaskCreation,
     handleStartTaskCreation,
+    handleTaskEditorBlur,
     handleTaskTitleChange,
   } = useColumnTaskCreation({ columnId });
 
@@ -66,32 +68,6 @@ function ColumnComponent({
   const dropIndicatorEdge = useColumnDropIndicatorEdge(columnId);
   const isDragging = useIsColumnDragging(columnId);
   const hasVisibleTaskCards = visibleTaskIds.length > 0;
-
-  const handleEditorBlur = (event: FocusEvent<HTMLFormElement>) => {
-    const nextFocusedElement = event.relatedTarget;
-
-    if (
-      nextFocusedElement instanceof Node &&
-      event.currentTarget.contains(nextFocusedElement)
-    ) {
-      return;
-    }
-
-    handleCancelEditing();
-  };
-
-  const handleTaskEditorBlur = (event: FocusEvent<HTMLFormElement>) => {
-    const nextFocusedElement = event.relatedTarget;
-
-    if (
-      nextFocusedElement instanceof Node &&
-      event.currentTarget.contains(nextFocusedElement)
-    ) {
-      return;
-    }
-
-    handleCancelTaskCreation();
-  };
 
   return (
     <section

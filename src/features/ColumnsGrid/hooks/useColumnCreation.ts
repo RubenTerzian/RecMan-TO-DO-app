@@ -1,19 +1,10 @@
-import type { FocusEventHandler } from "react";
-import { useCallback, useState } from "react";
+import { useCallback } from "react";
+import { useDraftSession } from "@/hooks/useDraftSession";
+import { useEditorBlur } from "@/hooks/useEditorBlur";
 import { useStore } from "@/store/store";
 import { selectCreateColumn } from "@/store/selectors";
 
 const DEFAULT_COLUMN_TITLE = "New Column";
-
-type ColumnCreationState = {
-  draftTitle: string;
-  isCreatingColumn: boolean;
-};
-
-const DEFAULT_CREATION_STATE: ColumnCreationState = {
-  draftTitle: DEFAULT_COLUMN_TITLE,
-  isCreatingColumn: false,
-};
 
 function normalizeColumnTitle(title: string) {
   const normalizedTitle = title.trim();
@@ -23,84 +14,34 @@ function normalizeColumnTitle(title: string) {
 
 export function useColumnCreation() {
   const createColumn = useStore(selectCreateColumn);
-
-  const [creationState, setCreationState] = useState<ColumnCreationState>(
-    DEFAULT_CREATION_STATE,
-  );
-
-  const resetCreationState = useCallback(() => {
-    setCreationState((currentState) => {
-      if (
-        currentState.draftTitle === DEFAULT_CREATION_STATE.draftTitle &&
-        currentState.isCreatingColumn ===
-          DEFAULT_CREATION_STATE.isCreatingColumn
-      ) {
-        return currentState;
-      }
-
-      return DEFAULT_CREATION_STATE;
-    });
-  }, []);
+  const { draft, isActive, resetSession, startSession, updateDraft } =
+    useDraftSession(DEFAULT_COLUMN_TITLE);
 
   const handleStartColumnCreation = useCallback(() => {
-    setCreationState((currentState) => {
-      if (
-        currentState.draftTitle === DEFAULT_COLUMN_TITLE &&
-        currentState.isCreatingColumn
-      ) {
-        return currentState;
-      }
+    startSession(DEFAULT_COLUMN_TITLE);
+  }, [startSession]);
 
-      return {
-        draftTitle: DEFAULT_COLUMN_TITLE,
-        isCreatingColumn: true,
-      };
-    });
-  }, []);
-
-  const handleDraftTitleChange = useCallback((title: string) => {
-    setCreationState((currentState) => {
-      if (currentState.draftTitle === title) {
-        return currentState;
-      }
-
-      return {
-        ...currentState,
-        draftTitle: title,
-      };
-    });
-  }, []);
-
-  const handleCancelColumnCreation = useCallback(() => {
-    resetCreationState();
-  }, [resetCreationState]);
-
-  const handleCreateEditorBlur = useCallback<
-    FocusEventHandler<HTMLFormElement>
-  >(
-    (event) => {
-      const nextFocusedElement = event.relatedTarget;
-
-      if (
-        nextFocusedElement instanceof Node &&
-        event.currentTarget.contains(nextFocusedElement)
-      ) {
-        return;
-      }
-
-      resetCreationState();
+  const handleDraftTitleChange = useCallback(
+    (title: string) => {
+      updateDraft(title);
     },
-    [resetCreationState],
+    [updateDraft],
   );
 
+  const handleCancelColumnCreation = useCallback(() => {
+    resetSession();
+  }, [resetSession]);
+
+  const handleCreateEditorBlur = useEditorBlur(handleCancelColumnCreation);
+
   const handleSaveColumnCreation = useCallback(() => {
-    createColumn(normalizeColumnTitle(creationState.draftTitle));
-    resetCreationState();
-  }, [createColumn, creationState.draftTitle, resetCreationState]);
+    createColumn(normalizeColumnTitle(draft));
+    resetSession();
+  }, [createColumn, draft, resetSession]);
 
   return {
-    draftTitle: creationState.draftTitle,
-    isCreatingColumn: creationState.isCreatingColumn,
+    draftTitle: draft,
+    isCreatingColumn: isActive,
     handleCreateEditorBlur,
     handleDraftTitleChange,
     handleCancelColumnCreation,

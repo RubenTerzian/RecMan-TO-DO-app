@@ -1,20 +1,12 @@
-import { useCallback, useState } from "react";
+import { useCallback } from "react";
+import { useDraftSession } from "@/hooks/useDraftSession";
+import { useEditorBlur } from "@/hooks/useEditorBlur";
 import { useStore } from "@/store/store";
 import { selectDeleteColumn, selectUpdateColumnTitle } from "@/store/selectors";
-
-type ColumnEditingState = {
-  draftTitle: string;
-  isEditing: boolean;
-};
 
 type UseColumnEditingOptions = {
   columnId: string;
   title: string;
-};
-
-const DEFAULT_COLUMN_EDITING_STATE: ColumnEditingState = {
-  draftTitle: "",
-  isEditing: false,
 };
 
 function normalizeColumnTitle(title: string, fallbackTitle: string) {
@@ -26,78 +18,42 @@ function normalizeColumnTitle(title: string, fallbackTitle: string) {
 export function useColumnEditing({ columnId, title }: UseColumnEditingOptions) {
   const updateColumnTitle = useStore(selectUpdateColumnTitle);
   const deleteColumn = useStore(selectDeleteColumn);
-
-  const [editingState, setEditingState] = useState<ColumnEditingState>(
-    DEFAULT_COLUMN_EDITING_STATE,
-  );
-
-  const resetEditingState = useCallback(() => {
-    setEditingState((currentState) => {
-      if (
-        currentState.draftTitle === DEFAULT_COLUMN_EDITING_STATE.draftTitle &&
-        currentState.isEditing === DEFAULT_COLUMN_EDITING_STATE.isEditing
-      ) {
-        return currentState;
-      }
-
-      return DEFAULT_COLUMN_EDITING_STATE;
-    });
-  }, []);
+  const { draft, isActive, resetSession, startSession, updateDraft } =
+    useDraftSession("");
 
   const handleStartEditing = useCallback(() => {
-    setEditingState((currentState) => {
-      if (currentState.isEditing && currentState.draftTitle === title) {
-        return currentState;
-      }
+    startSession(title);
+  }, [startSession, title]);
 
-      return {
-        draftTitle: title,
-        isEditing: true,
-      };
-    });
-  }, [title]);
-
-  const handleDraftTitleChange = useCallback((nextTitle: string) => {
-    setEditingState((currentState) => {
-      if (currentState.draftTitle === nextTitle) {
-        return currentState;
-      }
-
-      return {
-        ...currentState,
-        draftTitle: nextTitle,
-      };
-    });
-  }, []);
+  const handleDraftTitleChange = useCallback(
+    (nextTitle: string) => {
+      updateDraft(nextTitle);
+    },
+    [updateDraft],
+  );
 
   const handleCancelEditing = useCallback(() => {
-    resetEditingState();
-  }, [resetEditingState]);
+    resetSession();
+  }, [resetSession]);
+
+  const handleEditorBlur = useEditorBlur(handleCancelEditing);
 
   const handleSaveEditing = useCallback(() => {
-    updateColumnTitle(
-      columnId,
-      normalizeColumnTitle(editingState.draftTitle, title),
-    );
-    resetEditingState();
-  }, [
-    columnId,
-    editingState.draftTitle,
-    resetEditingState,
-    title,
-    updateColumnTitle,
-  ]);
+    updateColumnTitle(columnId, normalizeColumnTitle(draft, title));
+    resetSession();
+  }, [columnId, draft, resetSession, title, updateColumnTitle]);
 
   const handleDeleteColumn = useCallback(() => {
     deleteColumn(columnId);
   }, [columnId, deleteColumn]);
 
   return {
-    draftTitle: editingState.draftTitle,
-    isEditing: editingState.isEditing,
+    draftTitle: draft,
+    isEditing: isActive,
     handleCancelEditing,
     handleDeleteColumn,
     handleDraftTitleChange,
+    handleEditorBlur,
     handleSaveEditing,
     handleStartEditing,
   };

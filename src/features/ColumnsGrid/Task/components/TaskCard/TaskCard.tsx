@@ -1,4 +1,3 @@
-import type { FocusEvent } from "react";
 import { memo, useCallback } from "react";
 import { clsx } from "@/utils/clsx";
 import dragHandleIcon from "@/assets/icons/drag-handle.svg";
@@ -43,6 +42,7 @@ function TaskCardComponent({ taskId, ...props }: TaskCardProps) {
     isEditing,
     handleCancelEditing,
     handleDeleteTask,
+    handleEditorBlur,
     handleSaveEditing,
     handleStartEditing,
     handleTitleChange,
@@ -60,19 +60,6 @@ function TaskCardComponent({ taskId, ...props }: TaskCardProps) {
   if (!task) {
     return null;
   }
-
-  const handleEditorBlur = (event: FocusEvent<HTMLFormElement>) => {
-    const nextFocusedElement = event.relatedTarget;
-
-    if (
-      nextFocusedElement instanceof Node &&
-      event.currentTarget.contains(nextFocusedElement)
-    ) {
-      return;
-    }
-
-    handleCancelEditing();
-  };
 
   if (isEditing && !selectionMode) {
     return (

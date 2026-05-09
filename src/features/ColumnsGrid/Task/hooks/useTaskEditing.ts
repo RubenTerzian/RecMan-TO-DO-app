@@ -1,16 +1,8 @@
-import { useCallback, useState } from "react";
+import { useCallback } from "react";
+import { useDraftSession } from "@/hooks/useDraftSession";
+import { useEditorBlur } from "@/hooks/useEditorBlur";
 import { useStore } from "@/store/store";
 import { selectDeleteTask, selectUpdateTaskTitle } from "@/store/selectors";
-
-type TaskEditingState = {
-  title: string;
-  isEditing: boolean;
-};
-
-const DEFAULT_TASK_EDITING_STATE: TaskEditingState = {
-  title: "",
-  isEditing: false,
-};
 
 function normalizeTaskTitle(title: string, fallbackTitle: string) {
   const normalizedTitle = title.trim();
@@ -26,67 +18,41 @@ type UseTaskEditingOptions = {
 export function useTaskEditing({ taskId, title }: UseTaskEditingOptions) {
   const updateTaskTitle = useStore(selectUpdateTaskTitle);
   const deleteTask = useStore(selectDeleteTask);
-  const [editingState, setEditingState] = useState<TaskEditingState>(
-    DEFAULT_TASK_EDITING_STATE,
-  );
-
-  const resetEditingState = useCallback(() => {
-    setEditingState((currentState) => {
-      if (
-        currentState.title === DEFAULT_TASK_EDITING_STATE.title &&
-        currentState.isEditing === DEFAULT_TASK_EDITING_STATE.isEditing
-      ) {
-        return currentState;
-      }
-
-      return DEFAULT_TASK_EDITING_STATE;
-    });
-  }, []);
+  const { draft, isActive, resetSession, startSession, updateDraft } =
+    useDraftSession("");
 
   const handleStartEditing = useCallback(() => {
-    setEditingState((currentState) => {
-      if (currentState.isEditing && currentState.title === title) {
-        return currentState;
-      }
+    startSession(title);
+  }, [startSession, title]);
 
-      return {
-        title,
-        isEditing: true,
-      };
-    });
-  }, [title]);
-
-  const handleTitleChange = useCallback((nextTitle: string) => {
-    setEditingState((currentState) => {
-      if (currentState.title === nextTitle) {
-        return currentState;
-      }
-
-      return {
-        ...currentState,
-        title: nextTitle,
-      };
-    });
-  }, []);
+  const handleTitleChange = useCallback(
+    (nextTitle: string) => {
+      updateDraft(nextTitle);
+    },
+    [updateDraft],
+  );
 
   const handleCancelEditing = useCallback(() => {
-    resetEditingState();
-  }, [resetEditingState]);
+    resetSession();
+  }, [resetSession]);
+
+  const handleEditorBlur = useEditorBlur(handleCancelEditing);
 
   const handleSaveEditing = useCallback(() => {
-    updateTaskTitle(taskId, normalizeTaskTitle(editingState.title, title));
-    resetEditingState();
-  }, [editingState.title, resetEditingState, taskId, title, updateTaskTitle]);
+    updateTaskTitle(taskId, normalizeTaskTitle(draft, title));
+    resetSession();
+  }, [draft, resetSession, taskId, title, updateTaskTitle]);
 
   const handleDeleteTask = useCallback(() => {
     deleteTask(taskId);
   }, [deleteTask, taskId]);
 
   return {
-    draftTitle: editingState.title,
-    isEditing: editingState.isEditing,
+    draftTitle: draft,
+    isEditing: isActive,
     handleCancelEditing,
     handleDeleteTask,
+    handleEditorBlur,
     handleSaveEditing,
     handleStartEditing,
     handleTitleChange,

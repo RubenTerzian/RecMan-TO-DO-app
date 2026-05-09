@@ -1,18 +1,10 @@
-import { useCallback, useState } from "react";
+import { useCallback } from "react";
+import { useDraftSession } from "@/hooks/useDraftSession";
+import { useEditorBlur } from "@/hooks/useEditorBlur";
 import { useStore } from "@/store/store";
 import { selectCreateTask } from "@/store/selectors";
 
 const DEFAULT_TASK_TITLE = "New Task";
-
-type TaskCreationState = {
-  title: string;
-  isCreatingTask: boolean;
-};
-
-const DEFAULT_TASK_CREATION_STATE: TaskCreationState = {
-  title: DEFAULT_TASK_TITLE,
-  isCreatingTask: false,
-};
 
 function normalizeTaskTitle(title: string) {
   const normalizedTitle = title.trim();
@@ -28,68 +20,38 @@ export function useColumnTaskCreation({
   columnId,
 }: UseColumnTaskCreationOptions) {
   const createTask = useStore(selectCreateTask);
-  const [creationState, setCreationState] = useState<TaskCreationState>(
-    DEFAULT_TASK_CREATION_STATE,
-  );
-
-  const resetCreationState = useCallback(() => {
-    setCreationState((currentState) => {
-      if (
-        currentState.title === DEFAULT_TASK_CREATION_STATE.title &&
-        currentState.isCreatingTask ===
-          DEFAULT_TASK_CREATION_STATE.isCreatingTask
-      ) {
-        return currentState;
-      }
-
-      return DEFAULT_TASK_CREATION_STATE;
-    });
-  }, []);
+  const { draft, isActive, resetSession, startSession, updateDraft } =
+    useDraftSession(DEFAULT_TASK_TITLE);
 
   const handleStartTaskCreation = useCallback(() => {
-    setCreationState((currentState) => {
-      if (
-        currentState.title === DEFAULT_TASK_TITLE &&
-        currentState.isCreatingTask
-      ) {
-        return currentState;
-      }
+    startSession(DEFAULT_TASK_TITLE);
+  }, [startSession]);
 
-      return {
-        title: DEFAULT_TASK_TITLE,
-        isCreatingTask: true,
-      };
-    });
-  }, []);
-
-  const handleTaskTitleChange = useCallback((title: string) => {
-    setCreationState((currentState) => {
-      if (currentState.title === title) {
-        return currentState;
-      }
-
-      return {
-        ...currentState,
-        title,
-      };
-    });
-  }, []);
+  const handleTaskTitleChange = useCallback(
+    (title: string) => {
+      updateDraft(title);
+    },
+    [updateDraft],
+  );
 
   const handleCancelTaskCreation = useCallback(() => {
-    resetCreationState();
-  }, [resetCreationState]);
+    resetSession();
+  }, [resetSession]);
+
+  const handleTaskEditorBlur = useEditorBlur(handleCancelTaskCreation);
 
   const handleSaveTaskCreation = useCallback(() => {
-    createTask(columnId, normalizeTaskTitle(creationState.title));
-    resetCreationState();
-  }, [columnId, createTask, creationState.title, resetCreationState]);
+    createTask(columnId, normalizeTaskTitle(draft));
+    resetSession();
+  }, [columnId, createTask, draft, resetSession]);
 
   return {
-    draftTaskTitle: creationState.title,
-    isCreatingTask: creationState.isCreatingTask,
+    draftTaskTitle: draft,
+    isCreatingTask: isActive,
     handleCancelTaskCreation,
     handleSaveTaskCreation,
     handleStartTaskCreation,
+    handleTaskEditorBlur,
     handleTaskTitleChange,
   };
 }
