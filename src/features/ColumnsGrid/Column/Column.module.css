@@ -22,6 +22,15 @@
   flex-shrink: 0;
 }
 
+.addTaskButtonWrapper {
+  display: inline-flex;
+  align-self: start;
+}
+
+.addTaskEditor {
+  flex-shrink: 0;
+}
+
 .taskList {
   display: grid;
   gap: 12px;

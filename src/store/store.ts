@@ -8,6 +8,9 @@ type Actions = {
   createColumn(title: string): void;
   updateColumnTitle(columnId: string, title: string): void;
   deleteColumn(columnId: string): void;
+  createTask(columnId: string, title: string): void;
+  updateTaskTitle(taskId: string, title: string): void;
+  deleteTask(taskId: string): void;
   setSearchTerm(searchTerm: string): void;
   setActiveFilter(activeFilter: TaskFilter): void;
   toggleSelectionMode(): void;
@@ -76,6 +79,92 @@ function clearSelectionAfterTaskMutation(
   };
 }
 
+function getColumnTasks(tasks: StoreState["tasks"], columnId: string) {
+  return tasks.filter((task) => task.columnId === columnId);
+}
+
+function replaceTasksInColumn(
+  tasks: StoreState["tasks"],
+  columnId: string,
+  nextColumnTasks: StoreState["tasks"],
+) {
+  let nextColumnTaskIndex = 0;
+
+  const nextTasks = tasks.flatMap((task) => {
+    if (task.columnId !== columnId) {
+      return [task];
+    }
+
+    if (nextColumnTaskIndex >= nextColumnTasks.length) {
+      return [];
+    }
+
+    const nextTask = nextColumnTasks[nextColumnTaskIndex];
+    nextColumnTaskIndex += 1;
+
+    return [nextTask];
+  });
+
+  if (nextColumnTaskIndex >= nextColumnTasks.length) {
+    return nextTasks;
+  }
+
+  return [...nextTasks, ...nextColumnTasks.slice(nextColumnTaskIndex)];
+}
+
+function mergeTasksAtCompletionBoundary(
+  existingColumnTasks: StoreState["tasks"],
+  incomingTasks: StoreState["tasks"],
+) {
+  const remainingIncompleteTasks = existingColumnTasks.filter(
+    (task) => !task.isComplete,
+  );
+  const remainingCompleteTasks = existingColumnTasks.filter(
+    (task) => task.isComplete,
+  );
+  const incomingIncompleteTasks = incomingTasks.filter(
+    (task) => !task.isComplete,
+  );
+  const incomingCompleteTasks = incomingTasks.filter((task) => task.isComplete);
+
+  return [
+    ...remainingIncompleteTasks,
+    ...incomingIncompleteTasks,
+    ...incomingCompleteTasks,
+    ...remainingCompleteTasks,
+  ];
+}
+
+function prependTasksInColumn(
+  existingColumnTasks: StoreState["tasks"],
+  incomingTasks: StoreState["tasks"],
+) {
+  return [...incomingTasks, ...existingColumnTasks];
+}
+
+function reorderTasksForCompletionChange(
+  columnTasks: StoreState["tasks"],
+  taskIds: string[],
+  isComplete: boolean,
+) {
+  const taskIdSet = new Set(taskIds);
+  const movingTasks = columnTasks
+    .filter((task) => taskIdSet.has(task.id))
+    .map((task) => ({ ...task, isComplete }));
+  const remainingTasks = columnTasks.filter((task) => !taskIdSet.has(task.id));
+
+  return mergeTasksAtCompletionBoundary(remainingTasks, movingTasks);
+}
+
+function removeTaskAndSelection(state: AppStore, taskId: string) {
+  return {
+    tasks: state.tasks.filter((task) => task.id !== taskId),
+    selectedTaskIds: state.selectedTaskIds.filter(
+      (selectedTaskId) => selectedTaskId !== taskId,
+    ),
+  };
+}
+
 export const useStore = create<AppStore>()((set) => ({
   ...createInitialState(),
   resetStore() {
@@ -116,6 +205,34 @@ export const useStore = create<AppStore>()((set) => ({
       };
     });
   },
+  createTask(columnId, title) {
+    set((state) => {
+      const nextTask = {
+        id: createUniquePrefixedId("task"),
+        columnId,
+        title,
+        isComplete: false,
+      };
+      const nextColumnTasks = prependTasksInColumn(
+        getColumnTasks(state.tasks, columnId),
+        [nextTask],
+      );
+
+      return {
+        tasks: replaceTasksInColumn(state.tasks, columnId, nextColumnTasks),
+      };
+    });
+  },
+  updateTaskTitle(taskId, title) {
+    set((state) => ({
+      tasks: state.tasks.map((task) =>
+        task.id === taskId ? { ...task, title } : task,
+      ),
+    }));
+  },
+  deleteTask(taskId) {
+    set((state) => removeTaskAndSelection(state, taskId));
+  },
   setSearchTerm(searchTerm) {
     set({ searchTerm });
   },
@@ -150,23 +267,57 @@ export const useStore = create<AppStore>()((set) => ({
     });
   },
   toggleTaskCompletion(taskId) {
-    set((state) => ({
-      tasks: state.tasks.map((task) =>
-        task.id === taskId ? { ...task, isComplete: !task.isComplete } : task,
-      ),
-    }));
+    set((state) => {
+      const currentTask = state.tasks.find((task) => task.id === taskId);
+
+      if (!currentTask) {
+        return state;
+      }
+
+      const nextColumnTasks = reorderTasksForCompletionChange(
+        getColumnTasks(state.tasks, currentTask.columnId),
+        [taskId],
+        !currentTask.isComplete,
+      );
+
+      return {
+        tasks: replaceTasksInColumn(
+          state.tasks,
+          currentTask.columnId,
+          nextColumnTasks,
+        ),
+      };
+    });
   },
   markSelectedTasksComplete(isComplete) {
-    set((state) =>
-      clearSelectionAfterTaskMutation(
-        state,
-        state.tasks.map((task) =>
-          state.selectedTaskIds.includes(task.id)
-            ? { ...task, isComplete }
-            : task,
-        ),
-      ),
-    );
+    set((state) => {
+      let nextTasks = state.tasks;
+      const selectedTasksByColumn = new Map<string, string[]>();
+
+      state.tasks.forEach((task) => {
+        if (!state.selectedTaskIds.includes(task.id)) {
+          return;
+        }
+
+        const columnTaskIds = selectedTasksByColumn.get(task.columnId) ?? [];
+        columnTaskIds.push(task.id);
+        selectedTasksByColumn.set(task.columnId, columnTaskIds);
+      });
+
+      selectedTasksByColumn.forEach((taskIds, columnId) => {
+        nextTasks = replaceTasksInColumn(
+          nextTasks,
+          columnId,
+          reorderTasksForCompletionChange(
+            getColumnTasks(nextTasks, columnId),
+            taskIds,
+            isComplete,
+          ),
+        );
+      });
+
+      return clearSelectionAfterTaskMutation(state, nextTasks);
+    });
   },
   deleteSelectedTasks() {
     set((state) =>
@@ -177,15 +328,23 @@ export const useStore = create<AppStore>()((set) => ({
     );
   },
   moveSelectedTasks(columnId) {
-    set((state) =>
-      clearSelectionAfterTaskMutation(
+    set((state) => {
+      const movingTaskIdSet = new Set(state.selectedTaskIds);
+      const movingTasks = state.tasks
+        .filter((task) => movingTaskIdSet.has(task.id))
+        .map((task) => ({ ...task, columnId }));
+      const remainingTasks = state.tasks.filter(
+        (task) => !movingTaskIdSet.has(task.id),
+      );
+      const nextTargetColumnTasks = mergeTasksAtCompletionBoundary(
+        getColumnTasks(remainingTasks, columnId),
+        movingTasks,
+      );
+
+      return clearSelectionAfterTaskMutation(
         state,
-        state.tasks.map((task) =>
-          state.selectedTaskIds.includes(task.id)
-            ? { ...task, columnId }
-            : task,
-        ),
-      ),
-    );
+        replaceTasksInColumn(remainingTasks, columnId, nextTargetColumnTasks),
+      );
+    });
   },
 }));

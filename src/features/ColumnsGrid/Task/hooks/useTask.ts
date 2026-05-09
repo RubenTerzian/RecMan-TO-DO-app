@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { useStore } from "@/store/store";
 import {
   makeSelectIsTaskSelected,
@@ -26,7 +26,7 @@ export function useTask({ taskId, mode }: UseTaskOptions) {
 
   const selectionMode = mode === "selection";
 
-  const handleToggle = () => {
+  const handleToggle = useCallback(() => {
     if (selectionMode) {
       toggleTaskSelection(taskId);
 
@@ -34,7 +34,7 @@ export function useTask({ taskId, mode }: UseTaskOptions) {
     }
 
     toggleTaskCompletion(taskId);
-  };
+  }, [selectionMode, taskId, toggleTaskCompletion, toggleTaskSelection]);
 
   return {
     task,

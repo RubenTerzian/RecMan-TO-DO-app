@@ -20,6 +20,12 @@ export const selectUpdateColumnTitle = (state: AppStore) =>
 
 export const selectDeleteColumn = (state: AppStore) => state.deleteColumn;
 
+export const selectCreateTask = (state: AppStore) => state.createTask;
+
+export const selectUpdateTaskTitle = (state: AppStore) => state.updateTaskTitle;
+
+export const selectDeleteTask = (state: AppStore) => state.deleteTask;
+
 export const selectSetSearchTerm = (state: AppStore) => state.setSearchTerm;
 
 export const selectSetActiveFilter = (state: AppStore) => state.setActiveFilter;

@@ -1,12 +1,15 @@
+import type { FocusEvent } from "react";
 import { memo } from "react";
 import { clsx } from "@/utils/clsx";
 import dragHandleIcon from "@/assets/icons/drag-handle.svg";
 import styles from "./TaskCard.module.css";
 import { Checkbox } from "@/components/atoms/Checkbox/Checkbox";
+import { TaskEditor } from "@/features/ColumnsGrid/Task/components/TaskEditor/TaskEditor";
 import {
   DeleteIconButton,
   EditIconButton,
 } from "@/components/shared/ActionIconButton/ActionIconButton";
+import { useTaskEditing } from "@/features/ColumnsGrid/Task/hooks/useTaskEditing";
 import { useTask } from "@/features/ColumnsGrid/Task/hooks/useTask";
 
 type BaseTaskCardProps = {
@@ -31,8 +34,45 @@ function TaskCardComponent({ taskId, ...props }: TaskCardProps) {
     },
   );
 
+  const {
+    draftTitle,
+    isEditing,
+    handleCancelEditing,
+    handleDeleteTask,
+    handleSaveEditing,
+    handleStartEditing,
+    handleTitleChange,
+  } = useTaskEditing({ taskId, title: task?.title ?? "" });
+
   if (!task) {
     return null;
+  }
+
+  const handleEditorBlur = (event: FocusEvent<HTMLFormElement>) => {
+    const nextFocusedElement = event.relatedTarget;
+
+    if (
+      nextFocusedElement instanceof Node &&
+      event.currentTarget.contains(nextFocusedElement)
+    ) {
+      return;
+    }
+
+    handleCancelEditing();
+  };
+
+  if (isEditing && !selectionMode) {
+    return (
+      <TaskEditor
+        autoFocus
+        mode="edit"
+        onBlur={handleEditorBlur}
+        onCancel={handleCancelEditing}
+        onSave={handleSaveEditing}
+        onTitleChange={handleTitleChange}
+        title={draftTitle}
+      />
+    );
   }
 
   return (
@@ -76,11 +116,16 @@ function TaskCardComponent({ taskId, ...props }: TaskCardProps) {
 
       {!selectionMode ? (
         <div className={styles.actions}>
-          <EditIconButton data-testid="task-edit" aria-label="Edit task" />
+          <EditIconButton
+            data-testid="task-edit"
+            aria-label="Edit task"
+            onClick={handleStartEditing}
+          />
 
           <DeleteIconButton
             data-testid="task-delete"
             aria-label="Delete task"
+            onClick={handleDeleteTask}
           />
         </div>
       ) : null}

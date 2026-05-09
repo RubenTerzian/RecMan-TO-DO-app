@@ -6,7 +6,9 @@ import { clsx } from "@/utils/clsx";
 import { ColumnEditor } from "@/features/ColumnsGrid/Column/components/ColumnEditor/ColumnEditor";
 import { ColumnHeader } from "@/features/ColumnsGrid/Column/components/ColumnHeader/ColumnHeader";
 import { EmptyColumnState } from "@/features/ColumnsGrid/Column/components/EmptyColumnState/EmptyColumnState";
+import { TaskEditor } from "@/features/ColumnsGrid/Task/components/TaskEditor/TaskEditor";
 import { TaskCard } from "@/features/ColumnsGrid/Task/components/TaskCard/TaskCard";
+import { useColumnTaskCreation } from "./hooks/useColumnTaskCreation";
 import { useColumnEditing } from "./hooks/useColumnEditing";
 import { useColumnTasks } from "./hooks/useColumnTasks";
 
@@ -29,6 +31,7 @@ function ColumnComponent({
     showSelectionToggle,
     handleToggleAllTasksSelection,
   } = useColumnTasks({ columnId });
+
   const {
     draftTitle,
     isEditing,
@@ -38,6 +41,15 @@ function ColumnComponent({
     handleSaveEditing,
     handleStartEditing,
   } = useColumnEditing({ columnId, title });
+
+  const {
+    draftTaskTitle,
+    isCreatingTask,
+    handleCancelTaskCreation,
+    handleSaveTaskCreation,
+    handleStartTaskCreation,
+    handleTaskTitleChange,
+  } = useColumnTaskCreation({ columnId });
 
   const handleEditorBlur = (event: FocusEvent<HTMLFormElement>) => {
     const nextFocusedElement = event.relatedTarget;
@@ -50,6 +62,19 @@ function ColumnComponent({
     }
 
     handleCancelEditing();
+  };
+
+  const handleTaskEditorBlur = (event: FocusEvent<HTMLFormElement>) => {
+    const nextFocusedElement = event.relatedTarget;
+
+    if (
+      nextFocusedElement instanceof Node &&
+      event.currentTarget.contains(nextFocusedElement)
+    ) {
+      return;
+    }
+
+    handleCancelTaskCreation();
   };
 
   return (
@@ -80,9 +105,28 @@ function ColumnComponent({
       )}
 
       {!selectionMode ? (
-        <Button className={styles.addTaskButton} data-testid="add-task-button">
-          Add task
-        </Button>
+        <>
+          <Button
+            className={styles.addTaskButton}
+            data-testid="add-task-button"
+            disabled={isCreatingTask}
+            onClick={isCreatingTask ? undefined : handleStartTaskCreation}
+          >
+            Add task
+          </Button>
+
+          {isCreatingTask ? (
+            <TaskEditor
+              autoFocus
+              mode="create"
+              onBlur={handleTaskEditorBlur}
+              onCancel={handleCancelTaskCreation}
+              onSave={handleSaveTaskCreation}
+              onTitleChange={handleTaskTitleChange}
+              title={draftTaskTitle}
+            />
+          ) : null}
+        </>
       ) : null}
 
       {hasTaskContent ? (
@@ -95,14 +139,14 @@ function ColumnComponent({
             />
           ))}
         </div>
-      ) : (
+      ) : !isCreatingTask ? (
         <EmptyColumnState
           variant={emptyState?.variant}
           title={emptyState?.title}
           message={emptyState?.message}
           testId="empty-column-drop-target"
         />
-      )}
+      ) : null}
     </section>
   );
 }
