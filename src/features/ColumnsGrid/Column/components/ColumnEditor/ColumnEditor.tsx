@@ -1,3 +1,4 @@
+import type { FocusEventHandler, SubmitEventHandler } from "react";
 import { memo } from "react";
 import { Input } from "@/components/atoms/Input/Input";
 import {
@@ -9,19 +10,50 @@ import styles from "./ColumnEditor.module.css";
 type ColumnEditorProps = {
   draftTitle: string;
   mode: "create" | "edit";
+  autoFocus?: boolean;
+  onBlur?: FocusEventHandler<HTMLFormElement>;
+  onCancel(): void;
+  onDraftTitleChange(title: string): void;
+  onSave(): void;
 };
 
-function ColumnEditorComponent({ draftTitle, mode }: ColumnEditorProps) {
+function ColumnEditorComponent({
+  draftTitle,
+  mode,
+  autoFocus = false,
+  onBlur,
+  onCancel,
+  onDraftTitleChange,
+  onSave,
+}: ColumnEditorProps) {
   const isCreateMode = mode === "create";
 
+  const handleSubmit: SubmitEventHandler<HTMLFormElement> = (event) => {
+    event.preventDefault();
+    onSave();
+  };
+
   return (
-    <header className={styles.columnEditor} data-testid="column-editor">
+    <form
+      className={styles.columnEditor}
+      data-testid="column-editor"
+      onBlur={onBlur}
+      onSubmit={handleSubmit}
+    >
       <div className={styles.headerRow}>
         <Input
           aria-label={isCreateMode ? "New column name" : "Edit column name"}
+          autoFocus={autoFocus}
           className={styles.titleInput}
-          defaultValue={draftTitle}
+          onChange={(event) => onDraftTitleChange(event.target.value)}
+          onKeyDown={(event) => {
+            if (event.key === "Escape") {
+              event.preventDefault();
+              onCancel();
+            }
+          }}
           placeholder={isCreateMode ? "New column" : "Rename column"}
+          value={draftTitle}
         />
 
         <div className={styles.actions}>
@@ -29,6 +61,7 @@ function ColumnEditorComponent({ draftTitle, mode }: ColumnEditorProps) {
             aria-label={
               isCreateMode ? "Cancel new column" : "Cancel column edit"
             }
+            onClick={onCancel}
             data-testid="cancel-column-editor"
           />
           <SaveIconButton
@@ -36,6 +69,7 @@ function ColumnEditorComponent({ draftTitle, mode }: ColumnEditorProps) {
               isCreateMode ? "Save new column" : "Save column changes"
             }
             data-testid="save-column-editor"
+            type="submit"
           />
         </div>
       </div>
@@ -45,7 +79,7 @@ function ColumnEditorComponent({ draftTitle, mode }: ColumnEditorProps) {
           ? "Save the column to start dragging it and adding tasks."
           : "Save changes to restore the regular column controls."}
       </p>
-    </header>
+    </form>
   );
 }
 

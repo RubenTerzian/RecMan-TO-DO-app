@@ -1,9 +1,11 @@
 import { create } from "zustand";
 import type { TaskFilter } from "@/features/TopBar/types";
 import type { StoreState } from "./types";
+import { createUniquePrefixedId } from "@/utils/ids";
 
 type Actions = {
   resetStore(): void;
+  createColumn(title: string): void;
   setSearchTerm(searchTerm: string): void;
   setActiveFilter(activeFilter: TaskFilter): void;
   toggleSelectionMode(): void;
@@ -76,6 +78,17 @@ export const useStore = create<AppStore>()((set) => ({
   ...createInitialState(),
   resetStore() {
     set(createInitialState());
+  },
+  createColumn(title) {
+    set((state) => ({
+      columns: [
+        ...state.columns,
+        {
+          id: createUniquePrefixedId("column"),
+          title,
+        },
+      ],
+    }));
   },
   setSearchTerm(searchTerm) {
     set({ searchTerm });

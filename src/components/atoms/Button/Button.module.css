@@ -29,6 +29,22 @@
   box-shadow: 0 12px 26px rgba(36, 90, 240, 0.2);
 }
 
+.button:disabled {
+  cursor: not-allowed;
+  background: linear-gradient(180deg, #aebddd, #94a7d2);
+  color: rgba(255, 255, 255, 0.92);
+  box-shadow: none;
+  transform: none;
+  opacity: 0.78;
+  pointer-events: none;
+}
+
+.button:disabled:hover {
+  transform: none;
+  background: linear-gradient(180deg, #aebddd, #94a7d2);
+  box-shadow: none;
+}
+
 .button:focus-visible {
   outline: none;
   border-color: rgba(36, 90, 240, 0.48);

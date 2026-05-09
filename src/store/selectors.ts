@@ -13,6 +13,8 @@ export const selectSearchTerm = (state: AppStore) => state.searchTerm;
 
 export const selectActiveFilter = (state: AppStore) => state.activeFilter;
 
+export const selectCreateColumn = (state: AppStore) => state.createColumn;
+
 export const selectSetSearchTerm = (state: AppStore) => state.setSearchTerm;
 
 export const selectSetActiveFilter = (state: AppStore) => state.setActiveFilter;
