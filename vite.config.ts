@@ -4,6 +4,7 @@ import { resolve } from "node:path";
 
 // https://vite.dev/config/
 export default defineConfig({
+  base: "/RecMan-TO-DO-app/",
   plugins: [react()],
   resolve: {
     alias: {
