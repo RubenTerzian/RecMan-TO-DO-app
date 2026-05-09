@@ -1,20 +1,20 @@
 import type { TaskFilter } from "@/features/TopBar/types";
 
-export type BoardColumn = {
+export type Column = {
   id: string;
   title: string;
 };
 
-export type BoardTask = {
+export type Task = {
   id: string;
   columnId: string;
   title: string;
   isComplete: boolean;
 };
 
-export type BoardState = {
-  columns: BoardColumn[];
-  tasks: BoardTask[];
+export type StoreState = {
+  columns: Column[];
+  tasks: Task[];
   selectionMode: boolean;
   activeFilter: TaskFilter;
   searchTerm: string;

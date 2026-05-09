@@ -1,11 +1,12 @@
 import { Button } from "@/components/atoms/Button";
 import styles from "./Column.module.css";
 import { clsx } from "@/utils/clsx";
-import { ColumnEditor } from "@/features/Column/components/ColumnEditor";
-import { ColumnHeader } from "@/features/Column/components/ColumnHeader";
-import { EmptyColumnState } from "@/features/Column/components/EmptyColumnState";
-import { TaskList } from "@/features/Column/components/TaskList";
-import type { ColumnData } from "@/features/Column/types";
+import { ColumnEditor } from "@/features/ColumnsGrid/Column/components/ColumnEditor";
+import { ColumnHeader } from "@/features/ColumnsGrid/Column/components/ColumnHeader";
+import { EmptyColumnState } from "@/features/ColumnsGrid/Column/components/EmptyColumnState";
+import { TaskCard } from "@/features/ColumnsGrid/Task/components/TaskCard";
+import { TaskEditor } from "@/features/ColumnsGrid/Task/components/TaskEditor";
+import type { ColumnData } from "@/features/ColumnsGrid/Column/types";
 
 type ColumnProps = {
   column: ColumnData;
@@ -40,17 +41,10 @@ export function Column({ column, selectionMode = false }: ColumnProps) {
         <ColumnEditor draftTitle={column.draftTitle} mode={column.mode} />
       ) : (
         <ColumnHeader
-          {...(selectionMode
-            ? {
-                mode: "selection" as const,
-                allSelected: allTasksSelected,
-                showSelectionToggle: selectableTasks.length > 0,
-                title: column.title,
-              }
-            : {
-                mode: "default" as const,
-                title: column.title,
-              })}
+          mode={selectionMode ? "selection" : "default"}
+          allSelected={allTasksSelected}
+          showSelectionToggle={selectableTasks.length > 0}
+          title={column.title}
         />
       )}
 
@@ -61,7 +55,22 @@ export function Column({ column, selectionMode = false }: ColumnProps) {
       ) : null}
 
       {column.tasks.length > 0 ? (
-        <TaskList tasks={column.tasks} selectionMode={selectionMode} />
+        <div className={styles.taskList}>
+          {column.tasks.map((task) =>
+            task.kind === "task-editor" ? (
+              <TaskEditor key={task.id} title={task.title} mode={task.mode} />
+            ) : (
+              <TaskCard
+                key={task.id}
+                mode={selectionMode ? "selection" : "default"}
+                title={task.title}
+                tag={task.tag}
+                isComplete={task.isComplete}
+                isSelected={task.isSelected}
+              />
+            ),
+          )}
+        </div>
       ) : (
         <EmptyColumnState
           variant={emptyState?.variant}

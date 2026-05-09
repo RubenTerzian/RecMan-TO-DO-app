@@ -1,33 +1,17 @@
 export type ColumnEmptyStateVariant = "empty" | "no-results";
 
+import type { TaskData } from "@/features/ColumnsGrid/Task/types";
+
 export type ColumnEmptyState = {
   variant: ColumnEmptyStateVariant;
   title: string;
   message: string;
 };
 
-export type ColumnTaskCard = {
-  kind: "task";
-  id: string;
-  title: string;
-  tag?: string;
-  isComplete?: boolean;
-  isSelected?: boolean;
-};
-
-export type ColumnTaskEditor = {
-  kind: "task-editor";
-  id: string;
-  title: string;
-  mode: "create" | "edit";
-};
-
-export type ColumnTask = ColumnTaskCard | ColumnTaskEditor;
-
 type ColumnBase = {
   id: string;
   title: string;
-  tasks: ColumnTask[];
+  tasks: TaskData[];
   emptyState?: ColumnEmptyState;
 };
 

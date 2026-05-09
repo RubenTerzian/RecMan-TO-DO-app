@@ -1,5 +1,5 @@
-import type { BoardState } from "./types";
+import type { StoreState } from "./types";
 
-export function selectColumnCount(state: BoardState) {
+export function selectColumnCount(state: StoreState) {
   return state.columns.length;
 }
