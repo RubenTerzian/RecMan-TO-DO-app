@@ -1,5 +1,11 @@
-import { useCallback } from "react";
+import { useMemo } from "react";
 import { useStore } from "@/store/store";
+import {
+  makeSelectIsTaskSelected,
+  makeSelectTaskById,
+  selectToggleTaskCompletion,
+  selectToggleTaskSelection,
+} from "@/store/selectors";
 
 type UseTaskOptions = {
   taskId: string;
@@ -7,17 +13,16 @@ type UseTaskOptions = {
 };
 
 export function useTask({ taskId, mode }: UseTaskOptions) {
-  const task = useStore(
-    useCallback(
-      (state) => state.tasks.find((currentTask) => currentTask.id === taskId),
-      [taskId],
-    ),
+  const selectTask = useMemo(() => makeSelectTaskById(taskId), [taskId]);
+  const selectIsSelected = useMemo(
+    () => makeSelectIsTaskSelected(taskId),
+    [taskId],
   );
-  const isSelected = useStore(
-    useCallback((state) => state.selectedTaskIds.includes(taskId), [taskId]),
-  );
-  const toggleTaskCompletion = useStore((state) => state.toggleTaskCompletion);
-  const toggleTaskSelection = useStore((state) => state.toggleTaskSelection);
+
+  const task = useStore(selectTask);
+  const isSelected = useStore(selectIsSelected);
+  const toggleTaskCompletion = useStore(selectToggleTaskCompletion);
+  const toggleTaskSelection = useStore(selectToggleTaskSelection);
 
   const selectionMode = mode === "selection";
 

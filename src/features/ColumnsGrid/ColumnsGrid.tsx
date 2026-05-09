@@ -1,16 +1,12 @@
 import { Column } from "@/features/ColumnsGrid/Column/Column";
 import { GridHeader } from "@/features/ColumnsGrid/GridHeader/GridHeader";
+import { selectBoardGridState } from "../../store/selectors";
 import { useStore } from "@/store/store";
 import { useShallow } from "zustand/react/shallow";
 import styles from "./ColumnsGrid.module.css";
 
 export function ColumnsGrid() {
-  const { columns, selectionMode } = useStore(
-    useShallow((state) => ({
-      columns: state.columns,
-      selectionMode: state.selectionMode,
-    })),
-  );
+  const { columns, selectionMode } = useStore(useShallow(selectBoardGridState));
 
   return (
     <main className={styles.board}>

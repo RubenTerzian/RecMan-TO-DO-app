@@ -2,6 +2,13 @@ import { useCallback, useMemo } from "react";
 import { useStore } from "@/store/store";
 import type { ColumnEmptyState } from "@/features/ColumnsGrid/Column/types";
 import { useShallow } from "zustand/react/shallow";
+import {
+  makeSelectTasksByColumnId,
+  selectActiveFilter,
+  selectSearchTerm,
+  selectSelectedTaskIds,
+  selectToggleAllTaskSelection,
+} from "@/store/selectors";
 
 type UseColumnOptions = {
   columnId: string;
@@ -57,20 +64,16 @@ function getEmptyState(
 }
 
 export function useColumn({ columnId }: UseColumnOptions) {
-  const tasks = useStore(
-    useShallow(
-      useCallback(
-        (state) => state.tasks.filter((task) => task.columnId === columnId),
-        [columnId],
-      ),
-    ),
+  const selectTasks = useMemo(
+    () => makeSelectTasksByColumnId(columnId),
+    [columnId],
   );
-  const activeFilter = useStore((state) => state.activeFilter);
-  const searchTerm = useStore((state) => state.searchTerm);
-  const selectedTaskIds = useStore((state) => state.selectedTaskIds);
-  const onToggleAllTasksSelection = useStore(
-    (state) => state.toggleAllTaskSelection,
-  );
+
+  const tasks = useStore(useShallow(selectTasks));
+  const activeFilter = useStore(selectActiveFilter);
+  const searchTerm = useStore(selectSearchTerm);
+  const selectedTaskIds = useStore(selectSelectedTaskIds);
+  const onToggleAllTasksSelection = useStore(selectToggleAllTaskSelection);
 
   const selectedTaskIdSet = useMemo(
     () => new Set(selectedTaskIds),
