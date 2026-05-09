@@ -1,33 +1,16 @@
-import { useMemo } from "react";
 import { Column } from "@/features/ColumnsGrid/Column/Column";
 import { GridHeader } from "@/features/ColumnsGrid/GridHeader/GridHeader";
 import { useStore } from "@/store/store";
+import { useShallow } from "zustand/react/shallow";
 import styles from "./ColumnsGrid.module.css";
 
-function groupTasksByColumnId(
-  tasks: ReturnType<typeof useStore.getState>["tasks"],
-) {
-  return tasks.reduce<Record<string, typeof tasks>>((groups, task) => {
-    const tasksForColumn = groups[task.columnId] ?? [];
-
-    return {
-      ...groups,
-      [task.columnId]: [...tasksForColumn, task],
-    };
-  }, {});
-}
-
 export function ColumnsGrid() {
-  const {
-    columns,
-    tasks,
-    selectionMode,
-    toggleTaskSelection,
-    toggleColumnTaskSelection,
-    toggleTaskCompletion,
-  } = useStore();
-
-  const tasksByColumnId = useMemo(() => groupTasksByColumnId(tasks), [tasks]);
+  const { columns, selectionMode } = useStore(
+    useShallow((state) => ({
+      columns: state.columns,
+      selectionMode: state.selectionMode,
+    })),
+  );
 
   return (
     <main className={styles.board}>
@@ -44,12 +27,9 @@ export function ColumnsGrid() {
               {columns.map((column) => (
                 <Column
                   key={column.id}
+                  columnId={column.id}
                   title={column.title}
-                  tasks={tasksByColumnId[column.id] ?? []}
                   selectionMode={selectionMode}
-                  onToggleTaskCompletion={toggleTaskCompletion}
-                  onToggleTaskSelection={toggleTaskSelection}
-                  onToggleColumnTaskSelection={toggleColumnTaskSelection}
                 />
               ))}
             </div>

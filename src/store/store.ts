@@ -9,7 +9,7 @@ type Actions = {
   toggleSelectionMode(): void;
   clearSelectedTasks(): void;
   toggleTaskSelection(taskId: string): void;
-  toggleColumnTaskSelection(taskIds: string[]): void;
+  toggleAllTaskSelection(taskIds: string[]): void;
   toggleTaskCompletion(taskId: string): void;
   markSelectedTasksComplete(isComplete: boolean): void;
   deleteSelectedTasks(): void;
@@ -97,7 +97,7 @@ export const useStore = create<AppStore>()((set) => ({
       selectedTaskIds: toggleIdInList(state.selectedTaskIds, taskId),
     }));
   },
-  toggleColumnTaskSelection(taskIds) {
+  toggleAllTaskSelection(taskIds) {
     set((state) => {
       const allSelected =
         taskIds.length > 0 &&

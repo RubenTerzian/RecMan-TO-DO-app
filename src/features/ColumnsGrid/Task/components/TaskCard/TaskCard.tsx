@@ -7,41 +7,33 @@ import {
   DeleteIconButton,
   EditIconButton,
 } from "@/components/shared/ActionIconButton/ActionIconButton";
+import { useTask } from "@/features/ColumnsGrid/Task/hooks/useTask";
 
 type BaseTaskCardProps = {
   taskId: string;
-  title: string;
-  tag?: string;
-  isComplete?: boolean;
 };
 
 type DefaultTaskCardProps = BaseTaskCardProps & {
   mode: "default";
-  onToggleComplete?(taskId: string): void;
 };
 
 type SelectionTaskCardProps = BaseTaskCardProps & {
   mode: "selection";
-  isSelected?: boolean;
-  onToggleSelection?(taskId: string): void;
 };
 
 type TaskCardProps = DefaultTaskCardProps | SelectionTaskCardProps;
 
-function TaskCardComponent({ taskId, title, tag, ...props }: TaskCardProps) {
-  const selectionMode = props.mode === "selection";
-  const isComplete = props.isComplete ?? false;
-  const isSelected =
-    props.mode === "selection" ? (props.isSelected ?? false) : false;
-  const handleToggle = () => {
-    if (props.mode === "selection") {
-      props.onToggleSelection?.(taskId);
+function TaskCardComponent({ taskId, ...props }: TaskCardProps) {
+  const { task, selectionMode, isSelected, isComplete, handleToggle } = useTask(
+    {
+      taskId,
+      mode: props.mode,
+    },
+  );
 
-      return;
-    }
-
-    props.onToggleComplete?.(taskId);
-  };
+  if (!task) {
+    return null;
+  }
 
   return (
     <article
@@ -78,9 +70,8 @@ function TaskCardComponent({ taskId, title, tag, ...props }: TaskCardProps) {
 
       <div className={styles.content}>
         <strong className={styles.title} data-testid="task-title">
-          {title}
+          {task.title}
         </strong>
-        {tag ? <span className={styles.tag}>{tag}</span> : null}
       </div>
 
       {!selectionMode ? (

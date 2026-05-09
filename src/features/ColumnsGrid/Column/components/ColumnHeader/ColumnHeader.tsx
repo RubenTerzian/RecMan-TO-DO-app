@@ -12,7 +12,7 @@ type ColumnHeaderProps = {
   mode: "default" | "selection";
   allSelected?: boolean;
   showSelectionToggle?: boolean;
-  onToggleSelection?(): void;
+  onToggleAllSelection?(): void;
 };
 
 function ColumnHeaderComponent({
@@ -20,7 +20,7 @@ function ColumnHeaderComponent({
   mode,
   allSelected = false,
   showSelectionToggle = false,
-  onToggleSelection,
+  onToggleAllSelection,
 }: ColumnHeaderProps) {
   const selectionMode = mode === "selection";
 
@@ -56,7 +56,7 @@ function ColumnHeaderComponent({
         <button
           className={styles.selectionToggle}
           type="button"
-          onClick={onToggleSelection}
+          onClick={onToggleAllSelection}
         >
           {allSelected ? "Deselect all" : "Select all"}
         </button>
