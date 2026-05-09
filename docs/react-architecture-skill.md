@@ -142,6 +142,28 @@ Use `React.memo` when:
 - Prefer subscribing to minimal stable slices, then deriving view data in the component or a focused hook when needed.
 - If a selector is reused broadly, keep it pure and ensure its output shape does not cause accidental churn.
 
+### Selector patterns for this repo
+
+- Prefer named selectors in [src/store/selectors.ts](src/store/selectors.ts) for reusable reads and action access.
+- Prefer selector factories for parameterized subscriptions such as task-by-id or tasks-by-column.
+- If a component needs only a count, boolean, or narrow derived flag, subscribe to that derived result instead of the full source array.
+- Avoid `useStore()` without a selector. It creates a broad subscription and usually defeats downstream memoization.
+
+### Subscription placement rules
+
+- Fix performance issues by shrinking subscription scope before adding memoization.
+- Keep board/layout components subscribed only to structural state they really own.
+- Move volatile subscriptions such as task selection, task lookup, and input values down to the smallest useful leaf hook.
+- Prefer passing stable identifiers like `taskId` and `columnId` instead of whole objects when a leaf can select its own data.
+
+### Lessons from current optimizations
+
+- `ColumnsGrid` should not subscribe to the full `tasks` array just to group tasks for children.
+- `Column` should subscribe to its own tasks and narrow derived selection state rather than reading broad board selection collections when possible.
+- `TaskCard` should read task-by-id and selection-by-id through focused selectors instead of receiving full task objects from parents.
+- `TopBar` should keep layout stateless and let each control subscribe only to the state it owns.
+- Memoizing child components is not enough if the parent still holds the hot subscription.
+
 ## 6. Derive data instead of duplicating it
 
 If a value can be calculated from existing state, it usually should not be stored separately.
@@ -179,6 +201,12 @@ Use `useEffect` only when you are synchronizing with something outside React.
 - using effects just to compute derived state
 - copying props into state on every change
 - chaining effects to keep internal values in sync when they could be derived directly
+
+### Debounced input rule
+
+- For debounced search or filter inputs, keep the immediate input value in local component state.
+- Debounce the callback that writes into shared state instead of debouncing the rendered value.
+- Do not add an effect that mirrors store state back into the local input value on every update unless there is a real external reset/sync requirement.
 
 ## 8. Keep component inputs explicit
 
@@ -220,6 +248,11 @@ A component or hook should not listen to values it does not use.
 - Name hooks/selectors after actual behavior; for example, if all columns always render, prefer names like `useColumnsGridData` over `useVisibleColumns`.
 - Prefer one source of truth for each feature.
 - When performance matters, optimize from measured or obvious churn, not guesswork.
+- Start performance fixes with these questions:
+  - Which component owns the hot store subscription?
+  - Can the subscription move lower in the tree?
+  - Can the subscriber read a narrower selector such as an id, count, or boolean?
+  - Is memoization being used to hide a parent subscription problem instead of fixing it?
 
 ## Review checklist
 

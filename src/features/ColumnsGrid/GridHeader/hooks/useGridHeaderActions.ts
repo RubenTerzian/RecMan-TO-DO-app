@@ -1,6 +1,15 @@
 import type { AvailableColumnOption } from "../types";
 import { useCallback, useMemo, useState } from "react";
 import { useStore } from "@/store/store";
+import {
+  selectColumns,
+  selectDeleteSelectedTasks,
+  selectMarkSelectedTasksComplete,
+  selectMoveSelectedTasks,
+  selectSelectedTaskCount,
+  selectSelectionMode,
+  selectToggleSelectionMode,
+} from "@/store/selectors";
 
 function mapAvailableColumns(
   columns: Array<{ id: string; title: string }>,
@@ -12,15 +21,13 @@ function mapAvailableColumns(
 }
 
 export function useGridHeaderActions() {
-  const {
-    selectionMode,
-    columns,
-    selectedTaskIds,
-    toggleSelectionMode,
-    markSelectedTasksComplete,
-    deleteSelectedTasks,
-    moveSelectedTasks,
-  } = useStore();
+  const selectionMode = useStore(selectSelectionMode);
+  const columns = useStore(selectColumns);
+  const selectionCount = useStore(selectSelectedTaskCount);
+  const toggleSelectionMode = useStore(selectToggleSelectionMode);
+  const markSelectedTasksComplete = useStore(selectMarkSelectedTasksComplete);
+  const deleteSelectedTasks = useStore(selectDeleteSelectedTasks);
+  const moveSelectedTasks = useStore(selectMoveSelectedTasks);
 
   const [moveTargetId, setMoveTargetId] = useState<string | undefined>();
 
@@ -28,7 +35,6 @@ export function useGridHeaderActions() {
     () => mapAvailableColumns(columns),
     [columns],
   );
-  const selectionCount = selectedTaskIds.length;
 
   const handleSelectionModeToggle = useCallback(() => {
     if (selectionMode) {

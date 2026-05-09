@@ -1,21 +1,17 @@
+import { memo } from "react";
 import styles from "./FilterControls.module.css";
 import { Select } from "@/components/atoms/Select/Select";
 import type { TaskFilter } from "@/features/TopBar/types";
+import { useFilterControl } from "@/features/TopBar/hooks/useFilterControl";
 
-type FilterControlsProps = {
-  activeFilter: TaskFilter;
-  onChange(activeFilter: TaskFilter): void;
-};
+function FilterControlsComponent() {
+  const { activeFilter, handleChange } = useFilterControl();
 
-export function FilterControls({
-  activeFilter,
-  onChange,
-}: FilterControlsProps) {
   return (
     <Select
       className={styles.filterControls}
       value={activeFilter}
-      onChange={(event) => onChange(event.target.value as TaskFilter)}
+      onChange={(event) => handleChange(event.target.value as TaskFilter)}
       aria-label="Task filter"
       data-testid="filter-controls"
     >
@@ -25,3 +21,5 @@ export function FilterControls({
     </Select>
   );
 }
+
+export const FilterControls = memo(FilterControlsComponent);

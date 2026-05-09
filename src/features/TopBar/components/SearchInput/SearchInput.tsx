@@ -1,19 +1,20 @@
+import { memo } from "react";
 import styles from "./SearchInput.module.css";
 import { Input } from "@/components/atoms/Input/Input";
+import { useSearchInputControl } from "@/features/TopBar/hooks/useSearchInputControl";
 
-type SearchInputProps = {
-  value: string;
-  onChange(value: string): void;
-};
+function SearchInputComponent() {
+  const { value, handleChange } = useSearchInputControl();
 
-export function SearchInput({ value, onChange }: SearchInputProps) {
   return (
     <Input
       className={styles.searchInput}
       data-testid="search-input"
       value={value}
-      onChange={(event) => onChange(event.target.value)}
+      onChange={(event) => handleChange(event.target.value)}
       placeholder="Search tasks"
     />
   );
 }
+
+export const SearchInput = memo(SearchInputComponent);

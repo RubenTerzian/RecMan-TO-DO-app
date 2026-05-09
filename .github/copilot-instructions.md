@@ -34,6 +34,10 @@ When working in this repository, follow these rules by default.
 - Board columns are structural and should stay rendered by default; search and filters affect tasks inside columns, not whether columns appear, unless a feature explicitly introduces column visibility.
 - Components must subscribe only to the specific store values they actually use.
 - Avoid broad store subscriptions that pull unrelated values into a component.
+- Prefer named selectors in `src/store/selectors.ts` for repeated store reads instead of repeating ad hoc inline selectors across multiple hooks.
+- Do not call `useStore()` without a selector in feature hooks or components unless a task explicitly requires a broad subscription.
+- Prefer selector factories such as `makeSelectTaskById(taskId)` or `makeSelectTasksByColumnId(columnId)` when a hook needs a parameterized store read.
+- When a component needs only a boolean or count derived from shared state, subscribe to that derived value rather than the full backing collection.
 
 ## Rendering and rerender safety
 
@@ -45,12 +49,17 @@ When working in this repository, follow these rules by default.
 - Do not memoize everything by default; add memoization intentionally where it prevents real churn.
 - Avoid creating new objects and arrays in store selectors used directly in subscriptions unless equality handling is explicit.
 - Prefer deriving data from stable inputs in hooks/components over subscribing to freshly-created selector outputs that change identity every render.
+- Fix rerender problems at the subscription boundary first. Memoizing children does not help if the parent still subscribes to changing state and rerenders the whole subtree.
+- When performance matters, move store subscriptions as far down the tree as practical so parent layout components can stay static.
+- Prefer passing stable IDs like `taskId` or `columnId` down the tree and letting leaf hooks subscribe to the exact record they need.
+- Treat search and filter updates as board-wide by default; optimize selection, counts, and per-item updates first because those are easier to localize.
 
 ## Effects and derived data
 
 - Do not use `useEffect` to mirror props/store data into another piece of state unless synchronization with an external system is required.
 - If a value can be derived from props, store state, or local state, derive it instead of storing it again.
 - Keep effects focused on external side effects only: DOM integration, network, subscriptions, timers, persistence, and similar boundaries.
+- For debounced inputs, prefer local input state plus a debounced callback that writes to shared state later. Do not mirror store state back into local state on every store update just to support debouncing.
 
 ## API shape and typing
 
@@ -69,5 +78,7 @@ When working in this repository, follow these rules by default.
 - `GridHeader` is the current reference implementation for this architecture and should be treated as done unless a task explicitly asks to change it.
 - Use the `GridHeader` split across component, hook, and store as the example to follow: UI in the component, orchestration/derived handlers in the hook, and source data mutations in Zustand actions.
 - Before finishing a change, check whether any state, selector, prop, or memo can be simplified or moved closer to where it is used.
+- Use `ColumnsGrid` + `Column` + `TaskCard` as the main performance reference: parent layout reads should stay narrow, item lookups should happen through focused selectors, and leaf hooks should own task-level subscriptions.
+- Use `TopBar` as the input-performance reference: the layout component stays stateless, each control owns only its own subscription, and debounced store writes should not introduce value-mirroring effects.
 
 For more detail and examples, see `docs/react-architecture-skill.md`.

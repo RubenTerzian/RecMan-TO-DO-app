@@ -3,10 +3,10 @@ import { useStore } from "@/store/store";
 import type { ColumnEmptyState } from "@/features/ColumnsGrid/Column/types";
 import { useShallow } from "zustand/react/shallow";
 import {
+  makeSelectSelectedCountForTaskIds,
   makeSelectTasksByColumnId,
   selectActiveFilter,
   selectSearchTerm,
-  selectSelectedTaskIds,
   selectToggleAllTaskSelection,
 } from "@/store/selectors";
 
@@ -72,13 +72,7 @@ export function useColumn({ columnId }: UseColumnOptions) {
   const tasks = useStore(useShallow(selectTasks));
   const activeFilter = useStore(selectActiveFilter);
   const searchTerm = useStore(selectSearchTerm);
-  const selectedTaskIds = useStore(selectSelectedTaskIds);
   const onToggleAllTasksSelection = useStore(selectToggleAllTaskSelection);
-
-  const selectedTaskIdSet = useMemo(
-    () => new Set(selectedTaskIds),
-    [selectedTaskIds],
-  );
 
   const visibleTasks = useMemo(
     () =>
@@ -95,10 +89,12 @@ export function useColumn({ columnId }: UseColumnOptions) {
     [visibleTasks],
   );
 
-  const selectedVisibleTaskCount = useMemo(
-    () => visibleTasks.filter((task) => selectedTaskIdSet.has(task.id)).length,
-    [visibleTasks, selectedTaskIdSet],
+  const selectSelectedVisibleTaskCount = useMemo(
+    () => makeSelectSelectedCountForTaskIds(visibleTaskIds),
+    [visibleTaskIds],
   );
+
+  const selectedVisibleTaskCount = useStore(selectSelectedVisibleTaskCount);
 
   const allTasksSelected =
     visibleTasks.length > 0 && selectedVisibleTaskCount === visibleTasks.length;

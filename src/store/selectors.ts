@@ -13,7 +13,26 @@ export const selectSearchTerm = (state: AppStore) => state.searchTerm;
 
 export const selectActiveFilter = (state: AppStore) => state.activeFilter;
 
+export const selectSetSearchTerm = (state: AppStore) => state.setSearchTerm;
+
+export const selectSetActiveFilter = (state: AppStore) => state.setActiveFilter;
+
 export const selectSelectedTaskIds = (state: AppStore) => state.selectedTaskIds;
+
+export const selectSelectedTaskCount = (state: AppStore) =>
+  state.selectedTaskIds.length;
+
+export const selectToggleSelectionMode = (state: AppStore) =>
+  state.toggleSelectionMode;
+
+export const selectMarkSelectedTasksComplete = (state: AppStore) =>
+  state.markSelectedTasksComplete;
+
+export const selectDeleteSelectedTasks = (state: AppStore) =>
+  state.deleteSelectedTasks;
+
+export const selectMoveSelectedTasks = (state: AppStore) =>
+  state.moveSelectedTasks;
 
 export const selectToggleTaskCompletion = (state: AppStore) =>
   state.toggleTaskCompletion;
@@ -36,4 +55,18 @@ export function makeSelectIsTaskSelected(taskId: string) {
 export function makeSelectTasksByColumnId(columnId: string) {
   return (state: AppStore) =>
     state.tasks.filter((task) => task.columnId === columnId);
+}
+
+export function makeSelectSelectedCountForTaskIds(taskIds: string[]) {
+  return (state: AppStore) => {
+    if (taskIds.length === 0) {
+      return 0;
+    }
+
+    return taskIds.reduce(
+      (count, taskId) =>
+        count + (state.selectedTaskIds.includes(taskId) ? 1 : 0),
+      0,
+    );
+  };
 }
