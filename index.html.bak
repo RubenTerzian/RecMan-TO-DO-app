@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="./favicon-recman.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RecMan To Do</title>
+    <!--
+      Single-Page Apps for GitHub Pages — path restore
+      https://github.com/rafgraph/spa-github-pages
+
+      If the user was redirected here from 404.html, the real path is encoded
+      in the query string as "?/..." — decode it and restore the URL before
+      React mounts so the app sees the original path.
+    -->
+    <script>
+      (function (l) {
+        if (l.search[1] === "/") {
+          const decoded = l.search
+            .slice(1)
+            .split("&")
+            .map((s) => s.replace(/~and~/g, "&"))
+            .join("?");
+          window.history.replaceState(
+            null,
+            null,
+            l.pathname.slice(0, -1) + decoded + l.hash
+          );
+        }
+      })(window.location);
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <div id="modal-root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
