@@ -115,6 +115,7 @@ export function useColumnTasks({ columnId }: UseColumnTasksOptions) {
   return {
     emptyState,
     visibleTaskIds,
+    totalTaskCount: tasks.length,
     allTasksSelected,
     hasTaskContent: visibleTasks.length > 0,
     showSelectionToggle: visibleTasks.length > 0,

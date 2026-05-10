@@ -1,6 +1,7 @@
 import type { Ref } from "react";
-import { memo } from "react";
+import { memo, useCallback, useMemo, useState } from "react";
 import { Button } from "@/components/atoms/Button/Button";
+import { ConfirmationModal } from "@/components/shared/ConfirmationModal/ConfirmationModal";
 import styles from "./Column.module.css";
 import { clsx } from "@/utils/clsx";
 import { ColumnEditor } from "@/features/ColumnsGrid/Column/components/ColumnEditor/ColumnEditor";
@@ -35,11 +36,15 @@ function ColumnComponent({
   const {
     emptyState,
     visibleTaskIds,
+    totalTaskCount,
     allTasksSelected,
     hasTaskContent,
     showSelectionToggle,
     handleToggleAllTasksSelection,
   } = useColumnTasks({ columnId });
+
+  const [isDeleteConfirmationOpen, setIsDeleteConfirmationOpen] =
+    useState(false);
 
   const {
     draftTitle,
@@ -68,6 +73,30 @@ function ColumnComponent({
   const dropIndicatorEdge = useColumnDropIndicatorEdge(columnId);
   const isDragging = useIsColumnDragging(columnId);
   const hasVisibleTaskCards = visibleTaskIds.length > 0;
+
+  const handleCancelDeleteConfirmation = useCallback(() => {
+    setIsDeleteConfirmationOpen(false);
+  }, []);
+
+  const handleConfirmDeleteColumn = useCallback(() => {
+    handleDeleteColumn();
+    setIsDeleteConfirmationOpen(false);
+  }, [handleDeleteColumn]);
+
+  const handleRequestDeleteColumn = useCallback(() => {
+    if (totalTaskCount === 0) {
+      handleDeleteColumn();
+      return;
+    }
+
+    setIsDeleteConfirmationOpen(true);
+  }, [handleDeleteColumn, totalTaskCount]);
+
+  const deleteConfirmationDescription = useMemo(() => {
+    const taskLabel = totalTaskCount === 1 ? "task" : "tasks";
+
+    return `This column contains ${totalTaskCount} ${taskLabel}. Deleting it will also permanently remove all ${taskLabel}, including any currently hidden by search or filters.`;
+  }, [totalTaskCount]);
 
   return (
     <section
@@ -102,7 +131,7 @@ function ColumnComponent({
           allSelected={allTasksSelected}
           dragHandleRef={dragHandleRef}
           showSelectionToggle={showSelectionToggle}
-          onDelete={handleDeleteColumn}
+          onDelete={handleRequestDeleteColumn}
           onEdit={handleStartEditing}
           onToggleAllSelection={handleToggleAllTasksSelection}
           title={title}
@@ -158,6 +187,16 @@ function ColumnComponent({
           />
         ) : null}
       </div>
+
+      <ConfirmationModal
+        cancelLabel="Keep column"
+        confirmLabel="Delete column"
+        description={deleteConfirmationDescription}
+        isOpen={isDeleteConfirmationOpen}
+        onCancel={handleCancelDeleteConfirmation}
+        onConfirm={handleConfirmDeleteColumn}
+        title="Delete this column?"
+      />
     </section>
   );
 }

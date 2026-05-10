@@ -1,0 +1,77 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(18, 24, 38, 0.44);
+  backdrop-filter: blur(8px);
+}
+
+.modal {
+  width: min(100%, 460px);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: 24px;
+  background: var(--color-surface-strong);
+  box-shadow: var(--shadow-lg);
+}
+
+.content {
+  display: grid;
+  gap: 12px;
+}
+
+.title {
+  margin: 0;
+  color: var(--color-text);
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.description {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.actions {
+  margin-top: 24px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.secondaryButton {
+  background: var(--color-surface-muted);
+  color: var(--color-text);
+  box-shadow: none;
+}
+
+.secondaryButton:hover {
+  background: #ebe3d6;
+  box-shadow: none;
+}
+
+.secondaryButton:disabled,
+.secondaryButton:disabled:hover {
+  background: var(--color-surface-muted);
+  color: var(--color-text-muted);
+}
+
+.confirmButton {
+  box-shadow: none;
+}
+
+.dangerButton {
+  background: linear-gradient(180deg, #e86868, #d84c4c);
+}
+
+.dangerButton:hover {
+  background: linear-gradient(180deg, #ec7676, #dd5757);
+  box-shadow: none;
+}

@@ -46,6 +46,83 @@
   gap: clamp(18px, 2.4vw, 30px);
 }
 
+.hero {
+  display: grid;
+  gap: 12px;
+  padding: clamp(18px, 3.5vw, 30px);
+  border: 1px solid rgba(32, 50, 79, 0.08);
+  border-radius: calc(var(--radius-xl) + 8px);
+  background:
+    radial-gradient(
+      circle at top left,
+      rgba(36, 90, 240, 0.14),
+      transparent 28%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.96),
+      rgba(255, 255, 255, 0.84)
+    );
+  box-shadow: 0 20px 40px rgba(24, 34, 53, 0.08);
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  min-width: 0;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(36, 90, 240, 0.1);
+  color: var(--color-accent-strong);
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.heroCopy {
+  display: grid;
+  gap: 10px;
+  max-width: 56rem;
+}
+
+.heroTitle {
+  margin: 0;
+  font-size: clamp(2rem, 8vw, 4.25rem);
+  line-height: 0.95;
+  letter-spacing: -0.05em;
+  color: #172033;
+}
+
+.heroSubtitle {
+  margin: 0;
+  max-width: 44rem;
+  color: rgba(23, 32, 51, 0.8);
+  font-size: clamp(0.98rem, 3.4vw, 1.2rem);
+  line-height: 1.6;
+}
+
+@media (max-width: 479px) {
+  .appShell {
+    padding: 12px;
+  }
+
+  .hero {
+    gap: 10px;
+    padding: 16px;
+  }
+
+  .eyebrow {
+    font-size: 0.68rem;
+    letter-spacing: 0.06em;
+  }
+
+  .heroTitle {
+    font-size: clamp(1.85rem, 10vw, 2.4rem);
+  }
+}
+
 @media (min-width: 1680px) {
   .appShell {
     padding-inline: clamp(24px, 3vw, 48px);
