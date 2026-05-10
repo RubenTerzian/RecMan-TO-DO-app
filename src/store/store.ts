@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import type { TaskFilter } from "@/features/TopBar/types";
+import { readTaskQueryState } from "@/features/TopBar/urlQuery";
 import type { StoreState } from "./types";
 import { createUniquePrefixedId } from "@/utils/ids";
 import { loadStoredState, saveStoredState } from "./persistence";
@@ -23,6 +24,7 @@ type Actions = {
   deleteTask(taskId: string): void;
   setSearchTerm(searchTerm: string): void;
   setActiveFilter(activeFilter: TaskFilter): void;
+  resetTaskFilters(): void;
   toggleSelectionMode(): void;
   clearSelectedTasks(): void;
   toggleTaskSelection(taskId: string): void;
@@ -60,6 +62,7 @@ function moveItem<TItem>(
 
 function createInitialState(): StoreState {
   const persistedState = loadStoredState();
+  const queryState = readTaskQueryState();
 
   return {
     columns: persistedState?.columns ?? [
@@ -94,8 +97,8 @@ function createInitialState(): StoreState {
     ],
     selectedTaskIds: [],
     selectionMode: false,
-    activeFilter: "all",
-    searchTerm: "",
+    activeFilter: queryState.activeFilter,
+    searchTerm: queryState.searchTerm,
   };
 }
 
@@ -400,6 +403,12 @@ export const useStore = create<AppStore>()((set) => ({
   },
   setActiveFilter(activeFilter) {
     set({ activeFilter });
+  },
+  resetTaskFilters() {
+    set({
+      activeFilter: "all",
+      searchTerm: "",
+    });
   },
   toggleSelectionMode() {
     set((state) => ({

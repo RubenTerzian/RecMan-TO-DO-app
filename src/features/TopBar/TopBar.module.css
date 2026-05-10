@@ -15,22 +15,37 @@
 }
 
 .controlsCard {
-  padding: 12px;
+  padding: 8px;
   border: 1px solid rgba(32, 50, 79, 0.08);
   border-radius: calc(var(--radius-xl) - 4px);
   background: rgba(255, 255, 255, 0.64);
-  display: grid;
-  gap: 12px;
 }
 
 .controls {
   display: grid;
-  gap: 10px;
+  gap: 8px;
 }
 
-@media (min-width: 768px) {
+.controls > * {
+  width: 100%;
+  min-width: 0;
+}
+
+@media (min-width: 720px) {
   .controls {
-    grid-template-columns: minmax(0, 1fr) minmax(180px, 220px);
+    display: flex;
     align-items: center;
+  }
+
+  .controls > * {
+    width: auto;
+  }
+
+  .controls > :first-child {
+    flex: 1 1 auto;
+  }
+
+  .controls > :nth-child(2) {
+    flex: 0 0 clamp(140px, 22vw, 180px);
   }
 }

@@ -19,16 +19,29 @@ export function useDebounce<T extends (...args: any[]) => void>(
     };
   }, []);
 
-  return useCallback(
+  const cancel = useCallback(() => {
+    if (timeoutIdRef.current === null) {
+      return;
+    }
+
+    window.clearTimeout(timeoutIdRef.current);
+    timeoutIdRef.current = null;
+  }, []);
+
+  const schedule = useCallback(
     (...args: Parameters<T>) => {
-      if (timeoutIdRef.current !== null) {
-        window.clearTimeout(timeoutIdRef.current);
-      }
+      cancel();
 
       timeoutIdRef.current = window.setTimeout(() => {
         callbackRef.current(...args);
+        timeoutIdRef.current = null;
       }, delayMs);
     },
-    [delayMs],
+    [cancel, delayMs],
   );
+
+  return {
+    schedule,
+    cancel,
+  };
 }

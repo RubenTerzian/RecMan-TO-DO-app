@@ -36,6 +36,12 @@ export const selectSetSearchTerm = (state: AppStore) => state.setSearchTerm;
 
 export const selectSetActiveFilter = (state: AppStore) => state.setActiveFilter;
 
+export const selectResetTaskFilters = (state: AppStore) =>
+  state.resetTaskFilters;
+
+export const selectHasActiveTaskFilters = (state: AppStore) =>
+  state.activeFilter !== "all" || state.searchTerm.trim().length > 0;
+
 export const selectSelectedTaskIds = (state: AppStore) => state.selectedTaskIds;
 
 export const selectSelectedTaskCount = (state: AppStore) =>
