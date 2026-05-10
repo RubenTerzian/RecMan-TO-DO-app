@@ -1,4 +1,4 @@
-import type { HTMLAttributes } from "react";
+import { memo, useCallback, useMemo, type HTMLAttributes } from "react";
 import { Button } from "@/components/atoms/Button/Button";
 import { Select } from "@/components/atoms/Select/Select";
 import { clsx } from "@/utils/clsx";
@@ -17,7 +17,7 @@ type SelectionActionBarProps = {
   onMove(): void;
 };
 
-export function SelectionActionBar({
+function SelectionActionBarComponent({
   selectionCount,
   availableColumns,
   moveTargetId,
@@ -29,6 +29,25 @@ export function SelectionActionBar({
   onMove,
 }: SelectionActionBarProps) {
   const hasSelection = selectionCount > 0;
+  const handleMoveTargetSelect = useCallback(
+    (event: { target: { value: string } }) => {
+      onMoveTargetChange(event.target.value);
+    },
+    [onMoveTargetChange],
+  );
+  const moveOptions = useMemo(
+    () => [
+      <option key="placeholder" value="" disabled>
+        Select column
+      </option>,
+      ...availableColumns.map((column) => (
+        <option key={column.id} value={column.id}>
+          {column.label}
+        </option>
+      )),
+    ],
+    [availableColumns],
+  );
 
   return (
     <section
@@ -73,16 +92,9 @@ export function SelectionActionBar({
           <Select
             className={styles.moveSelect}
             value={moveTargetId ?? ""}
-            onChange={(event) => onMoveTargetChange(event.target.value)}
+            onChange={handleMoveTargetSelect}
           >
-            <option value="" disabled>
-              Select column
-            </option>
-            {availableColumns.map((column) => (
-              <option key={column.id} value={column.id}>
-                {column.label}
-              </option>
-            ))}
+            {moveOptions}
           </Select>
           <Button
             className={styles.moveAction}
@@ -96,3 +108,5 @@ export function SelectionActionBar({
     </section>
   );
 }
+
+export const SelectionActionBar = memo(SelectionActionBarComponent);

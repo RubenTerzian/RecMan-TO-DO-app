@@ -1,5 +1,6 @@
 import {
   Children,
+  memo,
   isValidElement,
   useCallback,
   useId,
@@ -49,6 +50,16 @@ type PopoverPosition = {
   width: number;
 };
 
+function getPopoverPosition(element: HTMLDivElement) {
+  const rect = element.getBoundingClientRect();
+
+  return {
+    top: rect.bottom + 8,
+    left: rect.left,
+    width: rect.width,
+  } satisfies PopoverPosition;
+}
+
 function toOptions(children: ReactNode) {
   return Children.toArray(children).flatMap((child) => {
     if (!isValidElement<OptionElementProps>(child) || child.type !== "option") {
@@ -65,7 +76,7 @@ function toOptions(children: ReactNode) {
   });
 }
 
-export function Select({
+function SelectComponent({
   children,
   className = "",
   value = "",
@@ -78,8 +89,9 @@ export function Select({
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const popoverRef = useRef<HTMLDivElement | null>(null);
+  const popoverPositionRef = useRef<PopoverPosition | null>(null);
   const listboxId = useId();
-  const [popoverPosition, setPopoverPosition] =
+  const [renderedPopoverPosition, setRenderedPopoverPosition] =
     useState<PopoverPosition | null>(null);
   const options = useMemo(() => toOptions(children), [children]);
   const selectedOption =
@@ -87,29 +99,30 @@ export function Select({
   const isPopoverOpen = isOpen && !disabled;
 
   const updatePopoverPosition = useCallback(() => {
-    const rect = containerRef.current?.getBoundingClientRect();
-
-    if (!rect) {
+    if (!containerRef.current) {
       return;
     }
 
-    setPopoverPosition((currentValue) => {
-      const nextValue = {
-        top: rect.bottom + 8,
-        left: rect.left,
-        width: rect.width,
-      };
+    const nextValue = getPopoverPosition(containerRef.current);
+    const currentValue = popoverPositionRef.current;
 
-      if (
-        currentValue?.top === nextValue.top &&
-        currentValue.left === nextValue.left &&
-        currentValue.width === nextValue.width
-      ) {
-        return currentValue;
-      }
+    if (
+      currentValue?.top === nextValue.top &&
+      currentValue.left === nextValue.left &&
+      currentValue.width === nextValue.width
+    ) {
+      return;
+    }
 
-      return nextValue;
-    });
+    popoverPositionRef.current = nextValue;
+
+    if (!popoverRef.current) {
+      return;
+    }
+
+    popoverRef.current.style.top = `${nextValue.top}px`;
+    popoverRef.current.style.left = `${nextValue.left}px`;
+    popoverRef.current.style.width = `${nextValue.width}px`;
   }, []);
 
   const handleToggle = useCallback(() => {
@@ -121,12 +134,20 @@ export function Select({
       const nextValue = !currentValue;
 
       if (nextValue) {
-        updatePopoverPosition();
+        if (!containerRef.current) {
+          return nextValue;
+        }
+
+        const nextPosition = getPopoverPosition(containerRef.current);
+        popoverPositionRef.current = nextPosition;
+        setRenderedPopoverPosition(nextPosition);
+      } else {
+        setRenderedPopoverPosition(null);
       }
 
       return nextValue;
     });
-  }, [disabled, updatePopoverPosition]);
+  }, [disabled]);
   const {
     schedule: schedulePopoverPositionUpdate,
     cancel: cancelPopoverPositionUpdate,
@@ -198,15 +219,15 @@ export function Select({
   ]);
 
   const popover =
-    isPopoverOpen && popoverPosition
+    isPopoverOpen && renderedPopoverPosition
       ? createPortal(
           <div
             className={styles.popover}
             ref={popoverRef}
             style={{
-              top: `${popoverPosition.top}px`,
-              left: `${popoverPosition.left}px`,
-              width: `${popoverPosition.width}px`,
+              top: `${renderedPopoverPosition.top}px`,
+              left: `${renderedPopoverPosition.left}px`,
+              width: `${renderedPopoverPosition.width}px`,
             }}
           >
             <ul className={styles.listbox} id={listboxId} role="listbox">
@@ -260,3 +281,5 @@ export function Select({
     </div>
   );
 }
+
+export const Select = memo(SelectComponent);
