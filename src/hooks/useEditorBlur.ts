@@ -4,30 +4,25 @@ import { useCallback } from "react";
 export function useEditorBlur(onBlurOutside: () => void) {
   return useCallback<FocusEventHandler<HTMLFormElement>>(
     (event) => {
-      const currentTarget = event.currentTarget;
       const nextFocusedElement = event.relatedTarget;
+      const activeElement = document.activeElement;
 
-      queueMicrotask(() => {
-        if (
-          nextFocusedElement instanceof Node &&
-          currentTarget.contains(nextFocusedElement)
-        ) {
-          return;
-        }
+      if (
+        nextFocusedElement instanceof Node &&
+        event.currentTarget.contains(nextFocusedElement)
+      ) {
+        return;
+      }
 
-        if (!nextFocusedElement) {
-          const activeElement = document.activeElement;
+      if (
+        nextFocusedElement === null &&
+        activeElement instanceof Node &&
+        event.currentTarget.contains(activeElement)
+      ) {
+        return;
+      }
 
-          if (
-            activeElement instanceof Node &&
-            currentTarget.contains(activeElement)
-          ) {
-            return;
-          }
-        }
-
-        onBlurOutside();
-      });
+      onBlurOutside();
     },
     [onBlurOutside],
   );

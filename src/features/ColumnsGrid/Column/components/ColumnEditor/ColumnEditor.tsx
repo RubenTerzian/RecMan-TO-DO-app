@@ -1,4 +1,8 @@
-import type { FocusEventHandler, SubmitEventHandler } from "react";
+import type {
+  FocusEventHandler,
+  PointerEventHandler,
+  SubmitEventHandler,
+} from "react";
 import { memo } from "react";
 import { Input } from "@/components/atoms/Input/Input";
 import {
@@ -33,6 +37,12 @@ function ColumnEditorComponent({
     onSave();
   };
 
+  const handleActionPointerDown: PointerEventHandler<HTMLButtonElement> = (
+    event,
+  ) => {
+    event.preventDefault();
+  };
+
   return (
     <form
       className={styles.columnEditor}
@@ -62,6 +72,7 @@ function ColumnEditorComponent({
               isCreateMode ? "Cancel new column" : "Cancel column edit"
             }
             onClick={onCancel}
+            onPointerDown={handleActionPointerDown}
             data-testid="cancel-column-editor"
           />
           <SaveIconButton
@@ -69,6 +80,7 @@ function ColumnEditorComponent({
               isCreateMode ? "Save new column" : "Save column changes"
             }
             data-testid="save-column-editor"
+            onPointerDown={handleActionPointerDown}
             type="submit"
           />
         </div>
