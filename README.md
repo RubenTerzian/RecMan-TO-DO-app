@@ -2,6 +2,12 @@
 
 RecMan is a Kanban-style task management app built with React, TypeScript, Vite, and Zustand. It supports column-based organization, task filtering, search, selection mode, and drag-and-drop interactions.
 
+## Demo recordings
+
+- Part 1 - https://www.loom.com/share/7daa1bf83b3242b5ad5bc4ac817a2047
+- Part 2 - https://www.loom.com/share/7368bcc621c7473b8700b5f57384256b
+- Part 3 - https://www.loom.com/share/d80f78e411d942adb80cac215b793993
+
 ## Demo goals
 
 This repository is structured to satisfy typical take-home requirements for:
