@@ -10,19 +10,7 @@
   padding: 0 38px 0 14px;
   border: 1px solid var(--color-border);
   border-radius: 15px;
-  background:
-    linear-gradient(45deg, transparent 50%, rgba(32, 50, 79, 0.8) 50%),
-    linear-gradient(135deg, rgba(32, 50, 79, 0.8) 50%, transparent 50%),
-    rgba(255, 255, 255, 0.92);
-  background-position:
-    calc(100% - 18px) calc(50% - 2px),
-    calc(100% - 12px) calc(50% - 2px),
-    0 0;
-  background-repeat: no-repeat;
-  background-size:
-    6px 6px,
-    6px 6px,
-    100% 100%;
+  background: rgba(255, 255, 255, 0.92);
   display: inline-flex;
   align-items: center;
   justify-content: space-between;
@@ -52,12 +40,18 @@
   position: absolute;
   top: 50%;
   right: 16px;
-  width: 8px;
-  height: 8px;
-  border-right: 2px solid rgba(32, 50, 79, 0.8);
-  border-bottom: 2px solid rgba(32, 50, 79, 0.8);
+  width: 7px;
+  height: 7px;
+  border-right: 1.5px solid rgba(32, 50, 79, 0.44);
+  border-bottom: 1.5px solid rgba(32, 50, 79, 0.44);
   transform: translateY(-60%) rotate(45deg);
   pointer-events: none;
+  transition: border-color 160ms ease;
+}
+
+.trigger:hover .chevron,
+.trigger:focus-visible .chevron {
+  border-color: rgba(32, 50, 79, 0.62);
 }
 
 .trigger:focus-visible {
