@@ -30,12 +30,17 @@ type SelectionTaskCardProps = BaseTaskCardProps & {
 type TaskCardProps = DefaultTaskCardProps | SelectionTaskCardProps;
 
 function TaskCardComponent({ taskId, ...props }: TaskCardProps) {
-  const { task, selectionMode, isSelected, isComplete, handleToggle } = useTask(
-    {
-      taskId,
-      mode: props.mode,
-    },
-  );
+  const {
+    task,
+    titleSegments,
+    selectionMode,
+    isSelected,
+    isComplete,
+    handleToggle,
+  } = useTask({
+    taskId,
+    mode: props.mode,
+  });
 
   const {
     draftTitle,
@@ -113,7 +118,18 @@ function TaskCardComponent({ taskId, ...props }: TaskCardProps) {
 
       <div className={styles.content}>
         <strong className={styles.title} data-testid="task-title">
-          {task.title}
+          {titleSegments.map((segment, index) =>
+            segment.isMatch ? (
+              <mark
+                key={`${task.id}-segment-${index}`}
+                className={styles.titleMatch}
+              >
+                {segment.text}
+              </mark>
+            ) : (
+              <span key={`${task.id}-segment-${index}`}>{segment.text}</span>
+            ),
+          )}
         </strong>
       </div>
 

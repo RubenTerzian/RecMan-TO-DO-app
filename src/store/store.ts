@@ -68,30 +68,34 @@ function createInitialState(): StoreState {
     columns: persistedState?.columns ?? [
       {
         id: "column-1",
-        title: "Column 1",
+        title: "New Applications",
       },
       {
         id: "column-2",
-        title: "Column 2",
+        title: "Phone Screen",
+      },
+      {
+        id: "column-3",
+        title: "Onsite Interviews",
       },
     ],
     tasks: persistedState?.tasks ?? [
       {
         id: "task-1",
         columnId: "column-1",
-        title: "Plan board architecture",
+        title: "Maya Patel - Senior Recruiter",
         isComplete: false,
       },
       {
         id: "task-2",
-        columnId: "column-1",
-        title: "Review rerender patterns",
+        columnId: "column-2",
+        title: "Jordan Lee - Customer Success Manager",
         isComplete: false,
       },
       {
         id: "task-3",
-        columnId: "column-2",
-        title: "Normalize board state",
+        columnId: "column-3",
+        title: "Alex Chen - Product Designer",
         isComplete: true,
       },
     ],
