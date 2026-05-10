@@ -5,6 +5,7 @@ import { GridHeader } from "@/features/ColumnsGrid/GridHeader/GridHeader";
 import { useColumnCreation } from "@/features/ColumnsGrid/hooks/useColumnCreation";
 import { useColumnDragAndDrop } from "@/features/ColumnsGrid/hooks/useColumnDragAndDrop";
 import { TaskDragAndDropProvider } from "@/features/ColumnsGrid/Task/components/TaskDragAndDropProvider/TaskDragAndDropProvider";
+import { TaskFloatingPreview } from "@/features/ColumnsGrid/Task/components/TaskFloatingPreview/TaskFloatingPreview";
 import { useTaskDragAndDrop } from "@/features/ColumnsGrid/Task/hooks/useTaskDragAndDrop";
 import { selectBoardGridState } from "../../store/selectors";
 import { useStore } from "@/store/store";
@@ -89,6 +90,8 @@ export function ColumnsGrid() {
                   ) : null}
                 </div>
               )}
+
+              <TaskFloatingPreview />
             </TaskDragAndDropProvider>
           </div>
         </div>

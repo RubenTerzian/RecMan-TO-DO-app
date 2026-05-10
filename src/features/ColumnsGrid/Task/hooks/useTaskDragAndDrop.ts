@@ -31,6 +31,11 @@ type TaskDropState = {
   previewTaskId: string | null;
   previewEdge: TaskDropEdge | null;
   previewTitle: string | null;
+  pointerClientX: number | null;
+  pointerClientY: number | null;
+  pointerOffsetX: number;
+  pointerOffsetY: number;
+  previewWidth: number | null;
 };
 
 type TaskPreviewSnapshot = {
@@ -66,6 +71,11 @@ const DEFAULT_DROP_STATE: TaskDropState = {
   previewTaskId: null,
   previewEdge: null,
   previewTitle: null,
+  pointerClientX: null,
+  pointerClientY: null,
+  pointerOffsetX: 0,
+  pointerOffsetY: 0,
+  previewWidth: null,
 };
 
 function shouldIgnoreDragStart(
@@ -105,7 +115,12 @@ function createTaskDragStateStore() {
         state.previewColumnId === nextState.previewColumnId &&
         state.previewTaskId === nextState.previewTaskId &&
         state.previewEdge === nextState.previewEdge &&
-        state.previewTitle === nextState.previewTitle
+        state.previewTitle === nextState.previewTitle &&
+        state.pointerClientX === nextState.pointerClientX &&
+        state.pointerClientY === nextState.pointerClientY &&
+        state.pointerOffsetX === nextState.pointerOffsetX &&
+        state.pointerOffsetY === nextState.pointerOffsetY &&
+        state.previewWidth === nextState.previewWidth
       ) {
         return;
       }
@@ -125,9 +140,19 @@ function createTaskDragStateStore() {
 
 const taskDragStateStore = createTaskDragStateStore();
 const taskPreviewSnapshotCache = new Map<string, TaskPreviewSnapshot>();
+let floatingPreviewSnapshotCache: TaskFloatingPreviewSnapshot | null = null;
 
 export const TaskDragAndDropContext =
   createContext<TaskDragAndDropContextValue | null>(null);
+
+type TaskFloatingPreviewSnapshot = {
+  title: string;
+  clientX: number;
+  clientY: number;
+  offsetX: number;
+  offsetY: number;
+  width: number | null;
+};
 
 function setDraggingDocumentState(isDragging: boolean) {
   if (typeof document === "undefined") {
@@ -241,6 +266,19 @@ export function useTaskDragAndDrop({
       updateTaskPreview(target.columnId, target.taskId, target.edge);
     },
     [clearPreview, updateTaskPreview],
+  );
+
+  const updateFloatingPreviewPointer = useCallback(
+    (clientX: number, clientY: number) => {
+      const currentState = taskDragStateStore.getSnapshot();
+
+      taskDragStateStore.setState({
+        ...currentState,
+        pointerClientX: clientX,
+        pointerClientY: clientY,
+      });
+    },
+    [],
   );
 
   const getPointerDropTarget = useCallback(
@@ -413,8 +451,9 @@ export function useTaskDragAndDrop({
         }
 
         const currentTask = tasksRef.current.find((task) => task.id === taskId);
+        const taskElement = taskElementsRef.current.get(taskId);
 
-        if (!currentTask) {
+        if (!currentTask || !taskElement) {
           return;
         }
 
@@ -436,6 +475,7 @@ export function useTaskDragAndDrop({
 
           isDragging = true;
           dragTaskMidpointsRef.current.clear();
+          const taskRect = taskElement.getBoundingClientRect();
 
           for (const task of tasksRef.current) {
             if (task.id === currentTask.id) {
@@ -464,11 +504,17 @@ export function useTaskDragAndDrop({
             previewTaskId: null,
             previewEdge: null,
             previewTitle: currentTask.title,
+            pointerClientX: dragStartX,
+            pointerClientY: dragStartY,
+            pointerOffsetX: dragStartX - taskRect.left,
+            pointerOffsetY: dragStartY - taskRect.top,
+            previewWidth: taskRect.width,
           });
         };
 
         const updateFromPointer = (clientX: number, clientY: number) => {
           ensureDraggingStarted();
+          updateFloatingPreviewPointer(clientX, clientY);
           autoScrollForPointerPoint(clientX, clientY);
 
           const target = getPointerDropTarget(clientX, clientY, currentTask.id);
@@ -572,6 +618,7 @@ export function useTaskDragAndDrop({
     [
       autoScrollForPointerPoint,
       getPointerDropTarget,
+      updateFloatingPreviewPointer,
       updateTaskDropStateFromTarget,
     ],
   );
@@ -689,6 +736,51 @@ export function useEmptyColumnPreview(columnId: string) {
       }
 
       return dragState.previewTitle ?? "Moving task";
+    },
+    () => null,
+  );
+}
+
+export function useTaskFloatingPreview() {
+  return useSyncExternalStore(
+    taskDragStateStore.subscribe,
+    () => {
+      const dragState = taskDragStateStore.getSnapshot();
+
+      if (
+        dragState.draggingTaskId === null ||
+        dragState.pointerClientX === null ||
+        dragState.pointerClientY === null
+      ) {
+        floatingPreviewSnapshotCache = null;
+
+        return null;
+      }
+
+      const nextTitle = dragState.previewTitle ?? "Moving task";
+
+      if (
+        floatingPreviewSnapshotCache &&
+        floatingPreviewSnapshotCache.title === nextTitle &&
+        floatingPreviewSnapshotCache.clientX === dragState.pointerClientX &&
+        floatingPreviewSnapshotCache.clientY === dragState.pointerClientY &&
+        floatingPreviewSnapshotCache.offsetX === dragState.pointerOffsetX &&
+        floatingPreviewSnapshotCache.offsetY === dragState.pointerOffsetY &&
+        floatingPreviewSnapshotCache.width === dragState.previewWidth
+      ) {
+        return floatingPreviewSnapshotCache;
+      }
+
+      floatingPreviewSnapshotCache = {
+        title: nextTitle,
+        clientX: dragState.pointerClientX,
+        clientY: dragState.pointerClientY,
+        offsetX: dragState.pointerOffsetX,
+        offsetY: dragState.pointerOffsetY,
+        width: dragState.previewWidth,
+      };
+
+      return floatingPreviewSnapshotCache;
     },
     () => null,
   );
