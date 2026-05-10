@@ -77,6 +77,7 @@ const DEFAULT_DROP_STATE: TaskDropState = {
   pointerOffsetY: 0,
   previewWidth: null,
 };
+export const MOVING_TASK_LABEL = "Moving task";
 
 function shouldIgnoreDragStart(
   target: EventTarget | null,
@@ -690,7 +691,7 @@ export function useTaskPreview(taskId: string) {
         return null;
       }
 
-      const nextTitle = dragState.previewTitle ?? "Moving task";
+      const nextTitle = dragState.previewTitle ?? MOVING_TASK_LABEL;
       const cachedSnapshot = taskPreviewSnapshotCache.get(taskId);
 
       if (
@@ -735,7 +736,7 @@ export function useEmptyColumnPreview(columnId: string) {
         return null;
       }
 
-      return dragState.previewTitle ?? "Moving task";
+      return dragState.previewTitle ?? MOVING_TASK_LABEL;
     },
     () => null,
   );
@@ -757,7 +758,7 @@ export function useTaskFloatingPreview() {
         return null;
       }
 
-      const nextTitle = dragState.previewTitle ?? "Moving task";
+      const nextTitle = dragState.previewTitle ?? MOVING_TASK_LABEL;
 
       if (
         floatingPreviewSnapshotCache &&

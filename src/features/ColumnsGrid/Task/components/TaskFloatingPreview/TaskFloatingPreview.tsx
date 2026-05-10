@@ -1,5 +1,8 @@
 import { memo } from "react";
-import { useTaskFloatingPreview } from "@/features/ColumnsGrid/Task/hooks/useTaskDragAndDrop";
+import {
+  MOVING_TASK_LABEL,
+  useTaskFloatingPreview,
+} from "@/features/ColumnsGrid/Task/hooks/useTaskDragAndDrop";
 import styles from "./TaskFloatingPreview.module.css";
 
 function TaskFloatingPreviewComponent() {
@@ -21,7 +24,7 @@ function TaskFloatingPreviewComponent() {
         width: preview.width ? `${preview.width}px` : undefined,
       }}
     >
-      <span className={styles.label}>Moving task</span>
+      <span className={styles.label}>{MOVING_TASK_LABEL}</span>
       <strong className={styles.title}>{preview.title}</strong>
     </div>
   );
