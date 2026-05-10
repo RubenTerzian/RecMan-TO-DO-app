@@ -1,5 +1,5 @@
 .clearAllButton {
-  min-height: 42px;
+  min-height: 42px !important;
   padding: 0 12px;
   width: 100%;
   border: 1px solid rgba(32, 50, 79, 0.12);
