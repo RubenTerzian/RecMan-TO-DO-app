@@ -1,4 +1,4 @@
-import type { Ref } from "react";
+import type { PointerEventHandler, Ref } from "react";
 import { memo, useCallback, useMemo, useState } from "react";
 import { Button } from "@/components/atoms/Button/Button";
 import { ConfirmationModal } from "@/components/shared/ConfirmationModal/ConfirmationModal";
@@ -74,6 +74,16 @@ function ColumnComponent({
   const isDragging = useIsColumnDragging(columnId);
   const hasVisibleTaskCards = visibleTaskIds.length > 0;
 
+  const handleAddTaskButtonPointerDown: PointerEventHandler<HTMLDivElement> = (
+    event,
+  ) => {
+    if (!isCreatingTask) {
+      return;
+    }
+
+    event.preventDefault();
+  };
+
   const handleCancelDeleteConfirmation = useCallback(() => {
     setIsDeleteConfirmationOpen(false);
   }, []);
@@ -140,14 +150,16 @@ function ColumnComponent({
 
       {!selectionMode ? (
         <>
-          <Button
-            className={styles.addTaskButton}
-            data-testid="add-task-button"
-            disabled={isCreatingTask}
-            onClick={isCreatingTask ? undefined : handleStartTaskCreation}
-          >
-            Add task
-          </Button>
+          <div onPointerDown={handleAddTaskButtonPointerDown}>
+            <Button
+              className={styles.addTaskButton}
+              data-testid="add-task-button"
+              disabled={isCreatingTask}
+              onClick={isCreatingTask ? undefined : handleStartTaskCreation}
+            >
+              Add task
+            </Button>
+          </div>
         </>
       ) : null}
 

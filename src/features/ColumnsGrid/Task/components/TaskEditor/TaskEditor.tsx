@@ -1,4 +1,8 @@
-import type { FocusEventHandler, SubmitEventHandler } from "react";
+import type {
+  FocusEventHandler,
+  PointerEventHandler,
+  SubmitEventHandler,
+} from "react";
 import { memo } from "react";
 import { Input } from "@/components/atoms/Input/Input";
 import {
@@ -33,6 +37,12 @@ function TaskEditorComponent({
     onSave();
   };
 
+  const handleActionPointerDown: PointerEventHandler<HTMLButtonElement> = (
+    event,
+  ) => {
+    event.preventDefault();
+  };
+
   return (
     <form
       className={styles.taskEditor}
@@ -60,10 +70,12 @@ function TaskEditorComponent({
           aria-label={isCreateMode ? "Cancel new task" : "Cancel task edit"}
           data-testid="cancel-task-editor"
           onClick={onCancel}
+          onPointerDown={handleActionPointerDown}
         />
         <SaveIconButton
           aria-label={isCreateMode ? "Save new task" : "Save task changes"}
           data-testid="save-task-editor"
+          onPointerDown={handleActionPointerDown}
           type="submit"
         />
       </div>
