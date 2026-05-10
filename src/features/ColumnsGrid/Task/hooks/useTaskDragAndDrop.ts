@@ -65,6 +65,17 @@ type LastTaskDropTarget = {
   taskId: string;
 };
 
+type TaskFloatingPreviewSnapshot = {
+  title: string;
+  clientX: number;
+  clientY: number;
+  offsetX: number;
+  offsetY: number;
+  width: number | null;
+};
+
+export const MOVING_TASK_LABEL = "Moving task";
+
 const DEFAULT_DROP_STATE: TaskDropState = {
   draggingTaskId: null,
   previewColumnId: null,
@@ -77,7 +88,6 @@ const DEFAULT_DROP_STATE: TaskDropState = {
   pointerOffsetY: 0,
   previewWidth: null,
 };
-export const MOVING_TASK_LABEL = "Moving task";
 
 function shouldIgnoreDragStart(
   target: EventTarget | null,
@@ -145,15 +155,6 @@ let floatingPreviewSnapshotCache: TaskFloatingPreviewSnapshot | null = null;
 
 export const TaskDragAndDropContext =
   createContext<TaskDragAndDropContextValue | null>(null);
-
-type TaskFloatingPreviewSnapshot = {
-  title: string;
-  clientX: number;
-  clientY: number;
-  offsetX: number;
-  offsetY: number;
-  width: number | null;
-};
 
 function setDraggingDocumentState(isDragging: boolean) {
   if (typeof document === "undefined") {
