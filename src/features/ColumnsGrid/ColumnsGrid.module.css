@@ -127,6 +127,10 @@
     padding-top: 40px;
   }
 
+  .boardViewport:has([data-testid="empty-board-state"]) {
+    padding-top: 0;
+  }
+
   .boardViewport::after {
     display: none;
   }
@@ -155,5 +159,9 @@
     text-overflow: ellipsis;
     text-align: center;
     pointer-events: none;
+  }
+
+  .boardViewport:has([data-testid="empty-board-state"]) .mobileScrollHint {
+    display: none;
   }
 }

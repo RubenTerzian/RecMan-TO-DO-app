@@ -1,5 +1,6 @@
 import { Column } from "@/features/ColumnsGrid/Column/Column";
 import { ColumnEditor } from "@/features/ColumnsGrid/Column/components/ColumnEditor/ColumnEditor";
+import { EmptyBoardState } from "@/features/ColumnsGrid/components/EmptyBoardState/EmptyBoardState";
 import { GridHeader } from "@/features/ColumnsGrid/GridHeader/GridHeader";
 import { useColumnCreation } from "@/features/ColumnsGrid/hooks/useColumnCreation";
 import { useColumnDragAndDrop } from "@/features/ColumnsGrid/hooks/useColumnDragAndDrop";
@@ -13,6 +14,7 @@ import styles from "./ColumnsGrid.module.css";
 
 export function ColumnsGrid() {
   const { columns, selectionMode } = useStore(useShallow(selectBoardGridState));
+  const isBoardEmpty = columns.length === 0;
 
   const { boardViewportRef, setColumnDragHandle, setColumnElement } =
     useColumnDragAndDrop({ columns, selectionMode });
@@ -46,43 +48,47 @@ export function ColumnsGrid() {
             </div>
 
             <TaskDragAndDropProvider value={taskDragAndDrop}>
-              <div
-                className={styles.boardGrid}
-                data-testid="board-column-track"
-                data-column-track="true"
-              >
-                {columns.map((column) => (
-                  <Column
-                    key={column.id}
-                    columnId={column.id}
-                    columnRef={(element) => {
-                      setColumnElement(column.id, element);
-                    }}
-                    dragHandleRef={(element) => {
-                      setColumnDragHandle(column.id, element);
-                    }}
-                    title={column.title}
-                    selectionMode={selectionMode}
-                  />
-                ))}
-
-                {isCreatingColumn ? (
-                  <section
-                    className={columnStyles.column}
-                    data-testid="create-column-card"
-                  >
-                    <ColumnEditor
-                      autoFocus
-                      draftTitle={draftTitle}
-                      mode="create"
-                      onBlur={handleCreateEditorBlur}
-                      onCancel={handleCancelColumnCreation}
-                      onDraftTitleChange={handleDraftTitleChange}
-                      onSave={handleSaveColumnCreation}
+              {isBoardEmpty && !isCreatingColumn ? (
+                <EmptyBoardState />
+              ) : (
+                <div
+                  className={styles.boardGrid}
+                  data-testid="board-column-track"
+                  data-column-track="true"
+                >
+                  {columns.map((column) => (
+                    <Column
+                      key={column.id}
+                      columnId={column.id}
+                      columnRef={(element) => {
+                        setColumnElement(column.id, element);
+                      }}
+                      dragHandleRef={(element) => {
+                        setColumnDragHandle(column.id, element);
+                      }}
+                      title={column.title}
+                      selectionMode={selectionMode}
                     />
-                  </section>
-                ) : null}
-              </div>
+                  ))}
+
+                  {isCreatingColumn ? (
+                    <section
+                      className={columnStyles.column}
+                      data-testid="create-column-card"
+                    >
+                      <ColumnEditor
+                        autoFocus
+                        draftTitle={draftTitle}
+                        mode="create"
+                        onBlur={handleCreateEditorBlur}
+                        onCancel={handleCancelColumnCreation}
+                        onDraftTitleChange={handleDraftTitleChange}
+                        onSave={handleSaveColumnCreation}
+                      />
+                    </section>
+                  ) : null}
+                </div>
+              )}
             </TaskDragAndDropProvider>
           </div>
         </div>
