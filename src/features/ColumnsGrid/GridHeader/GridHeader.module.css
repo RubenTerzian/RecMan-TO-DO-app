@@ -69,6 +69,11 @@
     width: 100%;
   }
 
+  .selectionModeButton {
+    min-height: 48px;
+    padding-inline: 18px;
+  }
+
   .createColumnButtonWrapper {
     width: 100%;
     min-width: 0;
