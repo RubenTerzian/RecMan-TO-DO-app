@@ -53,13 +53,20 @@
   overflow-y: auto;
   padding-right: 2px;
   /*
-   * pan-y tells the browser this region only handles vertical pans, so
-   * horizontal swipes are passed through to the ancestor board viewport
-   * (which owns column-to-column scrolling). overscroll-behavior-y
-   * keeps vertical bounce contained without affecting the horizontal
-   * gesture chain.
+   * Allow both axes so the browser can route the gesture to the right
+   * scroller based on initial direction:
+   *  - vertical pan -> this task list (overflow-y: auto)
+   *  - horizontal pan -> ancestor .boardViewport (overflow-x: auto)
+   *
+   * Using pan-y alone would block horizontal pans entirely; touch-action
+   * does NOT delegate a forbidden direction to ancestors, so the user
+   * gets stuck and can't swipe between columns when the touch starts
+   * inside a task list.
+   *
+   * overscroll-behavior-y: contain keeps vertical bounce contained
+   * without affecting the horizontal gesture chain.
    */
-  touch-action: pan-y;
+  touch-action: pan-x pan-y;
   overscroll-behavior-y: contain;
 }
 

@@ -144,8 +144,6 @@
     grid-area: drag;
     align-self: start;
     margin-top: 2px;
-    /* Allow vertical scrolling when user touches the drag handle on mobile */
-    touch-action: pan-y;
   }
 
   .content {
