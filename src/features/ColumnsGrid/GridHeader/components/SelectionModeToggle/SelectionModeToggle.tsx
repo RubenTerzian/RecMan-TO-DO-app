@@ -1,4 +1,5 @@
 import type { ButtonHTMLAttributes } from "react";
+import { memo } from "react";
 import { Button } from "@/components/atoms/Button/Button";
 import { clsx } from "@/utils/clsx";
 import styles from "./SelectionModeToggle.module.css";
@@ -9,7 +10,7 @@ type SelectionModeToggleProps = {
   onToggle(): void;
 };
 
-export function SelectionModeToggle({
+function SelectionModeToggleComponent({
   className,
   enabled,
   onToggle,
@@ -26,3 +27,5 @@ export function SelectionModeToggle({
     </Button>
   );
 }
+
+export const SelectionModeToggle = memo(SelectionModeToggleComponent);

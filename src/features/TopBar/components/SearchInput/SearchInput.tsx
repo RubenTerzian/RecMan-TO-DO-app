@@ -1,19 +1,30 @@
-import { memo } from "react";
+import { memo, useCallback, type ChangeEvent } from "react";
 import styles from "./SearchInput.module.css";
 import { Input } from "@/components/atoms/Input/Input";
 import { useSearchInputControl } from "@/features/TopBar/hooks/useSearchInputControl";
 
+const preventMouseDown = (event: { preventDefault(): void }) =>
+  event.preventDefault();
+
 function SearchInputComponent() {
-  const { value, hasValue, handleChange, handleClear } =
+  const { inputRef, initialValue, hasValue, handleInputChange, handleClear } =
     useSearchInputControl();
+
+  const onChange = useCallback(
+    (event: ChangeEvent<HTMLInputElement>) => {
+      handleInputChange(event.target.value);
+    },
+    [handleInputChange],
+  );
 
   return (
     <div className={styles.searchInputWrap}>
       <Input
+        ref={inputRef}
         className={styles.searchInput}
         data-testid="search-input"
-        value={value}
-        onChange={(event) => handleChange(event.target.value)}
+        defaultValue={initialValue}
+        onChange={onChange}
         placeholder="Search tasks"
       />
       {hasValue ? (
@@ -21,7 +32,7 @@ function SearchInputComponent() {
           aria-label="Clear search"
           className={styles.clearButton}
           onClick={handleClear}
-          onMouseDown={(event) => event.preventDefault()}
+          onMouseDown={preventMouseDown}
           type="button"
         >
           ×

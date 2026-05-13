@@ -164,4 +164,13 @@
   .taskViewport {
     flex-basis: auto;
   }
+
+  .column {
+    max-height: calc(100vh - 220px);
+  }
+
+  .taskList {
+    max-height: calc(100vh - 300px);
+    -webkit-overflow-scrolling: touch;
+  }
 }

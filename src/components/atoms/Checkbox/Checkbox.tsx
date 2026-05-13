@@ -1,10 +1,11 @@
 import type { InputHTMLAttributes } from "react";
+import { memo } from "react";
 import { clsx } from "@/utils/clsx";
 import styles from "./Checkbox.module.css";
 
 type CheckboxProps = InputHTMLAttributes<HTMLInputElement>;
 
-export function Checkbox({
+function CheckboxComponent({
   className = "",
   type = "checkbox",
   ...props
@@ -17,3 +18,5 @@ export function Checkbox({
     />
   );
 }
+
+export const Checkbox = memo(CheckboxComponent);

@@ -1,16 +1,18 @@
 import type { PointerEventHandler } from "react";
 import { CreateColumnButton } from "@/components/shared/CreateColumnButton/CreateColumnButton";
-import { SelectionActionBarContainer } from "@/features/ColumnsGrid/GridHeader/components/SelectionActionBar/SelectionActionBarContainer";
+import { SelectionActionBar } from "@/features/ColumnsGrid/GridHeader/components/SelectionActionBar/SelectionActionBar";
 import { SelectionModeToggle } from "@/features/ColumnsGrid/GridHeader/components/SelectionModeToggle/SelectionModeToggle";
 import styles from "./GridHeader.module.css";
 import { useGridHeaderActions } from "./hooks/useGridHeaderActions";
 
 type GridHeaderProps = {
+  hasColumns: boolean;
   isCreateColumnDisabled?: boolean;
   onCreateColumn?(): void;
 };
 
 export function GridHeader({
+  hasColumns,
   isCreateColumnDisabled = false,
   onCreateColumn,
 }: GridHeaderProps) {
@@ -29,11 +31,13 @@ export function GridHeader({
   return (
     <header className={styles.gridHeader} data-testid="grid-header">
       <div className={styles.actionsRow}>
-        <SelectionModeToggle
-          className={styles.selectionModeButton}
-          enabled={selectionMode}
-          onToggle={handleSelectionModeToggle}
-        />
+        {hasColumns ? (
+          <SelectionModeToggle
+            className={styles.selectionModeButton}
+            enabled={selectionMode}
+            onToggle={handleSelectionModeToggle}
+          />
+        ) : null}
 
         {!selectionMode ? (
           <div
@@ -49,8 +53,8 @@ export function GridHeader({
         ) : null}
       </div>
 
-      {selectionMode ? (
-        <SelectionActionBarContainer className={styles.selectionActionBar} />
+      {selectionMode && hasColumns ? (
+        <SelectionActionBar className={styles.selectionActionBar} />
       ) : null}
     </header>
   );

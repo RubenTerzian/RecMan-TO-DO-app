@@ -1,4 +1,5 @@
 import type { ButtonHTMLAttributes, ReactNode } from "react";
+import { memo } from "react";
 import { clsx } from "@/utils/clsx";
 import styles from "./IconButton.module.css";
 
@@ -6,7 +7,7 @@ type IconButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   children: ReactNode;
 };
 
-export function IconButton({
+function IconButtonComponent({
   className = "",
   children,
   type = "button",
@@ -22,3 +23,5 @@ export function IconButton({
     </button>
   );
 }
+
+export const IconButton = memo(IconButtonComponent);

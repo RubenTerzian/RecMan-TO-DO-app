@@ -1,4 +1,5 @@
 import type { ComponentProps, SVGProps } from "react";
+import { memo } from "react";
 import { IconButton } from "@/components/atoms/IconButton/IconButton";
 import { clsx } from "@/utils/clsx";
 import styles from "./ActionIconButton.module.css";
@@ -126,15 +127,18 @@ function BaseActionIconButton({
   );
 }
 
-export function EditIconButton({ className, ...props }: ActionIconButtonProps) {
+export const EditIconButton = memo(function EditIconButton({
+  className,
+  ...props
+}: ActionIconButtonProps) {
   return (
     <BaseActionIconButton className={clsx(styles.edit, className)} {...props}>
       <EditIcon className={styles.icon} />
     </BaseActionIconButton>
   );
-}
+});
 
-export function DeleteIconButton({
+export const DeleteIconButton = memo(function DeleteIconButton({
   className,
   ...props
 }: ActionIconButtonProps) {
@@ -143,9 +147,9 @@ export function DeleteIconButton({
       <DeleteIcon className={styles.icon} />
     </BaseActionIconButton>
   );
-}
+});
 
-export function CancelIconButton({
+export const CancelIconButton = memo(function CancelIconButton({
   className,
   ...props
 }: ActionIconButtonProps) {
@@ -154,12 +158,15 @@ export function CancelIconButton({
       <CancelIcon className={styles.icon} />
     </BaseActionIconButton>
   );
-}
+});
 
-export function SaveIconButton({ className, ...props }: ActionIconButtonProps) {
+export const SaveIconButton = memo(function SaveIconButton({
+  className,
+  ...props
+}: ActionIconButtonProps) {
   return (
     <BaseActionIconButton className={clsx(styles.save, className)} {...props}>
       <SaveIcon className={styles.icon} />
     </BaseActionIconButton>
   );
-}
+});

@@ -114,6 +114,14 @@
     min-height: 0;
     overflow: visible;
     padding: 12px;
+    /* remove heavy shadow on mobile to reduce visual bulk */
+    box-shadow: none;
+  }
+
+  /* hide decorative overlays that can look like a shadow on small screens */
+  .boardCanvas::before,
+  .boardCanvas::after {
+    display: none;
   }
 
   .boardContent {

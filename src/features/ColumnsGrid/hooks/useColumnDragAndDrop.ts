@@ -1,5 +1,7 @@
 import {
+  createContext,
   useCallback,
+  useContext,
   useEffect,
   useMemo,
   useRef,
@@ -7,12 +9,6 @@ import {
 } from "react";
 import { getReorderDestinationIndex } from "@atlaskit/pragmatic-drag-and-drop-hitbox/util/get-reorder-destination-index";
 import { useStore } from "@/store/store";
-import { selectMoveColumn } from "@/store/selectors";
-
-type ColumnSummary = {
-  id: string;
-  title: string;
-};
 
 type ColumnDropEdge = "left" | "right";
 
@@ -27,12 +23,12 @@ type ColumnDragState = {
   dropTargetEdge: ColumnDropEdge | null;
 };
 
-type UseColumnDragAndDropOptions = {
-  columns: ColumnSummary[];
-  selectionMode: boolean;
-};
-
 type Listener = () => void;
+
+export type ColumnDragAndDropContextValue = {
+  registerColumnElement(columnId: string, element: HTMLElement | null): void;
+  registerColumnDragHandle(columnId: string, element: HTMLElement | null): void;
+};
 
 const DEFAULT_DRAG_STATE: ColumnDragState = {
   draggingColumnId: null,
@@ -95,6 +91,19 @@ function createColumnDragStateStore() {
 
 const columnDragStateStore = createColumnDragStateStore();
 
+export const ColumnDragAndDropContext =
+  createContext<ColumnDragAndDropContextValue | null>(null);
+
+export function useColumnDragAndDropContext() {
+  const context = useContext(ColumnDragAndDropContext);
+
+  if (!context) {
+    throw new Error("Column drag-and-drop context is not available.");
+  }
+
+  return context;
+}
+
 function setDraggingDocumentState(isDragging: boolean) {
   if (typeof document === "undefined") {
     return;
@@ -104,19 +113,27 @@ function setDraggingDocumentState(isDragging: boolean) {
   document.body.style.userSelect = isDragging ? "none" : "";
 }
 
-export function useColumnDragAndDrop({
-  columns,
-  selectionMode,
-}: UseColumnDragAndDropOptions) {
-  const moveColumn = useStore(selectMoveColumn);
+export function useColumnDragAndDrop() {
   const boardViewportRef = useRef<HTMLDivElement | null>(null);
   const columnElementsRef = useRef(new Map<string, HTMLElement>());
   const dragHandleElementsRef = useRef(new Map<string, HTMLElement>());
+  const handleCleanupRef = useRef(new Map<string, () => void>());
+  const selectionModeRef = useRef(useStore.getState().selectionMode);
 
-  const columnIdOrder = useMemo(
-    () => columns.map((column) => column.id),
-    [columns],
-  );
+  useEffect(() => {
+    return useStore.subscribe((state) => {
+      if (state.selectionMode === selectionModeRef.current) {
+        return;
+      }
+
+      selectionModeRef.current = state.selectionMode;
+
+      if (state.selectionMode) {
+        columnDragStateStore.reset();
+        setDraggingDocumentState(false);
+      }
+    });
+  }, []);
 
   const getTouchDropTarget = useCallback(
     (
@@ -124,14 +141,8 @@ export function useColumnDragAndDrop({
       clientY: number,
       draggingColumnId: string,
     ): TouchColumnDropTarget | null => {
-      for (const columnId of columnIdOrder) {
+      for (const [columnId, element] of columnElementsRef.current.entries()) {
         if (columnId === draggingColumnId) {
-          continue;
-        }
-
-        const element = columnElementsRef.current.get(columnId);
-
-        if (!element) {
           continue;
         }
 
@@ -154,7 +165,7 @@ export function useColumnDragAndDrop({
 
       return null;
     },
-    [columnIdOrder],
+    [],
   );
 
   const autoScrollBoardViewport = useCallback((clientX: number) => {
@@ -178,32 +189,6 @@ export function useColumnDragAndDrop({
       boardViewport.scrollBy({ left: scrollStep });
     }
   }, []);
-
-  const setColumnElement = useCallback(
-    (columnId: string, element: HTMLElement | null) => {
-      if (!element) {
-        columnElementsRef.current.delete(columnId);
-
-        return;
-      }
-
-      columnElementsRef.current.set(columnId, element);
-    },
-    [],
-  );
-
-  const setColumnDragHandle = useCallback(
-    (columnId: string, element: HTMLElement | null) => {
-      if (!element) {
-        dragHandleElementsRef.current.delete(columnId);
-
-        return;
-      }
-
-      dragHandleElementsRef.current.set(columnId, element);
-    },
-    [],
-  );
 
   const clearDropTarget = useCallback(() => {
     const currentState = columnDragStateStore.getSnapshot();
@@ -235,35 +220,50 @@ export function useColumnDragAndDrop({
     [],
   );
 
-  useEffect(() => {
-    if (selectionMode) {
-      columnDragStateStore.reset();
-      setDraggingDocumentState(false);
+  const registerColumnElement = useCallback(
+    (columnId: string, element: HTMLElement | null) => {
+      if (!element) {
+        columnElementsRef.current.delete(columnId);
 
-      return;
-    }
-
-    const handleCleanups = columnIdOrder.flatMap((columnId) => {
-      const handleElement = dragHandleElementsRef.current.get(columnId);
-
-      if (!handleElement) {
-        return [];
+        return;
       }
 
+      columnElementsRef.current.set(columnId, element);
+    },
+    [],
+  );
+
+  const registerColumnDragHandle = useCallback(
+    (columnId: string, element: HTMLElement | null) => {
+      handleCleanupRef.current.get(columnId)?.();
+      handleCleanupRef.current.delete(columnId);
+
+      if (!element) {
+        dragHandleElementsRef.current.delete(columnId);
+
+        return;
+      }
+
+      dragHandleElementsRef.current.set(columnId, element);
+
       const onPointerDown = (event: PointerEvent) => {
+        if (selectionModeRef.current) {
+          return;
+        }
+
         if (event.pointerType === "mouse" && event.button !== 0) {
           return;
         }
 
-        if (shouldIgnoreDragStart(event.target, handleElement)) {
+        if (shouldIgnoreDragStart(event.target, element)) {
           return;
         }
 
         event.preventDefault();
         setDraggingDocumentState(true);
 
-        if (handleElement.hasPointerCapture?.(event.pointerId) === false) {
-          handleElement.setPointerCapture?.(event.pointerId);
+        if (element.hasPointerCapture?.(event.pointerId) === false) {
+          element.setPointerCapture?.(event.pointerId);
         }
 
         columnDragStateStore.setState({
@@ -293,8 +293,8 @@ export function useColumnDragAndDrop({
           window.removeEventListener("pointerup", handlePointerUp);
           window.removeEventListener("pointercancel", handlePointerCancel);
 
-          if (handleElement.hasPointerCapture?.(event.pointerId)) {
-            handleElement.releasePointerCapture?.(event.pointerId);
+          if (element.hasPointerCapture?.(event.pointerId)) {
+            element.releasePointerCapture?.(event.pointerId);
           }
 
           setDraggingDocumentState(false);
@@ -317,8 +317,13 @@ export function useColumnDragAndDrop({
           const target = updateFromPointer(upEvent.clientX, upEvent.clientY);
 
           if (target) {
-            const startIndex = columnIdOrder.indexOf(columnId);
-            const indexOfTarget = columnIdOrder.indexOf(target.columnId);
+            const currentColumns = useStore.getState().columns;
+            const startIndex = currentColumns.findIndex(
+              (column) => column.id === columnId,
+            );
+            const indexOfTarget = currentColumns.findIndex(
+              (column) => column.id === target.columnId,
+            );
 
             if (startIndex >= 0 && indexOfTarget >= 0) {
               const finishIndex = getReorderDestinationIndex({
@@ -328,7 +333,7 @@ export function useColumnDragAndDrop({
                 axis: "horizontal",
               });
 
-              moveColumn(columnId, finishIndex);
+              useStore.getState().moveColumn(columnId, finishIndex);
             }
           }
 
@@ -352,33 +357,43 @@ export function useColumnDragAndDrop({
         window.addEventListener("pointercancel", handlePointerCancel);
       };
 
-      handleElement.addEventListener("pointerdown", onPointerDown, {
+      element.addEventListener("pointerdown", onPointerDown, {
         passive: false,
       });
 
-      return [
-        () => handleElement.removeEventListener("pointerdown", onPointerDown),
-      ];
-    });
+      handleCleanupRef.current.set(columnId, () => {
+        element.removeEventListener("pointerdown", onPointerDown);
+      });
+    },
+    [
+      autoScrollBoardViewport,
+      clearDropTarget,
+      getTouchDropTarget,
+      updateDropTarget,
+    ],
+  );
+
+  useEffect(() => {
+    const cleanups = handleCleanupRef.current;
 
     return () => {
-      handleCleanups.forEach((cleanup) => cleanup());
+      cleanups.forEach((cleanup) => cleanup());
+      cleanups.clear();
       setDraggingDocumentState(false);
     };
-  }, [
-    autoScrollBoardViewport,
-    clearDropTarget,
-    columnIdOrder,
-    getTouchDropTarget,
-    moveColumn,
-    selectionMode,
-    updateDropTarget,
-  ]);
+  }, []);
+
+  const contextValue = useMemo<ColumnDragAndDropContextValue>(
+    () => ({
+      registerColumnElement,
+      registerColumnDragHandle,
+    }),
+    [registerColumnElement, registerColumnDragHandle],
+  );
 
   return {
     boardViewportRef,
-    setColumnDragHandle,
-    setColumnElement,
+    contextValue,
   };
 }
 

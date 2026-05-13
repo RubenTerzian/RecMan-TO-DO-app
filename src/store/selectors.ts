@@ -73,6 +73,11 @@ export function makeSelectTaskById(taskId: string) {
     state.tasks.find((currentTask) => currentTask.id === taskId);
 }
 
+export function makeSelectColumnTitle(columnId: string) {
+  return (state: AppStore) =>
+    state.columns.find((column) => column.id === columnId)?.title ?? "";
+}
+
 export function makeSelectIsTaskSelected(taskId: string) {
   return (state: AppStore) => state.selectedTaskIds.includes(taskId);
 }
@@ -80,18 +85,4 @@ export function makeSelectIsTaskSelected(taskId: string) {
 export function makeSelectTasksByColumnId(columnId: string) {
   return (state: AppStore) =>
     state.tasks.filter((task) => task.columnId === columnId);
-}
-
-export function makeSelectSelectedCountForTaskIds(taskIds: string[]) {
-  return (state: AppStore) => {
-    if (taskIds.length === 0) {
-      return 0;
-    }
-
-    return taskIds.reduce(
-      (count, taskId) =>
-        count + (state.selectedTaskIds.includes(taskId) ? 1 : 0),
-      0,
-    );
-  };
 }

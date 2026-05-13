@@ -3,7 +3,7 @@ import type { TaskFilter } from "@/features/TopBar/types";
 import { readTaskQueryState } from "@/features/TopBar/urlQuery";
 import type { StoreState } from "./types";
 import { createUniquePrefixedId } from "@/utils/ids";
-import { loadStoredState, saveStoredState } from "./persistence";
+import { loadStoredState } from "./persistence";
 
 type Actions = {
   resetStore(): void;
@@ -336,12 +336,19 @@ export const useStore = create<AppStore>()((set) => ({
           .map((task) => task.id),
       );
 
+      const nextColumns = state.columns.filter(
+        (column) => column.id !== columnId,
+      );
+
       return {
-        columns: state.columns.filter((column) => column.id !== columnId),
+        columns: nextColumns,
         tasks: state.tasks.filter((task) => task.columnId !== columnId),
         selectedTaskIds: state.selectedTaskIds.filter(
           (taskId) => !removedTaskIds.has(taskId),
         ),
+        // Exit selection mode automatically when there are no columns left
+        // — the toggle and bulk bar are not visible in that state.
+        selectionMode: nextColumns.length === 0 ? false : state.selectionMode,
       };
     });
   },
@@ -523,10 +530,3 @@ export const useStore = create<AppStore>()((set) => ({
     });
   },
 }));
-
-useStore.subscribe((state) => {
-  saveStoredState({
-    columns: state.columns,
-    tasks: state.tasks,
-  });
-});

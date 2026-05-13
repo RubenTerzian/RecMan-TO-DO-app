@@ -1,49 +1,77 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useStore } from "@/store/store";
-import { selectSearchTerm, selectSetSearchTerm } from "@/store/selectors";
 
 const SEARCH_INPUT_DEBOUNCE_MS = 250;
 
+/**
+ * Owns the search input value via a DOM ref (uncontrolled) so typing does
+ * not re-render the host component. Only flips a `hasValue` boolean when
+ * the input transitions between empty and non-empty for the clear button.
+ *
+ * External resets (Clear all, popstate) imperatively reset the DOM value
+ * via the returned `inputRef`.
+ */
 export function useSearchInputControl() {
-  const searchTerm = useStore(selectSearchTerm);
-  const setSearchTerm = useStore(selectSetSearchTerm);
-  const [value, setValue] = useState(searchTerm);
-  const lastRequestedValueRef = useRef(searchTerm);
-  const { schedule, cancel } = useDebounce(
-    setSearchTerm,
-    SEARCH_INPUT_DEBOUNCE_MS,
+  const initialValueRef = useRef(useStore.getState().searchTerm);
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const lastWrittenValueRef = useRef(initialValueRef.current);
+  const [hasValue, setHasValue] = useState(
+    () => initialValueRef.current.trim().length > 0,
   );
 
+  const { schedule, cancel } = useDebounce((nextValue: string) => {
+    lastWrittenValueRef.current = nextValue;
+    useStore.getState().setSearchTerm(nextValue);
+  }, SEARCH_INPUT_DEBOUNCE_MS);
+
+  // External resets only — never on our own writes.
   useEffect(() => {
-    if (searchTerm === lastRequestedValueRef.current) {
-      return;
-    }
+    return useStore.subscribe((state) => {
+      if (state.searchTerm === lastWrittenValueRef.current) {
+        return;
+      }
 
-    lastRequestedValueRef.current = searchTerm;
-    setValue(searchTerm);
-  }, [searchTerm]);
+      lastWrittenValueRef.current = state.searchTerm;
 
-  const handleChange = useCallback(
-    (nextSearchTerm: string) => {
-      lastRequestedValueRef.current = nextSearchTerm;
-      setValue(nextSearchTerm);
-      schedule(nextSearchTerm);
+      if (inputRef.current && inputRef.current.value !== state.searchTerm) {
+        inputRef.current.value = state.searchTerm;
+      }
+
+      setHasValue(state.searchTerm.trim().length > 0);
+    });
+  }, []);
+
+  const handleInputChange = useCallback(
+    (nextValue: string) => {
+      const nextHasValue = nextValue.trim().length > 0;
+
+      setHasValue((current) =>
+        current === nextHasValue ? current : nextHasValue,
+      );
+      schedule(nextValue);
     },
     [schedule],
   );
 
   const handleClear = useCallback(() => {
     cancel();
-    lastRequestedValueRef.current = "";
-    setValue("");
-    setSearchTerm("");
-  }, [cancel, setSearchTerm]);
+    lastWrittenValueRef.current = "";
+
+    if (inputRef.current) {
+      inputRef.current.value = "";
+      inputRef.current.focus();
+    }
+
+    setHasValue(false);
+    useStore.getState().setSearchTerm("");
+  }, [cancel]);
 
   return {
-    value,
-    hasValue: value.trim().length > 0,
-    handleChange,
+    inputRef,
+    initialValue: initialValueRef.current,
+    hasValue,
+    handleInputChange,
     handleClear,
   };
 }

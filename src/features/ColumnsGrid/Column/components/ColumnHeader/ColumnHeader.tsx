@@ -5,80 +5,55 @@ import {
   DeleteIconButton,
   EditIconButton,
 } from "@/components/shared/ActionIconButton/ActionIconButton";
-import { clsx } from "@/utils/clsx";
 import styles from "./ColumnHeader.module.css";
 
 type ColumnHeaderProps = {
   title: string;
-  mode: "default" | "selection";
-  allSelected?: boolean;
-  showSelectionToggle?: boolean;
-  onDelete?(): void;
-  onEdit?(): void;
-  onToggleAllSelection?(): void;
+  onDelete(): void;
+  onEdit(): void;
   dragHandleRef?: Ref<HTMLElement>;
 };
 
 function ColumnHeaderComponent({
   title,
-  mode,
-  allSelected = false,
-  showSelectionToggle = false,
   onDelete,
   onEdit,
-  onToggleAllSelection,
   dragHandleRef,
 }: ColumnHeaderProps) {
-  const selectionMode = mode === "selection";
-
   return (
     <header
-      ref={!selectionMode ? dragHandleRef : undefined}
-      className={clsx(styles.columnHeader, {
-        [styles.draggableHeader]: !selectionMode,
-      })}
+      ref={dragHandleRef}
+      className={`${styles.columnHeader} ${styles.draggableHeader}`}
     >
       <div className={styles.titleGroup}>
-        {!selectionMode ? (
-          <button
-            className={styles.dragCue}
-            data-drag-handle="true"
-            data-testid="column-drag-handle"
-            type="button"
-            aria-label="Drag column"
-          >
-            <img src={dragHandleIcon} alt="" className={styles.dragIcon} />
-          </button>
-        ) : null}
+        <button
+          className={styles.dragCue}
+          data-drag-handle="true"
+          data-testid="column-drag-handle"
+          type="button"
+          aria-label="Drag column"
+        >
+          <img src={dragHandleIcon} alt="" className={styles.dragIcon} />
+        </button>
 
         <h3 className={styles.title}>{title}</h3>
       </div>
 
-      {!selectionMode ? (
-        <div className={styles.controls}>
-          <div className={styles.actions}>
-            <EditIconButton
-              data-testid="edit-column-button"
-              aria-label="Edit column"
-              onClick={onEdit}
-            />
+      <div className={styles.controls}>
+        <div className={styles.actions}>
+          <EditIconButton
+            data-testid="edit-column-button"
+            aria-label="Edit column"
+            onClick={onEdit}
+          />
 
-            <DeleteIconButton
-              data-testid="delete-column-button"
-              aria-label="Delete column"
-              onClick={onDelete}
-            />
-          </div>
+          <DeleteIconButton
+            data-testid="delete-column-button"
+            aria-label="Delete column"
+            onClick={onDelete}
+          />
         </div>
-      ) : showSelectionToggle ? (
-        <button
-          className={styles.selectionToggle}
-          type="button"
-          onClick={onToggleAllSelection}
-        >
-          {allSelected ? "Deselect all" : "Select all"}
-        </button>
-      ) : null}
+      </div>
     </header>
   );
 }

@@ -1,4 +1,5 @@
 import type { ButtonHTMLAttributes, ReactNode } from "react";
+import { memo } from "react";
 import { clsx } from "@/utils/clsx";
 import styles from "./Button.module.css";
 
@@ -6,7 +7,7 @@ type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   children: ReactNode;
 };
 
-export function Button({
+function ButtonComponent({
   className = "",
   children,
   type = "button",
@@ -18,3 +19,5 @@ export function Button({
     </button>
   );
 }
+
+export const Button = memo(ButtonComponent);
