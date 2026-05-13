@@ -73,4 +73,13 @@ export function setDraggingDocumentState(isDragging: boolean) {
 
   document.body.style.cursor = isDragging ? "grabbing" : "";
   document.body.style.userSelect = isDragging ? "none" : "";
+  // Block the browser from interpreting touch gestures as page
+  // scroll/zoom/pan while a drag is active. Without this iOS Safari
+  // and Android Chrome continue to scroll the page during the drag
+  // because the gesture was already routed to a scroller before the
+  // long-press fired. Combined with the non-passive `touchmove`
+  // listener attached by `createPointerDragSession`, this fully
+  // suppresses native scrolling while DnD is in progress.
+  document.body.style.touchAction = isDragging ? "none" : "";
+  document.documentElement.style.touchAction = isDragging ? "none" : "";
 }

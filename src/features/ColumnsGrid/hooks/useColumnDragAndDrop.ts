@@ -9,14 +9,8 @@ import {
 } from "react";
 import { useStore } from "@/store/store";
 import { columnGhostNodeSlot } from "@/features/ColumnsGrid/dnd/ghostNodeSlot";
-import {
-  MOUSE_ACTIVATION_PIXELS,
-  TOUCH_LONG_PRESS_MS,
-  TOUCH_PRE_ACTIVATION_CANCEL_PIXELS,
-  isPointerOnDragHandle,
-  setDraggingDocumentState,
-  shouldIgnoreDragStart,
-} from "@/features/ColumnsGrid/dnd/pointerDragActivation";
+import { createPointerDragSession } from "@/features/ColumnsGrid/dnd/createPointerDragSession";
+import { setDraggingDocumentState } from "@/features/ColumnsGrid/dnd/pointerDragActivation";
 
 type ColumnDragSnapshot = {
   draggingColumnId: string | null;
@@ -264,22 +258,6 @@ export function useColumnDragAndDrop() {
       dragHandleElementsRef.current.set(columnId, element);
 
       const onPointerDown = (event: PointerEvent) => {
-        if (selectionModeRef.current) {
-          return;
-        }
-
-        if (event.pointerType === "mouse" && event.button !== 0) {
-          return;
-        }
-
-        const isTouch = event.pointerType === "touch";
-
-        // Skip drag start when the user pressed a real control inside
-        // the header (edit/delete icon buttons, the title input, etc.).
-        if (shouldIgnoreDragStart(event.target, element)) {
-          return;
-        }
-
         const columnState = useStore
           .getState()
           .columns.find((column) => column.id === columnId);
@@ -288,133 +266,29 @@ export function useColumnDragAndDrop() {
           return;
         }
 
-        const dragStartX = event.clientX;
-        const dragStartY = event.clientY;
         const columnElement =
           columnElementsRef.current.get(columnId) ?? element;
         const columnRect = columnElement.getBoundingClientRect();
-        const grabOffsetX = dragStartX - columnRect.left;
-        const grabOffsetY = dragStartY - columnRect.top;
-        let isDragging = false;
-        let touchActivationTimerId: number | null = null;
-        // Pre-drag track height so we can lock it for the duration of
-        // the drag and avoid the layout collapsing when we filter the
-        // dragged column out of the visible track.
+        const grabOffsetX = event.clientX - columnRect.left;
+        const grabOffsetY = event.clientY - columnRect.top;
+        // Pre-drag track height — locked while the drag is active so
+        // the grid track does not collapse to the height of the
+        // remaining (shorter) columns when the dragged column is
+        // filtered out of the visible track.
         let lockedTrackHeight: number | null = null;
-
-        // For mouse / pen, always preventDefault to suppress text
-        // selection and OS callouts. For touch we may only do it on a
-        // real drag handle (which sets `touch-action: none`); on the
-        // rest of the header surface the browser must keep handling
-        // the gesture so it can still scroll if the user moves before
-        // the long-press fires.
-        if (!isTouch || isPointerOnDragHandle(event.target, element)) {
-          event.preventDefault();
-        }
-
-        const startDragging = () => {
-          if (isDragging) {
-            return;
-          }
-
-          isDragging = true;
-          setDraggingDocumentState(true);
-
-          // Snapshot the track height BEFORE the dragged column is
-          // filtered out of the visible track. The track is a grid
-          // whose row height collapses to its tallest remaining
-          // column — if we don't lock it the whole board jumps when
-          // the dragged column is taller than the others.
-          const track = columnTrackRef.current;
-
-          if (track) {
-            lockedTrackHeight = track.getBoundingClientRect().height;
-            track.style.minHeight = `${lockedTrackHeight}px`;
-          }
-
-          if (element.hasPointerCapture?.(event.pointerId) === false) {
-            element.setPointerCapture?.(event.pointerId);
-          }
-
-          // Snapshot a pixel-perfect copy of the source column for the
-          // floating ghost. cloneNode does NOT clone event listeners.
-          const sourceClone = columnElement.cloneNode(true) as HTMLElement;
-
-          sourceClone.style.width = `${columnRect.width}px`;
-          sourceClone.style.height = `${columnRect.height}px`;
-          columnGhostNodeSlot.set(sourceClone);
-
-          columnDragStore.setState({
-            draggingColumnId: columnId,
-            draggingColumnWidth: columnRect.width,
-            draggingColumnHeight: columnRect.height,
-            dropIndex: null,
-          });
-
-          setGhostPointer({
-            x: dragStartX,
-            y: dragStartY,
-            offsetX: grabOffsetX,
-            offsetY: grabOffsetY,
-            active: true,
-          });
-        };
 
         const updateFromPointer = (clientX: number, clientY: number) => {
           setGhostPointer({ x: clientX, y: clientY });
           autoScrollBoardViewport(clientX);
 
-          const snapshot = columnDragStore.getSnapshot();
           const dropIndex = computeDropIndex(clientX, clientY, columnId);
 
           columnDragStore.setState({
-            ...snapshot,
+            ...columnDragStore.getSnapshot(),
             dropIndex,
           });
 
           return dropIndex;
-        };
-
-        const cancelTouchActivation = () => {
-          if (touchActivationTimerId !== null) {
-            window.clearTimeout(touchActivationTimerId);
-            touchActivationTimerId = null;
-          }
-        };
-
-        const cleanupPointerSession = () => {
-          cancelTouchActivation();
-          window.removeEventListener("pointermove", handlePointerMove);
-          window.removeEventListener("pointerup", handlePointerUp);
-          window.removeEventListener("pointercancel", handlePointerCancel);
-          window.removeEventListener("contextmenu", handleContextMenu, true);
-
-          if (element.hasPointerCapture?.(event.pointerId)) {
-            element.releasePointerCapture?.(event.pointerId);
-          }
-
-          // Always reset the document state. If we only reset when
-          // `isDragging` was true, an OS-hijacked long-press could
-          // leave the page with `userSelect: none` and a grabbing
-          // cursor — on mobile this manifests as broken scrolling.
-          setDraggingDocumentState(false);
-
-          // Release the height lock applied during startDragging so
-          // the track can resize naturally again.
-          const track = columnTrackRef.current;
-
-          if (track && lockedTrackHeight !== null) {
-            track.style.minHeight = "";
-            lockedTrackHeight = null;
-          }
-
-          columnGhostNodeSlot.set(null);
-          columnDragStore.reset();
-          setGhostPointer({ active: false });
-        };
-
-        const handleContextMenu = (contextEvent: Event) => {
-          contextEvent.preventDefault();
         };
 
         const finalizeDrop = (dropIndex: number | null) => {
@@ -451,81 +325,61 @@ export function useColumnDragAndDrop() {
           useStore.getState().moveColumn(columnId, finishIndex);
         };
 
-        const endDrag = (dropIndex: number | null) => {
-          finalizeDrop(dropIndex);
-          cleanupPointerSession();
-        };
+        createPointerDragSession({
+          handleElement: element,
+          pointerDownEvent: event,
+          canStart: () => !selectionModeRef.current,
+          onActivate: ({ clientX, clientY }) => {
+            const track = columnTrackRef.current;
 
-        const handlePointerMove = (moveEvent: PointerEvent) => {
-          if (moveEvent.pointerId !== event.pointerId) {
-            return;
-          }
-
-          if (isTouch && !isDragging) {
-            const deltaX = moveEvent.clientX - dragStartX;
-            const deltaY = moveEvent.clientY - dragStartY;
-
-            if (
-              Math.hypot(deltaX, deltaY) > TOUCH_PRE_ACTIVATION_CANCEL_PIXELS
-            ) {
-              cleanupPointerSession();
+            if (track) {
+              lockedTrackHeight = track.getBoundingClientRect().height;
+              track.style.minHeight = `${lockedTrackHeight}px`;
             }
 
-            return;
-          }
+            // Snapshot a pixel-perfect copy of the source column for
+            // the floating ghost. cloneNode does NOT clone listeners.
+            const sourceClone = columnElement.cloneNode(true) as HTMLElement;
 
-          if (!isTouch && !isDragging) {
-            const deltaX = moveEvent.clientX - dragStartX;
-            const deltaY = moveEvent.clientY - dragStartY;
+            sourceClone.style.width = `${columnRect.width}px`;
+            sourceClone.style.height = `${columnRect.height}px`;
+            columnGhostNodeSlot.set(sourceClone);
 
-            if (Math.hypot(deltaX, deltaY) < MOUSE_ACTIVATION_PIXELS) {
-              return;
+            columnDragStore.setState({
+              draggingColumnId: columnId,
+              draggingColumnWidth: columnRect.width,
+              draggingColumnHeight: columnRect.height,
+              dropIndex: null,
+            });
+
+            setGhostPointer({
+              x: clientX,
+              y: clientY,
+              offsetX: grabOffsetX,
+              offsetY: grabOffsetY,
+              active: true,
+            });
+          },
+          onMove: ({ clientX, clientY }) => {
+            updateFromPointer(clientX, clientY);
+          },
+          onCommit: ({ clientX, clientY }) => {
+            const dropIndex = updateFromPointer(clientX, clientY);
+            finalizeDrop(dropIndex);
+          },
+          onCleanup: () => {
+            const track = columnTrackRef.current;
+
+            if (track && lockedTrackHeight !== null) {
+              track.style.minHeight = "";
+              lockedTrackHeight = null;
             }
 
-            startDragging();
-          }
-
-          moveEvent.preventDefault();
-          updateFromPointer(moveEvent.clientX, moveEvent.clientY);
-        };
-
-        const handlePointerUp = (upEvent: PointerEvent) => {
-          if (upEvent.pointerId !== event.pointerId) {
-            return;
-          }
-
-          if (!isDragging) {
-            cleanupPointerSession();
-
-            return;
-          }
-
-          const dropIndex = updateFromPointer(upEvent.clientX, upEvent.clientY);
-
-          endDrag(dropIndex);
-        };
-
-        const handlePointerCancel = (cancelEvent: PointerEvent) => {
-          if (cancelEvent.pointerId !== event.pointerId) {
-            return;
-          }
-
-          cleanupPointerSession();
-        };
-
-        if (isTouch) {
-          touchActivationTimerId = window.setTimeout(() => {
-            touchActivationTimerId = null;
-            startDragging();
-          }, TOUCH_LONG_PRESS_MS);
-        }
-
-        window.addEventListener("pointermove", handlePointerMove, {
-          passive: false,
+            columnGhostNodeSlot.set(null);
+            columnDragStore.reset();
+            setGhostPointer({ active: false });
+          },
         });
-        window.addEventListener("pointerup", handlePointerUp);
-        window.addEventListener("pointercancel", handlePointerCancel);
-        window.addEventListener("contextmenu", handleContextMenu, true);
       };
 
       element.addEventListener("pointerdown", onPointerDown, {
