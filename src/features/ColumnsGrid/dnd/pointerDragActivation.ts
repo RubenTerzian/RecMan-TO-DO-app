@@ -4,14 +4,15 @@
  *
  * Activation policy:
  * - Mouse / pen: drag activates after the pointer moves
- *   `MOUSE_ACTIVATION_PIXELS` pixels. Drag may start from any non-interactive
- *   area inside the registered handle element.
- * - Touch: drag activates only after a long-press of `TOUCH_LONG_PRESS_MS`
- *   without significant movement. The pointer must land directly on a
- *   `[data-drag-handle="true"]` element. Any pre-activation movement
- *   exceeding `TOUCH_PRE_ACTIVATION_CANCEL_PIXELS` cancels the drag and
- *   lets the browser scroll naturally — preventing the "stuck in DnD
- *   while trying to scroll" state on mobile.
+ *   `MOUSE_ACTIVATION_PIXELS` pixels from the registered handle. The
+ *   entire handle surface is draggable, except interactive children
+ *   (buttons, inputs, links, etc.).
+ * - Touch: drag activates only after a long-press of
+ *   `TOUCH_LONG_PRESS_MS` without significant movement, anywhere on the
+ *   handle surface. Any pre-activation movement exceeding
+ *   `TOUCH_PRE_ACTIVATION_CANCEL_PIXELS` cancels the long-press timer
+ *   and lets the browser scroll naturally — preventing the "stuck in
+ *   DnD while trying to scroll" state on mobile.
  */
 
 export const MOUSE_ACTIVATION_PIXELS = 6;
@@ -24,11 +25,11 @@ const INTERACTIVE_SELECTOR =
 const DRAG_HANDLE_SELECTOR = '[data-drag-handle="true"]';
 
 /**
- * Returns true when a mouse/pen pointerdown should NOT initiate a drag,
- * because the user clicked an interactive child of the handle that is
- * not itself the drag handle (e.g. a button inside the column header).
+ * Returns true when a pointerdown should NOT initiate a drag, because
+ * the user pressed an interactive child of the handle that is not
+ * itself the drag handle (e.g. an icon button inside the column header).
  */
-export function shouldIgnoreMousePointerDown(
+export function shouldIgnoreDragStart(
   target: EventTarget | null,
   handleElement: HTMLElement,
 ): boolean {
@@ -46,11 +47,13 @@ export function shouldIgnoreMousePointerDown(
 }
 
 /**
- * Returns true when a touch pointerdown landed directly on a drag-handle
- * descendant of the registered handle element. Touch DnD is restricted
- * to explicit handles so the rest of the surface stays scrollable.
+ * Returns true when the pointerdown landed on a `[data-drag-handle]`
+ * descendant. We use this to decide whether to `preventDefault()` on
+ * the initial touch event — only handles set `touch-action: none` and
+ * are safe to consume. On the rest of the surface we must let the
+ * browser keep handling the touch so it can still scroll.
  */
-export function isTouchOnDragHandle(
+export function isPointerOnDragHandle(
   target: EventTarget | null,
   handleElement: HTMLElement,
 ): boolean {

@@ -13,9 +13,9 @@ import {
   MOUSE_ACTIVATION_PIXELS,
   TOUCH_LONG_PRESS_MS,
   TOUCH_PRE_ACTIVATION_CANCEL_PIXELS,
-  isTouchOnDragHandle,
+  isPointerOnDragHandle,
   setDraggingDocumentState,
-  shouldIgnoreMousePointerDown,
+  shouldIgnoreDragStart,
 } from "@/features/ColumnsGrid/dnd/pointerDragActivation";
 
 type ColumnDragSnapshot = {
@@ -274,11 +274,9 @@ export function useColumnDragAndDrop() {
 
         const isTouch = event.pointerType === "touch";
 
-        if (isTouch) {
-          if (!isTouchOnDragHandle(event.target, element)) {
-            return;
-          }
-        } else if (shouldIgnoreMousePointerDown(event.target, element)) {
+        // Skip drag start when the user pressed a real control inside
+        // the header (edit/delete icon buttons, the title input, etc.).
+        if (shouldIgnoreDragStart(event.target, element)) {
           return;
         }
 
@@ -299,13 +297,20 @@ export function useColumnDragAndDrop() {
         const grabOffsetY = dragStartY - columnRect.top;
         let isDragging = false;
         let touchActivationTimerId: number | null = null;
+        // Pre-drag track height so we can lock it for the duration of
+        // the drag and avoid the layout collapsing when we filter the
+        // dragged column out of the visible track.
+        let lockedTrackHeight: number | null = null;
 
-        // Always preventDefault on initial pointerdown so the OS
-        // long-press callout / context menu cannot hijack the gesture
-        // and strand us in a half-drag state. Drag handles set
-        // `touch-action: none`, so this does not break scrolling on
-        // the rest of the column surface.
-        event.preventDefault();
+        // For mouse / pen, always preventDefault to suppress text
+        // selection and OS callouts. For touch we may only do it on a
+        // real drag handle (which sets `touch-action: none`); on the
+        // rest of the header surface the browser must keep handling
+        // the gesture so it can still scroll if the user moves before
+        // the long-press fires.
+        if (!isTouch || isPointerOnDragHandle(event.target, element)) {
+          event.preventDefault();
+        }
 
         const startDragging = () => {
           if (isDragging) {
@@ -314,6 +319,18 @@ export function useColumnDragAndDrop() {
 
           isDragging = true;
           setDraggingDocumentState(true);
+
+          // Snapshot the track height BEFORE the dragged column is
+          // filtered out of the visible track. The track is a grid
+          // whose row height collapses to its tallest remaining
+          // column — if we don't lock it the whole board jumps when
+          // the dragged column is taller than the others.
+          const track = columnTrackRef.current;
+
+          if (track) {
+            lockedTrackHeight = track.getBoundingClientRect().height;
+            track.style.minHeight = `${lockedTrackHeight}px`;
+          }
 
           if (element.hasPointerCapture?.(event.pointerId) === false) {
             element.setPointerCapture?.(event.pointerId);
@@ -381,6 +398,15 @@ export function useColumnDragAndDrop() {
           // leave the page with `userSelect: none` and a grabbing
           // cursor — on mobile this manifests as broken scrolling.
           setDraggingDocumentState(false);
+
+          // Release the height lock applied during startDragging so
+          // the track can resize naturally again.
+          const track = columnTrackRef.current;
+
+          if (track && lockedTrackHeight !== null) {
+            track.style.minHeight = "";
+            lockedTrackHeight = null;
+          }
 
           columnGhostNodeSlot.set(null);
           columnDragStore.reset();

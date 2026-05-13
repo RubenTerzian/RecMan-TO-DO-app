@@ -6,7 +6,7 @@
 .boardCanvas {
   position: relative;
   min-height: 24rem;
-  height: clamp(28rem, 70vh, 56rem);
+  height: clamp(26.5rem, 66vh, 52rem);
   overflow: hidden;
   padding: clamp(14px, 1.6vw, 20px);
   border: 1px solid var(--color-border);

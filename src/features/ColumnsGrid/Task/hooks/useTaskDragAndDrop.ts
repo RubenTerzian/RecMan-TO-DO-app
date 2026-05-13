@@ -14,9 +14,9 @@ import {
   MOUSE_ACTIVATION_PIXELS,
   TOUCH_LONG_PRESS_MS,
   TOUCH_PRE_ACTIVATION_CANCEL_PIXELS,
-  isTouchOnDragHandle,
+  isPointerOnDragHandle,
   setDraggingDocumentState,
-  shouldIgnoreMousePointerDown,
+  shouldIgnoreDragStart,
 } from "@/features/ColumnsGrid/dnd/pointerDragActivation";
 
 type TaskDropTarget = {
@@ -185,20 +185,24 @@ export function useTaskDragAndDrop({
   }, []);
 
   /**
-   * Find which column the pointer is over (using the registered drop-zone
-   * element, which is the task list container). Pointer outside any
-   * column => null target.
+   * Find which column the pointer is over. We allow a generous vertical
+   * tolerance beyond the column's actual rect so the user can still
+   * target the bottom of a column on mobile, where the column's
+   * `max-height` typically ends well above the viewport bottom and the
+   * finger physically blocks the last few drop slots.
    */
   const getColumnAtPoint = useCallback(
-    (clientX: number, clientY: number): ColumnRect | null => {
+    (clientX: number, clientY: number, isTouch: boolean): ColumnRect | null => {
+      const verticalTolerance = isTouch ? 200 : 60;
+
       for (const [columnId, element] of columnDropZonesRef.current.entries()) {
         const rect = element.getBoundingClientRect();
 
         if (
           clientX >= rect.left &&
           clientX <= rect.right &&
-          clientY >= rect.top &&
-          clientY <= rect.bottom
+          clientY >= rect.top - verticalTolerance &&
+          clientY <= rect.bottom + verticalTolerance
         ) {
           return { columnId, rect };
         }
@@ -257,6 +261,24 @@ export function useTaskDragAndDrop({
           boardViewport.scrollBy({ left: -horizontalScrollStep });
         } else if (clientX >= rect.right - horizontalThreshold) {
           boardViewport.scrollBy({ left: horizontalScrollStep });
+        }
+      }
+
+      // Auto-scroll the document when the pointer is near the viewport
+      // top/bottom. On mobile the page itself is the vertical scroller
+      // (column max-height ends above the viewport bottom), so without
+      // this the user has no way to reach drop slots near the bottom of
+      // a tall column — their finger physically blocks the area.
+      if (typeof window !== "undefined") {
+        const verticalEdgeThreshold = 80;
+        const verticalEdgeStep = 18;
+        const viewportHeight = window.innerHeight;
+        const documentScroller = document.scrollingElement ?? document.documentElement;
+
+        if (clientY <= verticalEdgeThreshold) {
+          documentScroller.scrollBy({ top: -verticalEdgeStep });
+        } else if (clientY >= viewportHeight - verticalEdgeThreshold) {
+          documentScroller.scrollBy({ top: verticalEdgeStep });
         }
       }
 
@@ -333,13 +355,9 @@ export function useTaskDragAndDrop({
 
         const isTouch = event.pointerType === "touch";
 
-        // Touch DnD is restricted to explicit drag-handle children so
-        // the rest of the card surface stays scrollable on mobile.
-        if (isTouch) {
-          if (!isTouchOnDragHandle(event.target, element)) {
-            return;
-          }
-        } else if (shouldIgnoreMousePointerDown(event.target, element)) {
+        // Skip drag start when the user is interacting with a real
+        // control inside the card (checkbox, edit/delete buttons, etc.).
+        if (shouldIgnoreDragStart(event.target, element)) {
           return;
         }
 
@@ -359,12 +377,15 @@ export function useTaskDragAndDrop({
         let isDragging = false;
         let touchActivationTimerId: number | null = null;
 
-        // Always preventDefault on the initial pointerdown — for touch
-        // this suppresses the OS callout / context menu / image-save
-        // pop-up that would otherwise hijack the gesture and leak our
-        // drag session. Drag handles set `touch-action: none` so this
-        // does not interfere with scrolling on the rest of the surface.
-        event.preventDefault();
+        // For mouse / pen, always preventDefault to suppress text
+        // selection and the OS callout. For touch we may only do it on
+        // a real drag handle (which sets `touch-action: none`); on the
+        // rest of the card the browser must keep the gesture so it can
+        // still scroll the column or the page if the user moves before
+        // the long-press timer fires.
+        if (!isTouch || isPointerOnDragHandle(event.target, element)) {
+          event.preventDefault();
+        }
 
         const startDragging = () => {
           if (isDragging) {
@@ -410,7 +431,7 @@ export function useTaskDragAndDrop({
           // Always move the ghost first so it follows the cursor smoothly.
           setGhostPointer({ x: clientX, y: clientY });
 
-          const columnAtPoint = getColumnAtPoint(clientX, clientY);
+          const columnAtPoint = getColumnAtPoint(clientX, clientY, isTouch);
 
           autoScrollForPointerPoint(clientX, clientY, columnAtPoint);
 
