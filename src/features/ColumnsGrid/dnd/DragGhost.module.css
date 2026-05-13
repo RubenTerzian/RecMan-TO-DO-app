@@ -1,0 +1,21 @@
+.ghost {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+  pointer-events: none;
+  user-select: none;
+  will-change: transform;
+  box-sizing: border-box;
+  filter: drop-shadow(0 18px 38px rgba(24, 34, 53, 0.22))
+    drop-shadow(0 6px 12px rgba(24, 34, 53, 0.14));
+  opacity: 0.95;
+}
+
+/* Lock the cloned child to fill the wrapper, regardless of source layout. */
+.ghost > * {
+  width: 100% !important;
+  height: 100% !important;
+  margin: 0 !important;
+  pointer-events: none !important;
+}

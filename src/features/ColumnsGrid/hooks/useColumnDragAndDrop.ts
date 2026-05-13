@@ -8,13 +8,21 @@ import {
   useSyncExternalStore,
 } from "react";
 import { useStore } from "@/store/store";
+import { columnGhostNodeSlot } from "@/features/ColumnsGrid/dnd/ghostNodeSlot";
+import {
+  MOUSE_ACTIVATION_PIXELS,
+  TOUCH_LONG_PRESS_MS,
+  TOUCH_PRE_ACTIVATION_CANCEL_PIXELS,
+  isTouchOnDragHandle,
+  setDraggingDocumentState,
+  shouldIgnoreMousePointerDown,
+} from "@/features/ColumnsGrid/dnd/pointerDragActivation";
 
 type ColumnDragSnapshot = {
   draggingColumnId: string | null;
-  draggingColumnTitle: string;
   draggingColumnWidth: number;
   draggingColumnHeight: number;
-  /** Index where the dragged column would land in `state.columns`. */
+  /** Index where the dragged column would land in the filtered list. */
   dropIndex: number | null;
 };
 
@@ -29,30 +37,10 @@ export type ColumnDragAndDropContextValue = {
 
 const DEFAULT_SNAPSHOT: ColumnDragSnapshot = {
   draggingColumnId: null,
-  draggingColumnTitle: "",
   draggingColumnWidth: 0,
   draggingColumnHeight: 0,
   dropIndex: null,
 };
-
-function shouldIgnoreDragStart(
-  target: EventTarget | null,
-  handleElement: HTMLElement,
-) {
-  if (!(target instanceof Element)) {
-    return false;
-  }
-
-  const interactiveElement = target.closest(
-    'button, input, textarea, select, option, a, label, [role="button"], [contenteditable="true"], [data-no-drag="true"]',
-  );
-
-  if (!interactiveElement || !handleElement.contains(interactiveElement)) {
-    return false;
-  }
-
-  return interactiveElement.getAttribute("data-drag-handle") !== "true";
-}
 
 function createColumnDragStore() {
   let state = DEFAULT_SNAPSHOT;
@@ -73,7 +61,6 @@ function createColumnDragStore() {
     setState(nextState: ColumnDragSnapshot) {
       if (
         state.draggingColumnId === nextState.draggingColumnId &&
-        state.draggingColumnTitle === nextState.draggingColumnTitle &&
         state.draggingColumnWidth === nextState.draggingColumnWidth &&
         state.draggingColumnHeight === nextState.draggingColumnHeight &&
         state.dropIndex === nextState.dropIndex
@@ -97,9 +84,9 @@ function createColumnDragStore() {
 const columnDragStore = createColumnDragStore();
 
 /**
- * Pointer position store for the floating column ghost. Updated
- * imperatively from pointer events; ghost component reads it directly
- * and updates its own DOM transform without re-rendering React.
+ * Pointer position store for the floating column ghost. Same pattern as
+ * the task ghost store: read directly by the ghost component which
+ * mutates its own DOM transform, never re-rendering React.
  */
 type GhostPointer = {
   x: number;
@@ -119,13 +106,9 @@ const ghostPointer: GhostPointer = {
 
 const ghostListeners = new Set<Listener>();
 
-function notifyGhostListeners() {
-  ghostListeners.forEach((listener) => listener());
-}
-
 function setGhostPointer(next: Partial<GhostPointer>) {
   Object.assign(ghostPointer, next);
-  notifyGhostListeners();
+  ghostListeners.forEach((listener) => listener());
 }
 
 export function subscribeToColumnGhostPointer(listener: Listener) {
@@ -153,15 +136,6 @@ export function useColumnDragAndDropContext() {
   return context;
 }
 
-function setDraggingDocumentState(isDragging: boolean) {
-  if (typeof document === "undefined") {
-    return;
-  }
-
-  document.body.style.cursor = isDragging ? "grabbing" : "";
-  document.body.style.userSelect = isDragging ? "none" : "";
-}
-
 export function useColumnDragAndDrop() {
   const boardViewportRef = useRef<HTMLDivElement | null>(null);
   const columnElementsRef = useRef(new Map<string, HTMLElement>());
@@ -181,6 +155,7 @@ export function useColumnDragAndDrop() {
 
       if (state.selectionMode) {
         columnDragStore.reset();
+        columnGhostNodeSlot.set(null);
         setGhostPointer({ active: false });
         setDraggingDocumentState(false);
       }
@@ -297,7 +272,13 @@ export function useColumnDragAndDrop() {
           return;
         }
 
-        if (shouldIgnoreDragStart(event.target, element)) {
+        const isTouch = event.pointerType === "touch";
+
+        if (isTouch) {
+          if (!isTouchOnDragHandle(event.target, element)) {
+            return;
+          }
+        } else if (shouldIgnoreMousePointerDown(event.target, element)) {
           return;
         }
 
@@ -309,13 +290,6 @@ export function useColumnDragAndDrop() {
           return;
         }
 
-        event.preventDefault();
-
-        if (element.hasPointerCapture?.(event.pointerId) === false) {
-          element.setPointerCapture?.(event.pointerId);
-        }
-
-        const activationThreshold = 6;
         const dragStartX = event.clientX;
         const dragStartY = event.clientY;
         const columnElement =
@@ -324,6 +298,14 @@ export function useColumnDragAndDrop() {
         const grabOffsetX = dragStartX - columnRect.left;
         const grabOffsetY = dragStartY - columnRect.top;
         let isDragging = false;
+        let touchActivationTimerId: number | null = null;
+
+        // Always preventDefault on initial pointerdown so the OS
+        // long-press callout / context menu cannot hijack the gesture
+        // and strand us in a half-drag state. Drag handles set
+        // `touch-action: none`, so this does not break scrolling on
+        // the rest of the column surface.
+        event.preventDefault();
 
         const startDragging = () => {
           if (isDragging) {
@@ -333,9 +315,20 @@ export function useColumnDragAndDrop() {
           isDragging = true;
           setDraggingDocumentState(true);
 
+          if (element.hasPointerCapture?.(event.pointerId) === false) {
+            element.setPointerCapture?.(event.pointerId);
+          }
+
+          // Snapshot a pixel-perfect copy of the source column for the
+          // floating ghost. cloneNode does NOT clone event listeners.
+          const sourceClone = columnElement.cloneNode(true) as HTMLElement;
+
+          sourceClone.style.width = `${columnRect.width}px`;
+          sourceClone.style.height = `${columnRect.height}px`;
+          columnGhostNodeSlot.set(sourceClone);
+
           columnDragStore.setState({
             draggingColumnId: columnId,
-            draggingColumnTitle: columnState.title,
             draggingColumnWidth: columnRect.width,
             draggingColumnHeight: columnRect.height,
             dropIndex: null,
@@ -351,7 +344,6 @@ export function useColumnDragAndDrop() {
         };
 
         const updateFromPointer = (clientX: number, clientY: number) => {
-          startDragging();
           setGhostPointer({ x: clientX, y: clientY });
           autoScrollBoardViewport(clientX);
 
@@ -366,18 +358,37 @@ export function useColumnDragAndDrop() {
           return dropIndex;
         };
 
-        const cleanup = () => {
+        const cancelTouchActivation = () => {
+          if (touchActivationTimerId !== null) {
+            window.clearTimeout(touchActivationTimerId);
+            touchActivationTimerId = null;
+          }
+        };
+
+        const cleanupPointerSession = () => {
+          cancelTouchActivation();
           window.removeEventListener("pointermove", handlePointerMove);
           window.removeEventListener("pointerup", handlePointerUp);
           window.removeEventListener("pointercancel", handlePointerCancel);
+          window.removeEventListener("contextmenu", handleContextMenu, true);
 
           if (element.hasPointerCapture?.(event.pointerId)) {
             element.releasePointerCapture?.(event.pointerId);
           }
 
-          if (isDragging) {
-            setDraggingDocumentState(false);
-          }
+          // Always reset the document state. If we only reset when
+          // `isDragging` was true, an OS-hijacked long-press could
+          // leave the page with `userSelect: none` and a grabbing
+          // cursor — on mobile this manifests as broken scrolling.
+          setDraggingDocumentState(false);
+
+          columnGhostNodeSlot.set(null);
+          columnDragStore.reset();
+          setGhostPointer({ active: false });
+        };
+
+        const handleContextMenu = (contextEvent: Event) => {
+          contextEvent.preventDefault();
         };
 
         const finalizeDrop = (dropIndex: number | null) => {
@@ -395,7 +406,7 @@ export function useColumnDragAndDrop() {
           }
 
           // dropIndex is relative to the list with the dragging column
-          // already removed. Translate to the absolute index expected by
+          // removed. Translate to the absolute index expected by
           // moveColumn (which works on the unfiltered list).
           const filteredIds = orderedColumnIds.filter((id) => id !== columnId);
           const clamped = Math.max(0, Math.min(dropIndex, filteredIds.length));
@@ -414,22 +425,41 @@ export function useColumnDragAndDrop() {
           useStore.getState().moveColumn(columnId, finishIndex);
         };
 
+        const endDrag = (dropIndex: number | null) => {
+          finalizeDrop(dropIndex);
+          cleanupPointerSession();
+        };
+
         const handlePointerMove = (moveEvent: PointerEvent) => {
           if (moveEvent.pointerId !== event.pointerId) {
             return;
           }
 
-          moveEvent.preventDefault();
-
-          if (!isDragging) {
+          if (isTouch && !isDragging) {
             const deltaX = moveEvent.clientX - dragStartX;
             const deltaY = moveEvent.clientY - dragStartY;
 
-            if (Math.hypot(deltaX, deltaY) < activationThreshold) {
-              return;
+            if (
+              Math.hypot(deltaX, deltaY) > TOUCH_PRE_ACTIVATION_CANCEL_PIXELS
+            ) {
+              cleanupPointerSession();
             }
+
+            return;
           }
 
+          if (!isTouch && !isDragging) {
+            const deltaX = moveEvent.clientX - dragStartX;
+            const deltaY = moveEvent.clientY - dragStartY;
+
+            if (Math.hypot(deltaX, deltaY) < MOUSE_ACTIVATION_PIXELS) {
+              return;
+            }
+
+            startDragging();
+          }
+
+          moveEvent.preventDefault();
           updateFromPointer(moveEvent.clientX, moveEvent.clientY);
         };
 
@@ -439,17 +469,14 @@ export function useColumnDragAndDrop() {
           }
 
           if (!isDragging) {
-            cleanup();
+            cleanupPointerSession();
 
             return;
           }
 
           const dropIndex = updateFromPointer(upEvent.clientX, upEvent.clientY);
 
-          finalizeDrop(dropIndex);
-          cleanup();
-          columnDragStore.reset();
-          setGhostPointer({ active: false });
+          endDrag(dropIndex);
         };
 
         const handlePointerCancel = (cancelEvent: PointerEvent) => {
@@ -457,19 +484,22 @@ export function useColumnDragAndDrop() {
             return;
           }
 
-          cleanup();
-
-          if (isDragging) {
-            columnDragStore.reset();
-            setGhostPointer({ active: false });
-          }
+          cleanupPointerSession();
         };
+
+        if (isTouch) {
+          touchActivationTimerId = window.setTimeout(() => {
+            touchActivationTimerId = null;
+            startDragging();
+          }, TOUCH_LONG_PRESS_MS);
+        }
 
         window.addEventListener("pointermove", handlePointerMove, {
           passive: false,
         });
         window.addEventListener("pointerup", handlePointerUp);
         window.addEventListener("pointercancel", handlePointerCancel);
+        window.addEventListener("contextmenu", handleContextMenu, true);
       };
 
       element.addEventListener("pointerdown", onPointerDown, {
@@ -506,15 +536,6 @@ export function useColumnDragAndDrop() {
     boardViewportRef,
     contextValue,
   };
-}
-
-/** Returns true while `columnId` is being dragged (used to hide the source). */
-export function useIsColumnDragging(columnId: string) {
-  return useSyncExternalStore(
-    columnDragStore.subscribe,
-    () => columnDragStore.getSnapshot().draggingColumnId === columnId,
-    () => false,
-  );
 }
 
 /** Returns the currently dragging column id, or null when no drag is active. */
@@ -578,7 +599,6 @@ export function useColumnDropPlacement(): ColumnDropPlacement | null {
 
 type ColumnDragGhostSnapshot = {
   columnId: string;
-  title: string;
   width: number;
   height: number;
 } | null;
@@ -605,7 +625,6 @@ export function useColumnDragGhostSnapshot(): ColumnDragGhostSnapshot {
       if (
         cached &&
         cached.columnId === snapshot.draggingColumnId &&
-        cached.title === snapshot.draggingColumnTitle &&
         cached.width === snapshot.draggingColumnWidth &&
         cached.height === snapshot.draggingColumnHeight
       ) {
@@ -614,7 +633,6 @@ export function useColumnDragGhostSnapshot(): ColumnDragGhostSnapshot {
 
       const next: ColumnDragGhostSnapshot = {
         columnId: snapshot.draggingColumnId,
-        title: snapshot.draggingColumnTitle,
         width: snapshot.draggingColumnWidth,
         height: snapshot.draggingColumnHeight,
       };

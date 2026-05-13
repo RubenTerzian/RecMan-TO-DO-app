@@ -26,7 +26,6 @@ type Actions = {
   setActiveFilter(activeFilter: TaskFilter): void;
   resetTaskFilters(): void;
   toggleSelectionMode(): void;
-  clearSelectedTasks(): void;
   toggleTaskSelection(taskId: string): void;
   toggleAllTaskSelection(taskIds: string[]): void;
   toggleTaskCompletion(taskId: string): void;
@@ -426,9 +425,6 @@ export const useStore = create<AppStore>()((set) => ({
       selectionMode: !state.selectionMode,
       selectedTaskIds: state.selectionMode ? [] : state.selectedTaskIds,
     }));
-  },
-  clearSelectedTasks() {
-    set({ selectedTaskIds: [] });
   },
   toggleTaskSelection(taskId) {
     set((state) => ({

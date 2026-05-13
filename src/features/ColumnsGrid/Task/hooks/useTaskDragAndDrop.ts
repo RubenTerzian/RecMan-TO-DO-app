@@ -9,16 +9,24 @@ import {
   useSyncExternalStore,
 } from "react";
 import { useStore } from "@/store/store";
+import { taskGhostNodeSlot } from "@/features/ColumnsGrid/dnd/ghostNodeSlot";
+import {
+  MOUSE_ACTIVATION_PIXELS,
+  TOUCH_LONG_PRESS_MS,
+  TOUCH_PRE_ACTIVATION_CANCEL_PIXELS,
+  isTouchOnDragHandle,
+  setDraggingDocumentState,
+  shouldIgnoreMousePointerDown,
+} from "@/features/ColumnsGrid/dnd/pointerDragActivation";
 
 type TaskDropTarget = {
   columnId: string;
-  /** Index in this column's task list where the dragged task would land (0..tasks.length). */
+  /** Index in this column's task list where the dragged task would land. */
   index: number;
 };
 
 type TaskDragSnapshot = {
   draggingTaskId: string | null;
-  draggingTaskTitle: string;
   draggingTaskHeight: number;
   draggingTaskWidth: number;
   /** Original column of the dragged task. */
@@ -41,32 +49,12 @@ type Listener = () => void;
 
 const DEFAULT_SNAPSHOT: TaskDragSnapshot = {
   draggingTaskId: null,
-  draggingTaskTitle: "",
   draggingTaskHeight: 0,
   draggingTaskWidth: 0,
   sourceColumnId: null,
   previewColumnId: null,
   previewIndex: null,
 };
-
-function shouldIgnoreDragStart(
-  target: EventTarget | null,
-  handleElement: HTMLElement,
-) {
-  if (!(target instanceof Element)) {
-    return false;
-  }
-
-  const interactiveElement = target.closest(
-    'button, input, textarea, select, option, a, label, [role="button"], [contenteditable="true"], [data-no-drag="true"]',
-  );
-
-  if (!interactiveElement || !handleElement.contains(interactiveElement)) {
-    return false;
-  }
-
-  return interactiveElement.getAttribute("data-drag-handle") !== "true";
-}
 
 function createTaskDragStore() {
   let state = DEFAULT_SNAPSHOT;
@@ -87,7 +75,6 @@ function createTaskDragStore() {
     setState(nextState: TaskDragSnapshot) {
       if (
         state.draggingTaskId === nextState.draggingTaskId &&
-        state.draggingTaskTitle === nextState.draggingTaskTitle &&
         state.draggingTaskHeight === nextState.draggingTaskHeight &&
         state.draggingTaskWidth === nextState.draggingTaskWidth &&
         state.sourceColumnId === nextState.sourceColumnId &&
@@ -113,9 +100,9 @@ function createTaskDragStore() {
 const taskDragStore = createTaskDragStore();
 
 /**
- * Pointer position store for the drag ghost. Updated imperatively at
- * raf-throttle frequency. Decoupled from the main drag snapshot so that
- * pointer movement does not invalidate the heavier snapshot.
+ * Pointer position store for the drag ghost. Updated imperatively from
+ * pointer events. The ghost component reads it directly and mutates its
+ * own DOM transform, so pointer movement never re-renders React.
  */
 type GhostPointer = {
   x: number;
@@ -135,13 +122,9 @@ const ghostPointer: GhostPointer = {
 
 const ghostListeners = new Set<Listener>();
 
-function notifyGhostListeners() {
-  ghostListeners.forEach((listener) => listener());
-}
-
 function setGhostPointer(next: Partial<GhostPointer>) {
   Object.assign(ghostPointer, next);
-  notifyGhostListeners();
+  ghostListeners.forEach((listener) => listener());
 }
 
 export function subscribeToGhostPointer(listener: Listener) {
@@ -158,15 +141,6 @@ export function getGhostPointerSnapshot() {
 
 export const TaskDragAndDropContext =
   createContext<TaskDragAndDropContextValue | null>(null);
-
-function setDraggingDocumentState(isDragging: boolean) {
-  if (typeof document === "undefined") {
-    return;
-  }
-
-  document.body.style.cursor = isDragging ? "grabbing" : "";
-  document.body.style.userSelect = isDragging ? "none" : "";
-}
 
 export function useTaskDragAndDropContext() {
   const context = useContext(TaskDragAndDropContext);
@@ -202,6 +176,7 @@ export function useTaskDragAndDrop({
 
         if (state.selectionMode) {
           taskDragStore.reset();
+          taskGhostNodeSlot.set(null);
           setGhostPointer({ active: false });
           setDraggingDocumentState(false);
         }
@@ -235,10 +210,9 @@ export function useTaskDragAndDrop({
   );
 
   /**
-   * Compute the drop index inside a column based on cursor Y.
-   *
-   * Excludes the dragged task from the candidate list (we treat the
-   * dragged card as if it has been removed from the column already).
+   * Compute the drop index inside a column based on cursor Y. Excludes
+   * the dragged task from the candidate list (we treat the dragged card
+   * as if it has been removed from the column already).
    */
   const computeDropIndexForColumn = useCallback(
     (columnId: string, clientY: number, draggingTaskId: string) => {
@@ -357,7 +331,15 @@ export function useTaskDragAndDrop({
           return;
         }
 
-        if (shouldIgnoreDragStart(event.target, element)) {
+        const isTouch = event.pointerType === "touch";
+
+        // Touch DnD is restricted to explicit drag-handle children so
+        // the rest of the card surface stays scrollable on mobile.
+        if (isTouch) {
+          if (!isTouchOnDragHandle(event.target, element)) {
+            return;
+          }
+        } else if (shouldIgnoreMousePointerDown(event.target, element)) {
           return;
         }
 
@@ -367,13 +349,6 @@ export function useTaskDragAndDrop({
           return;
         }
 
-        event.preventDefault();
-
-        if (element.hasPointerCapture?.(event.pointerId) === false) {
-          element.setPointerCapture?.(event.pointerId);
-        }
-
-        const activationThreshold = 6;
         const dragStartX = event.clientX;
         const dragStartY = event.clientY;
         const taskElement =
@@ -382,6 +357,14 @@ export function useTaskDragAndDrop({
         const grabOffsetX = dragStartX - cardRect.left;
         const grabOffsetY = dragStartY - cardRect.top;
         let isDragging = false;
+        let touchActivationTimerId: number | null = null;
+
+        // Always preventDefault on the initial pointerdown — for touch
+        // this suppresses the OS callout / context menu / image-save
+        // pop-up that would otherwise hijack the gesture and leak our
+        // drag session. Drag handles set `touch-action: none` so this
+        // does not interfere with scrolling on the rest of the surface.
+        event.preventDefault();
 
         const startDragging = () => {
           if (isDragging) {
@@ -391,9 +374,22 @@ export function useTaskDragAndDrop({
           isDragging = true;
           setDraggingDocumentState(true);
 
+          if (element.hasPointerCapture?.(event.pointerId) === false) {
+            element.setPointerCapture?.(event.pointerId);
+          }
+
+          // Snapshot a pixel-perfect copy of the source card for the
+          // floating ghost. cloneNode does NOT clone event listeners.
+          const sourceClone = taskElement.cloneNode(true) as HTMLElement;
+
+          // Lock the clone to its source dimensions so layout doesn't
+          // collapse when we lift it out of its parent.
+          sourceClone.style.width = `${cardRect.width}px`;
+          sourceClone.style.height = `${cardRect.height}px`;
+          taskGhostNodeSlot.set(sourceClone);
+
           taskDragStore.setState({
             draggingTaskId: currentTask.id,
-            draggingTaskTitle: currentTask.title,
             draggingTaskHeight: cardRect.height,
             draggingTaskWidth: cardRect.width,
             sourceColumnId: currentTask.columnId,
@@ -411,8 +407,6 @@ export function useTaskDragAndDrop({
         };
 
         const updateFromPointer = (clientX: number, clientY: number) => {
-          startDragging();
-
           // Always move the ghost first so it follows the cursor smoothly.
           setGhostPointer({ x: clientX, y: clientY });
 
@@ -447,18 +441,42 @@ export function useTaskDragAndDrop({
           return { columnId: columnAtPoint.columnId, index: dropIndex };
         };
 
+        const cancelTouchActivation = () => {
+          if (touchActivationTimerId !== null) {
+            window.clearTimeout(touchActivationTimerId);
+            touchActivationTimerId = null;
+          }
+        };
+
         const cleanupPointerSession = () => {
+          cancelTouchActivation();
           window.removeEventListener("pointermove", handlePointerMove);
           window.removeEventListener("pointerup", handlePointerUp);
           window.removeEventListener("pointercancel", handlePointerCancel);
+          window.removeEventListener("contextmenu", handleContextMenu, true);
 
           if (element.hasPointerCapture?.(event.pointerId)) {
             element.releasePointerCapture?.(event.pointerId);
           }
 
-          if (isDragging) {
-            setDraggingDocumentState(false);
-          }
+          // Always reset the document/body state. If we only reset when
+          // `isDragging` was true, an OS-hijacked gesture could leave
+          // the page with `userSelect: none` and a grabbing cursor,
+          // which on mobile manifests as broken scrolling.
+          setDraggingDocumentState(false);
+
+          // Drop any in-flight ghost / drag-store snapshot so the UI
+          // can never get stuck in a half-drag state.
+          taskGhostNodeSlot.set(null);
+          taskDragStore.reset();
+          setGhostPointer({ active: false });
+        };
+
+        // Suppress the long-press context menu / image callout for the
+        // duration of this pointer session. Listening in capture phase
+        // means we beat the browser default.
+        const handleContextMenu = (contextEvent: Event) => {
+          contextEvent.preventDefault();
         };
 
         const finalizeDrop = (target: TaskDropTarget | null) => {
@@ -507,22 +525,46 @@ export function useTaskDragAndDrop({
           });
         };
 
+        const endDrag = (target: TaskDropTarget | null) => {
+          finalizeDrop(target);
+          cleanupPointerSession();
+        };
+
         const handlePointerMove = (moveEvent: PointerEvent) => {
           if (moveEvent.pointerId !== event.pointerId) {
             return;
           }
 
-          moveEvent.preventDefault();
-
-          if (!isDragging) {
+          if (isTouch && !isDragging) {
+            // Pre-activation movement on touch cancels the long-press
+            // and lets the browser scroll naturally — preventing the
+            // user from getting stuck in DnD when they meant to scroll.
             const deltaX = moveEvent.clientX - dragStartX;
             const deltaY = moveEvent.clientY - dragStartY;
 
-            if (Math.hypot(deltaX, deltaY) < activationThreshold) {
-              return;
+            if (
+              Math.hypot(deltaX, deltaY) > TOUCH_PRE_ACTIVATION_CANCEL_PIXELS
+            ) {
+              cleanupPointerSession();
             }
+
+            return;
           }
 
+          if (!isTouch && !isDragging) {
+            const deltaX = moveEvent.clientX - dragStartX;
+            const deltaY = moveEvent.clientY - dragStartY;
+
+            if (Math.hypot(deltaX, deltaY) < MOUSE_ACTIVATION_PIXELS) {
+              return;
+            }
+
+            startDragging();
+          }
+
+          // Once dragging, suppress browser handling (text selection,
+          // touch scrolling, etc.).
+          moveEvent.preventDefault();
           updateFromPointer(moveEvent.clientX, moveEvent.clientY);
         };
 
@@ -532,6 +574,7 @@ export function useTaskDragAndDrop({
           }
 
           if (!isDragging) {
+            // Tap/click without activation — just clean up.
             cleanupPointerSession();
 
             return;
@@ -539,11 +582,7 @@ export function useTaskDragAndDrop({
 
           const target = updateFromPointer(upEvent.clientX, upEvent.clientY);
 
-          finalizeDrop(target);
-
-          cleanupPointerSession();
-          taskDragStore.reset();
-          setGhostPointer({ active: false });
+          endDrag(target);
         };
 
         const handlePointerCancel = (cancelEvent: PointerEvent) => {
@@ -552,18 +591,23 @@ export function useTaskDragAndDrop({
           }
 
           cleanupPointerSession();
-
-          if (isDragging) {
-            taskDragStore.reset();
-            setGhostPointer({ active: false });
-          }
         };
+
+        if (isTouch) {
+          // Long-press timer activates the drag. If user moves before
+          // it fires, handlePointerMove cancels everything.
+          touchActivationTimerId = window.setTimeout(() => {
+            touchActivationTimerId = null;
+            startDragging();
+          }, TOUCH_LONG_PRESS_MS);
+        }
 
         window.addEventListener("pointermove", handlePointerMove, {
           passive: false,
         });
         window.addEventListener("pointerup", handlePointerUp);
         window.addEventListener("pointercancel", handlePointerCancel);
+        window.addEventListener("contextmenu", handleContextMenu, true);
       };
 
       element.addEventListener("pointerdown", onPointerDown, {
@@ -597,18 +641,6 @@ export function useTaskDragAndDrop({
   );
 }
 
-/**
- * Returns true when `taskId` is the currently dragging task. Used to hide
- * the source card from its column while it is being dragged.
- */
-export function useIsTaskDragging(taskId: string) {
-  return useSyncExternalStore(
-    taskDragStore.subscribe,
-    () => taskDragStore.getSnapshot().draggingTaskId === taskId,
-    () => false,
-  );
-}
-
 /** Returns the dragging task id, or `null` when no drag is in progress. */
 export function useDraggingTaskId() {
   return useSyncExternalStore(
@@ -619,8 +651,21 @@ export function useDraggingTaskId() {
 }
 
 /**
- * Returns true when this column is the active drop target column. Used to
- * highlight the column visually.
+ * Returns the column id the dragged task originated from, or `null` when
+ * no task drag is in progress. Used by the source column to suppress its
+ * empty-state messaging while the placeholder represents the held card.
+ */
+export function useDragSourceColumnId() {
+  return useSyncExternalStore(
+    taskDragStore.subscribe,
+    () => taskDragStore.getSnapshot().sourceColumnId,
+    () => null,
+  );
+}
+
+/**
+ * Returns true when this column is the active drop-target column.
+ * Used to highlight the column visually.
  */
 export function useIsColumnDropTarget(columnId: string) {
   return useSyncExternalStore(
@@ -640,8 +685,8 @@ const placementCache = new Map<string, ColumnDropPlacement | null>();
 
 /**
  * Returns the placement of the drop placeholder inside this column, or
- * null when this column is not the active drop target. Cached per column
- * so identity stays stable while the values do not change.
+ * `null` when this column is not the active drop target. Cached per
+ * column so the identity stays stable while the values do not change.
  */
 export function useColumnDropPlacement(
   columnId: string,
@@ -685,20 +730,19 @@ export function useColumnDropPlacement(
   );
 }
 
-/**
- * Drag ghost snapshot for the floating card that follows the cursor.
- * Position is excluded — the ghost component reads pointer position
- * imperatively and updates its own DOM transform.
- */
 type DragGhostSnapshot = {
   taskId: string;
-  title: string;
   width: number;
   height: number;
 } | null;
 
 const ghostSnapshotCache: { value: DragGhostSnapshot } = { value: null };
 
+/**
+ * Snapshot consumed by the floating ghost component. Position is
+ * intentionally excluded — the ghost reads pointer position
+ * imperatively and never re-renders during pointer movement.
+ */
 export function useDragGhostSnapshot(): DragGhostSnapshot {
   return useSyncExternalStore(
     taskDragStore.subscribe,
@@ -719,7 +763,6 @@ export function useDragGhostSnapshot(): DragGhostSnapshot {
       if (
         cached &&
         cached.taskId === snapshot.draggingTaskId &&
-        cached.title === snapshot.draggingTaskTitle &&
         cached.width === snapshot.draggingTaskWidth &&
         cached.height === snapshot.draggingTaskHeight
       ) {
@@ -728,7 +771,6 @@ export function useDragGhostSnapshot(): DragGhostSnapshot {
 
       const next: DragGhostSnapshot = {
         taskId: snapshot.draggingTaskId,
-        title: snapshot.draggingTaskTitle,
         width: snapshot.draggingTaskWidth,
         height: snapshot.draggingTaskHeight,
       };

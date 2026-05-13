@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { ColumnEditor } from "@/features/ColumnsGrid/Column/components/ColumnEditor/ColumnEditor";
 import { ColumnDragGhost } from "@/features/ColumnsGrid/components/ColumnDragGhost/ColumnDragGhost";
 import { ColumnTrack } from "@/features/ColumnsGrid/components/ColumnTrack/ColumnTrack";
@@ -37,6 +38,30 @@ export function ColumnsGrid() {
     handleSaveColumnCreation,
     handleStartColumnCreation,
   } = useColumnCreation();
+
+  // When the user opens the create-column editor, scroll the board to the
+  // far right so the trailing editor (and its action buttons) are in view.
+  useEffect(() => {
+    if (!isCreatingColumn) {
+      return;
+    }
+
+    const viewport = boardViewportRef.current;
+
+    if (!viewport) {
+      return;
+    }
+
+    // Wait one frame so the trailing editor section is mounted and
+    // contributes to scrollWidth before we scroll.
+    const frameId = window.requestAnimationFrame(() => {
+      viewport.scrollTo({ left: viewport.scrollWidth, behavior: "smooth" });
+    });
+
+    return () => {
+      window.cancelAnimationFrame(frameId);
+    };
+  }, [boardViewportRef, isCreatingColumn]);
 
   const createColumnEditor = isCreatingColumn ? (
     <section className={columnStyles.column} data-testid="create-column-card">

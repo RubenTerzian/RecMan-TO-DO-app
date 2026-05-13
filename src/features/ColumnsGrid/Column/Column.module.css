@@ -52,20 +52,20 @@
   align-content: start;
   overflow-y: auto;
   padding-right: 2px;
-  overscroll-behavior: contain;
-}
-
-.taskItem {
-  display: grid;
-  gap: 0;
+  /*
+   * pan-y tells the browser this region only handles vertical pans, so
+   * horizontal swipes are passed through to the ancestor board viewport
+   * (which owns column-to-column scrolling). overscroll-behavior-y
+   * keeps vertical bounce contained without affecting the horizontal
+   * gesture chain.
+   */
+  touch-action: pan-y;
+  overscroll-behavior-y: contain;
 }
 
 .taskDropTarget {
-  border-color: rgba(36, 90, 240, 0.32);
-  background: rgba(244, 248, 255, 0.96);
-  box-shadow:
-    0 0 0 2px rgba(36, 90, 240, 0.12),
-    0 12px 28px rgba(24, 34, 53, 0.08);
+  border-color: rgba(36, 90, 240, 0.45);
+  box-shadow: 0 0 0 1px rgba(36, 90, 240, 0.15);
 }
 
 @media (max-width: 767px) {

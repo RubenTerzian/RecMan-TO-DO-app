@@ -25,18 +25,7 @@ export function useTaskEditing({ taskId, title }: UseTaskEditingOptions) {
     startSession(title);
   }, [startSession, title]);
 
-  const handleTitleChange = useCallback(
-    (nextTitle: string) => {
-      updateDraft(nextTitle);
-    },
-    [updateDraft],
-  );
-
-  const handleCancelEditing = useCallback(() => {
-    resetSession();
-  }, [resetSession]);
-
-  const handleEditorBlur = useEditorBlur(handleCancelEditing);
+  const handleEditorBlur = useEditorBlur(resetSession);
 
   const handleSaveEditing = useCallback(() => {
     updateTaskTitle(taskId, normalizeTaskTitle(draft, title));
@@ -50,11 +39,11 @@ export function useTaskEditing({ taskId, title }: UseTaskEditingOptions) {
   return {
     draftTitle: draft,
     isEditing: isActive,
-    handleCancelEditing,
+    handleCancelEditing: resetSession,
     handleDeleteTask,
     handleEditorBlur,
     handleSaveEditing,
     handleStartEditing,
-    handleTitleChange,
+    handleTitleChange: updateDraft,
   };
 }

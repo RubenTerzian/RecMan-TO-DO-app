@@ -21,18 +21,7 @@ export function useColumnCreation() {
     startSession(DEFAULT_COLUMN_TITLE);
   }, [startSession]);
 
-  const handleDraftTitleChange = useCallback(
-    (title: string) => {
-      updateDraft(title);
-    },
-    [updateDraft],
-  );
-
-  const handleCancelColumnCreation = useCallback(() => {
-    resetSession();
-  }, [resetSession]);
-
-  const handleCreateEditorBlur = useEditorBlur(handleCancelColumnCreation);
+  const handleCreateEditorBlur = useEditorBlur(resetSession);
 
   const handleSaveColumnCreation = useCallback(() => {
     createColumn(normalizeColumnTitle(draft));
@@ -43,8 +32,8 @@ export function useColumnCreation() {
     draftTitle: draft,
     isCreatingColumn: isActive,
     handleCreateEditorBlur,
-    handleDraftTitleChange,
-    handleCancelColumnCreation,
+    handleDraftTitleChange: updateDraft,
+    handleCancelColumnCreation: resetSession,
     handleSaveColumnCreation,
     handleStartColumnCreation,
   };

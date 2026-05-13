@@ -5,12 +5,12 @@ import { EmptyColumnState } from "@/features/ColumnsGrid/Column/components/Empty
 import { TaskDropPlaceholder } from "@/features/ColumnsGrid/Task/components/TaskDropPlaceholder/TaskDropPlaceholder";
 import {
   useColumnDropPlacement,
+  useDragSourceColumnId,
   useDraggingTaskId,
   useTaskDragAndDropContext,
 } from "@/features/ColumnsGrid/Task/hooks/useTaskDragAndDrop";
 import { useVisibleTaskIds } from "@/features/ColumnsGrid/Column/hooks/useVisibleTaskIds";
 import { makeSelectColumnTaskCount } from "@/store/selectors";
-import type { ColumnEmptyState } from "@/features/ColumnsGrid/Column/types";
 import styles from "../../Column.module.css";
 
 type ColumnTaskListProps = {
@@ -18,17 +18,17 @@ type ColumnTaskListProps = {
   selectionMode: boolean;
 };
 
-const DEFAULT_EMPTY_STATE: ColumnEmptyState = {
+const DEFAULT_EMPTY_STATE = {
   variant: "empty",
   title: "No tasks yet",
   message: "Add your first task to start filling this column.",
-};
+} as const;
 
-const NO_RESULTS_EMPTY_STATE: ColumnEmptyState = {
+const NO_RESULTS_EMPTY_STATE = {
   variant: "no-results",
   title: "No matching tasks",
   message: "Try a different search or filter to see tasks here.",
-};
+} as const;
 
 function ColumnTaskListComponent({
   columnId,
@@ -38,6 +38,7 @@ function ColumnTaskListComponent({
   const totalTaskCount = useStore(makeSelectColumnTaskCount(columnId));
   const placement = useColumnDropPlacement(columnId);
   const draggingTaskId = useDraggingTaskId();
+  const dragSourceColumnId = useDragSourceColumnId();
   const { registerColumnDropZone } = useTaskDragAndDropContext();
 
   // Hide the dragged task from its own column while dragging — the
@@ -62,14 +63,22 @@ function ColumnTaskListComponent({
   );
 
   if (visibleTaskIds.length === 0) {
-    if (draggingTaskId) {
-      // While a drag is in progress, never show empty-state messaging.
-      // Render only the placeholder when this column is the active target.
+    // Suppress the empty/no-results message only in the column the
+    // task originates from (its slot is conceptually held by the ghost).
+    // Other columns keep their normal empty messaging unless this column
+    // is the active drop target, in which case the placeholder takes over.
+    const isSourceColumn = dragSourceColumnId === columnId;
+
+    if (placement) {
       return (
         <div ref={handleTaskListRef} className={styles.taskList}>
-          {placement ? <TaskDropPlaceholder height={placement.height} /> : null}
+          <TaskDropPlaceholder height={placement.height} />
         </div>
       );
+    }
+
+    if (isSourceColumn) {
+      return <div ref={handleTaskListRef} className={styles.taskList} />;
     }
 
     const emptyState =

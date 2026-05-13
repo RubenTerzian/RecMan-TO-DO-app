@@ -1,13 +1,6 @@
 import type { AppStore } from "./store";
 
-export const selectColumns = (state: AppStore) => state.columns;
-
 export const selectSelectionMode = (state: AppStore) => state.selectionMode;
-
-export const selectBoardGridState = (state: AppStore) => ({
-  columns: state.columns,
-  selectionMode: state.selectionMode,
-});
 
 export const selectSearchTerm = (state: AppStore) => state.searchTerm;
 
@@ -19,10 +12,6 @@ export const selectUpdateColumnTitle = (state: AppStore) =>
   state.updateColumnTitle;
 
 export const selectDeleteColumn = (state: AppStore) => state.deleteColumn;
-
-export const selectMoveColumn = (state: AppStore) => state.moveColumn;
-
-export const selectTasks = (state: AppStore) => state.tasks;
 
 export const selectCreateTask = (state: AppStore) => state.createTask;
 

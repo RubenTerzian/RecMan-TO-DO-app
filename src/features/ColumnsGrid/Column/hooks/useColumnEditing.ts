@@ -25,18 +25,7 @@ export function useColumnEditing({ columnId, title }: UseColumnEditingOptions) {
     startSession(title);
   }, [startSession, title]);
 
-  const handleDraftTitleChange = useCallback(
-    (nextTitle: string) => {
-      updateDraft(nextTitle);
-    },
-    [updateDraft],
-  );
-
-  const handleCancelEditing = useCallback(() => {
-    resetSession();
-  }, [resetSession]);
-
-  const handleEditorBlur = useEditorBlur(handleCancelEditing);
+  const handleEditorBlur = useEditorBlur(resetSession);
 
   const handleSaveEditing = useCallback(() => {
     updateColumnTitle(columnId, normalizeColumnTitle(draft, title));
@@ -50,9 +39,9 @@ export function useColumnEditing({ columnId, title }: UseColumnEditingOptions) {
   return {
     draftTitle: draft,
     isEditing: isActive,
-    handleCancelEditing,
+    handleCancelEditing: resetSession,
     handleDeleteColumn,
-    handleDraftTitleChange,
+    handleDraftTitleChange: updateDraft,
     handleEditorBlur,
     handleSaveEditing,
     handleStartEditing,

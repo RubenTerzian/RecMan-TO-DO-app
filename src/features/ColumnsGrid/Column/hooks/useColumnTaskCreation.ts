@@ -27,18 +27,7 @@ export function useColumnTaskCreation({
     startSession(DEFAULT_TASK_TITLE);
   }, [startSession]);
 
-  const handleTaskTitleChange = useCallback(
-    (title: string) => {
-      updateDraft(title);
-    },
-    [updateDraft],
-  );
-
-  const handleCancelTaskCreation = useCallback(() => {
-    resetSession();
-  }, [resetSession]);
-
-  const handleTaskEditorBlur = useEditorBlur(handleCancelTaskCreation);
+  const handleTaskEditorBlur = useEditorBlur(resetSession);
 
   const handleSaveTaskCreation = useCallback(() => {
     createTask(columnId, normalizeTaskTitle(draft));
@@ -48,10 +37,10 @@ export function useColumnTaskCreation({
   return {
     draftTaskTitle: draft,
     isCreatingTask: isActive,
-    handleCancelTaskCreation,
+    handleCancelTaskCreation: resetSession,
     handleSaveTaskCreation,
     handleStartTaskCreation,
     handleTaskEditorBlur,
-    handleTaskTitleChange,
+    handleTaskTitleChange: updateDraft,
   };
 }
