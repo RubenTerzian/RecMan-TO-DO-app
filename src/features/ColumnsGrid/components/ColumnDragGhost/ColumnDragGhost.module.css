@@ -1,0 +1,31 @@
+.ghost {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: flex-start;
+  padding: 16px;
+  border: 1px solid rgba(36, 90, 240, 0.36);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow:
+    0 24px 48px rgba(24, 34, 53, 0.22),
+    0 6px 16px rgba(24, 34, 53, 0.12);
+  pointer-events: none;
+  opacity: 0.92;
+  user-select: none;
+  will-change: transform;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-text);
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

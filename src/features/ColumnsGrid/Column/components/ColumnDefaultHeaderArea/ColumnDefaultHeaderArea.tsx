@@ -5,10 +5,10 @@ import { ConfirmationModal } from "@/components/shared/ConfirmationModal/Confirm
 import { ColumnEditor } from "@/features/ColumnsGrid/Column/components/ColumnEditor/ColumnEditor";
 import { ColumnHeader } from "@/features/ColumnsGrid/Column/components/ColumnHeader/ColumnHeader";
 import { useColumnEditing } from "@/features/ColumnsGrid/Column/hooks/useColumnEditing";
+import { makeSelectColumnTitle } from "@/store/selectors";
 
 type ColumnDefaultHeaderAreaProps = {
   columnId: string;
-  title: string;
   dragHandleRef: Ref<HTMLElement>;
 };
 
@@ -23,9 +23,13 @@ function getColumnTaskCount(columnId: string) {
 
 function ColumnDefaultHeaderAreaComponent({
   columnId,
-  title,
   dragHandleRef,
 }: ColumnDefaultHeaderAreaProps) {
+  const selectTitle = useMemo(
+    () => makeSelectColumnTitle(columnId),
+    [columnId],
+  );
+  const title = useStore(selectTitle);
   const {
     draftTitle,
     isEditing,

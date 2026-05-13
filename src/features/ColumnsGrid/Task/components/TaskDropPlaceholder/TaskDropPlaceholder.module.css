@@ -1,0 +1,9 @@
+.placeholder {
+  width: 100%;
+  border: 2px dashed rgba(36, 90, 240, 0.4);
+  border-radius: 16px;
+  background: rgba(36, 90, 240, 0.08);
+  box-sizing: border-box;
+  pointer-events: none;
+  transition: height 120ms ease;
+}

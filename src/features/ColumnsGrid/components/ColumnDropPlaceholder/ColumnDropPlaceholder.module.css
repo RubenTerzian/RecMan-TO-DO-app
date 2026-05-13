@@ -1,0 +1,8 @@
+.placeholder {
+  flex-shrink: 0;
+  border: 2px dashed rgba(36, 90, 240, 0.4);
+  border-radius: 18px;
+  background: rgba(36, 90, 240, 0.06);
+  box-sizing: border-box;
+  pointer-events: none;
+}

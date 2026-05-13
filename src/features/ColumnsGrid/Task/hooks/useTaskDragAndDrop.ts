@@ -9,63 +9,44 @@ import {
   useSyncExternalStore,
 } from "react";
 import { useStore } from "@/store/store";
-import { selectMoveTask } from "@/store/selectors";
 
-type TaskDropEdge = "top" | "bottom";
-
-type PointerTaskDropTarget =
-  | {
-      type: "task";
-      columnId: string;
-      edge: TaskDropEdge;
-      taskId: string;
-    }
-  | {
-      type: "empty-column";
-      columnId: string;
-    };
-
-type TaskDropState = {
-  draggingTaskId: string | null;
-  previewColumnId: string | null;
-  previewTaskId: string | null;
-  previewEdge: TaskDropEdge | null;
-  previewTitle: string | null;
+type TaskDropTarget = {
+  columnId: string;
+  /** Index in this column's task list where the dragged task would land (0..tasks.length). */
+  index: number;
 };
 
-type TaskPreviewSnapshot = {
-  edge: TaskDropEdge | null;
-  title: string;
+type TaskDragSnapshot = {
+  draggingTaskId: string | null;
+  draggingTaskTitle: string;
+  draggingTaskHeight: number;
+  draggingTaskWidth: number;
+  /** Original column of the dragged task. */
+  sourceColumnId: string | null;
+  previewColumnId: string | null;
+  previewIndex: number | null;
 };
 
 export type TaskDragAndDropContextValue = {
-  registerEmptyColumnDropTarget(
-    columnId: string,
-    element: HTMLElement | null,
-  ): void;
+  registerColumnDropZone(columnId: string, element: HTMLElement | null): void;
   registerTaskDragHandle(taskId: string, element: HTMLElement | null): void;
   registerTaskElement(taskId: string, element: HTMLElement | null): void;
-  registerTaskListElement(columnId: string, element: HTMLElement | null): void;
 };
 
 type UseTaskDragAndDropOptions = {
   boardViewportRef: RefObject<HTMLDivElement | null>;
-  selectionMode: boolean;
 };
 
 type Listener = () => void;
 
-type LastTaskDropTarget = {
-  edge: TaskDropEdge;
-  taskId: string;
-};
-
-const DEFAULT_DROP_STATE: TaskDropState = {
+const DEFAULT_SNAPSHOT: TaskDragSnapshot = {
   draggingTaskId: null,
+  draggingTaskTitle: "",
+  draggingTaskHeight: 0,
+  draggingTaskWidth: 0,
+  sourceColumnId: null,
   previewColumnId: null,
-  previewTaskId: null,
-  previewEdge: null,
-  previewTitle: null,
+  previewIndex: null,
 };
 
 function shouldIgnoreDragStart(
@@ -87,8 +68,8 @@ function shouldIgnoreDragStart(
   return interactiveElement.getAttribute("data-drag-handle") !== "true";
 }
 
-function createTaskDragStateStore() {
-  let state = DEFAULT_DROP_STATE;
+function createTaskDragStore() {
+  let state = DEFAULT_SNAPSHOT;
   const listeners = new Set<Listener>();
 
   return {
@@ -96,16 +77,22 @@ function createTaskDragStateStore() {
       return state;
     },
     reset() {
-      state = DEFAULT_DROP_STATE;
+      if (state === DEFAULT_SNAPSHOT) {
+        return;
+      }
+
+      state = DEFAULT_SNAPSHOT;
       listeners.forEach((listener) => listener());
     },
-    setState(nextState: TaskDropState) {
+    setState(nextState: TaskDragSnapshot) {
       if (
         state.draggingTaskId === nextState.draggingTaskId &&
+        state.draggingTaskTitle === nextState.draggingTaskTitle &&
+        state.draggingTaskHeight === nextState.draggingTaskHeight &&
+        state.draggingTaskWidth === nextState.draggingTaskWidth &&
+        state.sourceColumnId === nextState.sourceColumnId &&
         state.previewColumnId === nextState.previewColumnId &&
-        state.previewTaskId === nextState.previewTaskId &&
-        state.previewEdge === nextState.previewEdge &&
-        state.previewTitle === nextState.previewTitle
+        state.previewIndex === nextState.previewIndex
       ) {
         return;
       }
@@ -123,8 +110,51 @@ function createTaskDragStateStore() {
   };
 }
 
-const taskDragStateStore = createTaskDragStateStore();
-const taskPreviewSnapshotCache = new Map<string, TaskPreviewSnapshot>();
+const taskDragStore = createTaskDragStore();
+
+/**
+ * Pointer position store for the drag ghost. Updated imperatively at
+ * raf-throttle frequency. Decoupled from the main drag snapshot so that
+ * pointer movement does not invalidate the heavier snapshot.
+ */
+type GhostPointer = {
+  x: number;
+  y: number;
+  offsetX: number;
+  offsetY: number;
+  active: boolean;
+};
+
+const ghostPointer: GhostPointer = {
+  x: 0,
+  y: 0,
+  offsetX: 0,
+  offsetY: 0,
+  active: false,
+};
+
+const ghostListeners = new Set<Listener>();
+
+function notifyGhostListeners() {
+  ghostListeners.forEach((listener) => listener());
+}
+
+function setGhostPointer(next: Partial<GhostPointer>) {
+  Object.assign(ghostPointer, next);
+  notifyGhostListeners();
+}
+
+export function subscribeToGhostPointer(listener: Listener) {
+  ghostListeners.add(listener);
+
+  return () => {
+    ghostListeners.delete(listener);
+  };
+}
+
+export function getGhostPointerSnapshot() {
+  return ghostPointer;
+}
 
 export const TaskDragAndDropContext =
   createContext<TaskDragAndDropContextValue | null>(null);
@@ -148,189 +178,100 @@ export function useTaskDragAndDropContext() {
   return context;
 }
 
+type ColumnRect = {
+  columnId: string;
+  rect: DOMRect;
+};
+
 export function useTaskDragAndDrop({
   boardViewportRef,
-  selectionMode,
 }: UseTaskDragAndDropOptions): TaskDragAndDropContextValue {
-  const moveTask = useStore(selectMoveTask);
   const tasksRef = useRef(useStore.getState().tasks);
-  const moveTaskRef = useRef(moveTask);
-  const selectionModeRef = useRef(selectionMode);
-  const dragTaskMidpointsRef = useRef(new Map<string, number>());
-  const lastTaskDropTargetRef = useRef<LastTaskDropTarget | null>(null);
+  const selectionModeRef = useRef(useStore.getState().selectionMode);
   const taskElementsRef = useRef(new Map<string, HTMLElement>());
   const taskDragHandleElementsRef = useRef(new Map<string, HTMLElement>());
-  const taskListElementsRef = useRef(new Map<string, HTMLElement>());
-  const emptyColumnDropTargetsRef = useRef(new Map<string, HTMLElement>());
+  const columnDropZonesRef = useRef(new Map<string, HTMLElement>());
   const taskHandleCleanupRef = useRef(new Map<string, () => void>());
 
   useEffect(() => {
-    moveTaskRef.current = moveTask;
-  }, [moveTask]);
-
-  useEffect(() => {
-    selectionModeRef.current = selectionMode;
-
-    if (selectionMode) {
-      dragTaskMidpointsRef.current.clear();
-      lastTaskDropTargetRef.current = null;
-      taskDragStateStore.reset();
-      setDraggingDocumentState(false);
-    }
-  }, [selectionMode]);
-
-  useEffect(() => {
-    const unsubscribe = useStore.subscribe((state) => {
+    return useStore.subscribe((state) => {
       tasksRef.current = state.tasks;
-    });
 
-    return unsubscribe;
-  }, []);
+      if (state.selectionMode !== selectionModeRef.current) {
+        selectionModeRef.current = state.selectionMode;
 
-  const clearPreview = useCallback(() => {
-    const currentState = taskDragStateStore.getSnapshot();
-
-    if (
-      currentState.previewColumnId === null &&
-      currentState.previewTaskId === null &&
-      currentState.previewEdge === null
-    ) {
-      return;
-    }
-
-    taskDragStateStore.setState({
-      ...currentState,
-      previewColumnId: null,
-      previewTaskId: null,
-      previewEdge: null,
+        if (state.selectionMode) {
+          taskDragStore.reset();
+          setGhostPointer({ active: false });
+          setDraggingDocumentState(false);
+        }
+      }
     });
   }, []);
 
-  const updateTaskPreview = useCallback(
-    (
-      previewColumnId: string,
-      previewTaskId: string | null,
-      previewEdge: TaskDropEdge | null,
-    ) => {
-      const currentState = taskDragStateStore.getSnapshot();
-
-      taskDragStateStore.setState({
-        ...currentState,
-        previewColumnId,
-        previewTaskId,
-        previewEdge,
-      });
-    },
-    [],
-  );
-
-  const updateTaskDropStateFromTarget = useCallback(
-    (target: PointerTaskDropTarget | null) => {
-      if (!target) {
-        clearPreview();
-
-        return;
-      }
-
-      if (target.type === "empty-column") {
-        updateTaskPreview(target.columnId, null, null);
-
-        return;
-      }
-
-      updateTaskPreview(target.columnId, target.taskId, target.edge);
-    },
-    [clearPreview, updateTaskPreview],
-  );
-
-  const getPointerDropTarget = useCallback(
-    (
-      clientX: number,
-      clientY: number,
-      draggingTaskId: string,
-    ): PointerTaskDropTarget | null => {
-      const midpointDeadZone = 10;
-
-      for (const task of tasksRef.current) {
-        if (task.id === draggingTaskId) {
-          continue;
-        }
-
-        const element = taskElementsRef.current.get(task.id);
-
-        if (!element) {
-          continue;
-        }
-
-        const rect = element.getBoundingClientRect();
-        const midpointY =
-          dragTaskMidpointsRef.current.get(task.id) ??
-          rect.top + rect.height / 2;
-
-        if (
-          clientX < rect.left ||
-          clientX > rect.right ||
-          clientY < rect.top ||
-          clientY > rect.bottom
-        ) {
-          continue;
-        }
-
-        let edge: TaskDropEdge;
-
-        if (clientY <= midpointY - midpointDeadZone) {
-          edge = "top";
-        } else if (clientY >= midpointY + midpointDeadZone) {
-          edge = "bottom";
-        } else if (lastTaskDropTargetRef.current?.taskId === task.id) {
-          edge = lastTaskDropTargetRef.current.edge;
-        } else {
-          edge = clientY < midpointY ? "top" : "bottom";
-        }
-
-        lastTaskDropTargetRef.current = {
-          edge,
-          taskId: task.id,
-        };
-
-        return {
-          type: "task",
-          columnId: task.columnId,
-          edge,
-          taskId: task.id,
-        };
-      }
-
-      for (const [
-        columnId,
-        element,
-      ] of emptyColumnDropTargetsRef.current.entries()) {
+  /**
+   * Find which column the pointer is over (using the registered drop-zone
+   * element, which is the task list container). Pointer outside any
+   * column => null target.
+   */
+  const getColumnAtPoint = useCallback(
+    (clientX: number, clientY: number): ColumnRect | null => {
+      for (const [columnId, element] of columnDropZonesRef.current.entries()) {
         const rect = element.getBoundingClientRect();
 
         if (
-          clientX < rect.left ||
-          clientX > rect.right ||
-          clientY < rect.top ||
-          clientY > rect.bottom
+          clientX >= rect.left &&
+          clientX <= rect.right &&
+          clientY >= rect.top &&
+          clientY <= rect.bottom
         ) {
-          continue;
+          return { columnId, rect };
         }
-
-        return {
-          type: "empty-column",
-          columnId,
-        };
       }
-
-      lastTaskDropTargetRef.current = null;
 
       return null;
     },
     [],
   );
 
+  /**
+   * Compute the drop index inside a column based on cursor Y.
+   *
+   * Excludes the dragged task from the candidate list (we treat the
+   * dragged card as if it has been removed from the column already).
+   */
+  const computeDropIndexForColumn = useCallback(
+    (columnId: string, clientY: number, draggingTaskId: string) => {
+      const tasksInColumn = tasksRef.current.filter(
+        (task) => task.columnId === columnId && task.id !== draggingTaskId,
+      );
+
+      if (tasksInColumn.length === 0) {
+        return 0;
+      }
+
+      for (let index = 0; index < tasksInColumn.length; index += 1) {
+        const element = taskElementsRef.current.get(tasksInColumn[index].id);
+
+        if (!element) {
+          continue;
+        }
+
+        const rect = element.getBoundingClientRect();
+        const midpointY = rect.top + rect.height / 2;
+
+        if (clientY < midpointY) {
+          return index;
+        }
+      }
+
+      return tasksInColumn.length;
+    },
+    [],
+  );
+
   const autoScrollForPointerPoint = useCallback(
-    (clientX: number, clientY: number) => {
+    (clientX: number, clientY: number, currentColumn: ColumnRect | null) => {
       const boardViewport = boardViewportRef.current;
 
       if (boardViewport) {
@@ -345,28 +286,24 @@ export function useTaskDragAndDrop({
         }
       }
 
-      for (const element of taskListElementsRef.current.values()) {
-        const rect = element.getBoundingClientRect();
+      if (!currentColumn) {
+        return;
+      }
 
-        if (
-          clientX < rect.left ||
-          clientX > rect.right ||
-          clientY < rect.top ||
-          clientY > rect.bottom
-        ) {
-          continue;
-        }
+      const dropZone = columnDropZonesRef.current.get(currentColumn.columnId);
 
-        const verticalThreshold = 48;
-        const verticalScrollStep = 16;
+      if (!dropZone) {
+        return;
+      }
 
-        if (clientY <= rect.top + verticalThreshold) {
-          element.scrollBy({ top: -verticalScrollStep });
-        } else if (clientY >= rect.bottom - verticalThreshold) {
-          element.scrollBy({ top: verticalScrollStep });
-        }
+      const verticalThreshold = 48;
+      const verticalScrollStep = 16;
+      const rect = dropZone.getBoundingClientRect();
 
-        break;
+      if (clientY <= rect.top + verticalThreshold) {
+        dropZone.scrollBy({ top: -verticalScrollStep });
+      } else if (clientY >= rect.bottom - verticalThreshold) {
+        dropZone.scrollBy({ top: verticalScrollStep });
       }
     },
     [boardViewportRef],
@@ -376,12 +313,24 @@ export function useTaskDragAndDrop({
     (taskId: string, element: HTMLElement | null) => {
       if (!element) {
         taskElementsRef.current.delete(taskId);
-        taskPreviewSnapshotCache.delete(taskId);
 
         return;
       }
 
       taskElementsRef.current.set(taskId, element);
+    },
+    [],
+  );
+
+  const registerColumnDropZone = useCallback(
+    (columnId: string, element: HTMLElement | null) => {
+      if (!element) {
+        columnDropZonesRef.current.delete(columnId);
+
+        return;
+      }
+
+      columnDropZonesRef.current.set(columnId, element);
     },
     [],
   );
@@ -427,55 +376,75 @@ export function useTaskDragAndDrop({
         const activationThreshold = 6;
         const dragStartX = event.clientX;
         const dragStartY = event.clientY;
+        const taskElement =
+          taskElementsRef.current.get(currentTask.id) ?? element;
+        const cardRect = taskElement.getBoundingClientRect();
+        const grabOffsetX = dragStartX - cardRect.left;
+        const grabOffsetY = dragStartY - cardRect.top;
         let isDragging = false;
 
-        const ensureDraggingStarted = () => {
+        const startDragging = () => {
           if (isDragging) {
             return;
           }
 
           isDragging = true;
-          dragTaskMidpointsRef.current.clear();
-
-          for (const task of tasksRef.current) {
-            if (task.id === currentTask.id) {
-              continue;
-            }
-
-            const taskElement = taskElementsRef.current.get(task.id);
-
-            if (!taskElement) {
-              continue;
-            }
-
-            const rect = taskElement.getBoundingClientRect();
-
-            dragTaskMidpointsRef.current.set(
-              task.id,
-              rect.top + rect.height / 2,
-            );
-          }
-
-          lastTaskDropTargetRef.current = null;
           setDraggingDocumentState(true);
-          taskDragStateStore.setState({
+
+          taskDragStore.setState({
             draggingTaskId: currentTask.id,
-            previewColumnId: null,
-            previewTaskId: null,
-            previewEdge: null,
-            previewTitle: currentTask.title,
+            draggingTaskTitle: currentTask.title,
+            draggingTaskHeight: cardRect.height,
+            draggingTaskWidth: cardRect.width,
+            sourceColumnId: currentTask.columnId,
+            previewColumnId: currentTask.columnId,
+            previewIndex: null,
+          });
+
+          setGhostPointer({
+            x: dragStartX,
+            y: dragStartY,
+            offsetX: grabOffsetX,
+            offsetY: grabOffsetY,
+            active: true,
           });
         };
 
         const updateFromPointer = (clientX: number, clientY: number) => {
-          ensureDraggingStarted();
-          autoScrollForPointerPoint(clientX, clientY);
+          startDragging();
 
-          const target = getPointerDropTarget(clientX, clientY, currentTask.id);
+          // Always move the ghost first so it follows the cursor smoothly.
+          setGhostPointer({ x: clientX, y: clientY });
 
-          updateTaskDropStateFromTarget(target);
+          const columnAtPoint = getColumnAtPoint(clientX, clientY);
 
-          return target;
+          autoScrollForPointerPoint(clientX, clientY, columnAtPoint);
+
+          const snapshot = taskDragStore.getSnapshot();
+
+          if (!columnAtPoint) {
+            taskDragStore.setState({
+              ...snapshot,
+              previewColumnId: null,
+              previewIndex: null,
+            });
+
+            return null;
+          }
+
+          const dropIndex = computeDropIndexForColumn(
+            columnAtPoint.columnId,
+            clientY,
+            currentTask.id,
+          );
+
+          taskDragStore.setState({
+            ...snapshot,
+            previewColumnId: columnAtPoint.columnId,
+            previewIndex: dropIndex,
+          });
+
+          return { columnId: columnAtPoint.columnId, index: dropIndex };
         };
 
         const cleanupPointerSession = () => {
@@ -490,6 +459,52 @@ export function useTaskDragAndDrop({
           if (isDragging) {
             setDraggingDocumentState(false);
           }
+        };
+
+        const finalizeDrop = (target: TaskDropTarget | null) => {
+          if (!target) {
+            return;
+          }
+
+          const tasksInTargetColumn = useStore
+            .getState()
+            .tasks.filter(
+              (task) =>
+                task.columnId === target.columnId && task.id !== currentTask.id,
+            );
+
+          if (tasksInTargetColumn.length === 0) {
+            useStore.getState().moveTask(currentTask.id, {
+              columnId: target.columnId,
+            });
+
+            return;
+          }
+
+          const clampedIndex = Math.max(
+            0,
+            Math.min(target.index, tasksInTargetColumn.length),
+          );
+
+          if (clampedIndex >= tasksInTargetColumn.length) {
+            const last = tasksInTargetColumn[tasksInTargetColumn.length - 1];
+
+            useStore.getState().moveTask(currentTask.id, {
+              columnId: target.columnId,
+              targetTaskId: last.id,
+              position: "after",
+            });
+
+            return;
+          }
+
+          const targetTask = tasksInTargetColumn[clampedIndex];
+
+          useStore.getState().moveTask(currentTask.id, {
+            columnId: target.columnId,
+            targetTaskId: targetTask.id,
+            position: "before",
+          });
         };
 
         const handlePointerMove = (moveEvent: PointerEvent) => {
@@ -524,20 +539,11 @@ export function useTaskDragAndDrop({
 
           const target = updateFromPointer(upEvent.clientX, upEvent.clientY);
 
-          if (target?.type === "task") {
-            moveTaskRef.current(currentTask.id, {
-              columnId: target.columnId,
-              position: target.edge === "bottom" ? "after" : "before",
-              targetTaskId: target.taskId,
-            });
-          } else if (target?.type === "empty-column") {
-            moveTaskRef.current(currentTask.id, { columnId: target.columnId });
-          }
+          finalizeDrop(target);
 
           cleanupPointerSession();
-          dragTaskMidpointsRef.current.clear();
-          lastTaskDropTargetRef.current = null;
-          taskDragStateStore.reset();
+          taskDragStore.reset();
+          setGhostPointer({ active: false });
         };
 
         const handlePointerCancel = (cancelEvent: PointerEvent) => {
@@ -548,9 +554,8 @@ export function useTaskDragAndDrop({
           cleanupPointerSession();
 
           if (isDragging) {
-            dragTaskMidpointsRef.current.clear();
-            lastTaskDropTargetRef.current = null;
-            taskDragStateStore.reset();
+            taskDragStore.reset();
+            setGhostPointer({ active: false });
           }
         };
 
@@ -569,126 +574,168 @@ export function useTaskDragAndDrop({
         element.removeEventListener("pointerdown", onPointerDown);
       });
     },
-    [
-      autoScrollForPointerPoint,
-      getPointerDropTarget,
-      updateTaskDropStateFromTarget,
-    ],
-  );
-
-  const registerTaskListElement = useCallback(
-    (columnId: string, element: HTMLElement | null) => {
-      if (!element) {
-        taskListElementsRef.current.delete(columnId);
-
-        return;
-      }
-
-      taskListElementsRef.current.set(columnId, element);
-    },
-    [],
-  );
-
-  const registerEmptyColumnDropTarget = useCallback(
-    (columnId: string, element: HTMLElement | null) => {
-      if (!element) {
-        emptyColumnDropTargetsRef.current.delete(columnId);
-
-        return;
-      }
-
-      emptyColumnDropTargetsRef.current.set(columnId, element);
-    },
-    [],
+    [autoScrollForPointerPoint, computeDropIndexForColumn, getColumnAtPoint],
   );
 
   useEffect(() => {
     const taskHandleCleanupMap = taskHandleCleanupRef.current;
-    const dragTaskMidpoints = dragTaskMidpointsRef.current;
 
     return () => {
       taskHandleCleanupMap.forEach((cleanup) => cleanup());
       taskHandleCleanupMap.clear();
-      dragTaskMidpoints.clear();
-      lastTaskDropTargetRef.current = null;
       setDraggingDocumentState(false);
     };
   }, []);
 
   return useMemo(
     () => ({
-      registerEmptyColumnDropTarget,
+      registerColumnDropZone,
       registerTaskDragHandle,
       registerTaskElement,
-      registerTaskListElement,
     }),
-    [
-      registerEmptyColumnDropTarget,
-      registerTaskDragHandle,
-      registerTaskElement,
-      registerTaskListElement,
-    ],
+    [registerColumnDropZone, registerTaskDragHandle, registerTaskElement],
   );
 }
 
-export function useTaskPreview(taskId: string) {
+/**
+ * Returns true when `taskId` is the currently dragging task. Used to hide
+ * the source card from its column while it is being dragged.
+ */
+export function useIsTaskDragging(taskId: string) {
   return useSyncExternalStore(
-    taskDragStateStore.subscribe,
-    () => {
-      const dragState = taskDragStateStore.getSnapshot();
+    taskDragStore.subscribe,
+    () => taskDragStore.getSnapshot().draggingTaskId === taskId,
+    () => false,
+  );
+}
 
-      if (dragState.previewTaskId !== taskId) {
-        taskPreviewSnapshotCache.delete(taskId);
+/** Returns the dragging task id, or `null` when no drag is in progress. */
+export function useDraggingTaskId() {
+  return useSyncExternalStore(
+    taskDragStore.subscribe,
+    () => taskDragStore.getSnapshot().draggingTaskId,
+    () => null,
+  );
+}
+
+/**
+ * Returns true when this column is the active drop target column. Used to
+ * highlight the column visually.
+ */
+export function useIsColumnDropTarget(columnId: string) {
+  return useSyncExternalStore(
+    taskDragStore.subscribe,
+    () => taskDragStore.getSnapshot().previewColumnId === columnId,
+    () => false,
+  );
+}
+
+type ColumnDropPlacement = {
+  index: number;
+  height: number;
+  width: number;
+};
+
+const placementCache = new Map<string, ColumnDropPlacement | null>();
+
+/**
+ * Returns the placement of the drop placeholder inside this column, or
+ * null when this column is not the active drop target. Cached per column
+ * so identity stays stable while the values do not change.
+ */
+export function useColumnDropPlacement(
+  columnId: string,
+): ColumnDropPlacement | null {
+  return useSyncExternalStore(
+    taskDragStore.subscribe,
+    () => {
+      const snapshot = taskDragStore.getSnapshot();
+
+      if (
+        snapshot.previewColumnId !== columnId ||
+        snapshot.previewIndex === null
+      ) {
+        placementCache.delete(columnId);
 
         return null;
       }
 
-      const nextTitle = dragState.previewTitle ?? "Moving task";
-      const cachedSnapshot = taskPreviewSnapshotCache.get(taskId);
+      const cached = placementCache.get(columnId);
 
       if (
-        cachedSnapshot &&
-        cachedSnapshot.edge === dragState.previewEdge &&
-        cachedSnapshot.title === nextTitle
+        cached &&
+        cached.index === snapshot.previewIndex &&
+        cached.height === snapshot.draggingTaskHeight &&
+        cached.width === snapshot.draggingTaskWidth
       ) {
-        return cachedSnapshot;
+        return cached;
       }
 
-      const nextSnapshot = {
-        edge: dragState.previewEdge,
-        title: nextTitle,
+      const next: ColumnDropPlacement = {
+        index: snapshot.previewIndex,
+        height: snapshot.draggingTaskHeight,
+        width: snapshot.draggingTaskWidth,
       };
 
-      taskPreviewSnapshotCache.set(taskId, nextSnapshot);
+      placementCache.set(columnId, next);
 
-      return nextSnapshot;
+      return next;
     },
     () => null,
   );
 }
 
-export function useIsTaskDragging(taskId: string) {
-  return useSyncExternalStore(
-    taskDragStateStore.subscribe,
-    () => taskDragStateStore.getSnapshot().draggingTaskId === taskId,
-    () => false,
-  );
-}
+/**
+ * Drag ghost snapshot for the floating card that follows the cursor.
+ * Position is excluded — the ghost component reads pointer position
+ * imperatively and updates its own DOM transform.
+ */
+type DragGhostSnapshot = {
+  taskId: string;
+  title: string;
+  width: number;
+  height: number;
+} | null;
 
-export function useEmptyColumnPreview(columnId: string) {
+const ghostSnapshotCache: { value: DragGhostSnapshot } = { value: null };
+
+export function useDragGhostSnapshot(): DragGhostSnapshot {
   return useSyncExternalStore(
-    taskDragStateStore.subscribe,
+    taskDragStore.subscribe,
     () => {
-      const dragState = taskDragStateStore.getSnapshot();
+      const snapshot = taskDragStore.getSnapshot();
 
       if (
-        dragState.previewColumnId !== columnId ||
-        dragState.previewTaskId !== null
+        snapshot.draggingTaskId === null ||
+        snapshot.draggingTaskHeight === 0
       ) {
+        ghostSnapshotCache.value = null;
+
         return null;
       }
 
-      return dragState.previewTitle ?? "Moving task";
+      const cached = ghostSnapshotCache.value;
+
+      if (
+        cached &&
+        cached.taskId === snapshot.draggingTaskId &&
+        cached.title === snapshot.draggingTaskTitle &&
+        cached.width === snapshot.draggingTaskWidth &&
+        cached.height === snapshot.draggingTaskHeight
+      ) {
+        return cached;
+      }
+
+      const next: DragGhostSnapshot = {
+        taskId: snapshot.draggingTaskId,
+        title: snapshot.draggingTaskTitle,
+        width: snapshot.draggingTaskWidth,
+        height: snapshot.draggingTaskHeight,
+      };
+
+      ghostSnapshotCache.value = next;
+
+      return next;
     },
     () => null,
   );

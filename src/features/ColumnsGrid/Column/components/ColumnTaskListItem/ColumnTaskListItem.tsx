@@ -1,10 +1,6 @@
 import { memo, useCallback } from "react";
 import { TaskCard } from "@/features/ColumnsGrid/Task/components/TaskCard/TaskCard";
-import {
-  useTaskDragAndDropContext,
-  useTaskPreview,
-} from "@/features/ColumnsGrid/Task/hooks/useTaskDragAndDrop";
-import { TaskDropOverlay } from "../TaskDropOverlay/TaskDropOverlay";
+import { useTaskDragAndDropContext } from "@/features/ColumnsGrid/Task/hooks/useTaskDragAndDrop";
 import styles from "../../Column.module.css";
 
 type ColumnTaskListItemProps = {
@@ -17,10 +13,6 @@ function ColumnTaskListItemComponent({
   taskId,
 }: ColumnTaskListItemProps) {
   const { registerTaskElement } = useTaskDragAndDropContext();
-  const preview = useTaskPreview(taskId);
-  const previewTitle = preview?.title ?? "Moving task";
-  const isTopPreviewActive = preview?.edge === "top";
-  const isBottomPreviewActive = preview?.edge === "bottom";
   const handleTaskItemRef = useCallback(
     (element: HTMLDivElement | null) => {
       registerTaskElement(taskId, element);
@@ -30,21 +22,9 @@ function ColumnTaskListItemComponent({
 
   return (
     <div ref={handleTaskItemRef} className={styles.taskItem}>
-      <TaskDropOverlay
-        edge="top"
-        isActive={isTopPreviewActive}
-        title={previewTitle}
-      />
-
       <TaskCard
         taskId={taskId}
         mode={selectionMode ? "selection" : "default"}
-      />
-
-      <TaskDropOverlay
-        edge="bottom"
-        isActive={isBottomPreviewActive}
-        title={previewTitle}
       />
     </div>
   );

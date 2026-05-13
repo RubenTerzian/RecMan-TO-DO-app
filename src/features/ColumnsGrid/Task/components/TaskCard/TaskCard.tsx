@@ -8,10 +8,7 @@ import {
   DeleteIconButton,
   EditIconButton,
 } from "@/components/shared/ActionIconButton/ActionIconButton";
-import {
-  useIsTaskDragging,
-  useTaskDragAndDropContext,
-} from "@/features/ColumnsGrid/Task/hooks/useTaskDragAndDrop";
+import { useTaskDragAndDropContext } from "@/features/ColumnsGrid/Task/hooks/useTaskDragAndDrop";
 import { useTaskEditing } from "@/features/ColumnsGrid/Task/hooks/useTaskEditing";
 import { useTask } from "@/features/ColumnsGrid/Task/hooks/useTask";
 
@@ -54,7 +51,6 @@ function TaskCardComponent({ taskId, ...props }: TaskCardProps) {
   } = useTaskEditing({ taskId, title: task?.title ?? "" });
 
   const { registerTaskDragHandle } = useTaskDragAndDropContext();
-  const isDragging = useIsTaskDragging(taskId);
   const handleCardRef = useCallback(
     (element: HTMLElement | null) => {
       registerTaskDragHandle(taskId, element);
@@ -85,7 +81,6 @@ function TaskCardComponent({ taskId, ...props }: TaskCardProps) {
       ref={!selectionMode ? handleCardRef : undefined}
       className={clsx(styles.taskCard, {
         [styles.completed]: isComplete,
-        [styles.dragging]: isDragging,
         [styles.draggableCard]: !selectionMode,
         [styles.selected]: isSelected,
         [styles.selectionMode]: selectionMode,

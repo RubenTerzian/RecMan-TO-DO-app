@@ -1,16 +1,22 @@
-import { memo } from "react";
+import { memo, useMemo } from "react";
 import styles from "../ColumnHeader/ColumnHeader.module.css";
+import { useStore } from "@/store/store";
+import { makeSelectColumnTitle } from "@/store/selectors";
 import { ColumnSelectAllToggle } from "../ColumnSelectAllToggle/ColumnSelectAllToggle";
 
 type ColumnSelectionHeaderProps = {
   columnId: string;
-  title: string;
 };
 
 function ColumnSelectionHeaderComponent({
   columnId,
-  title,
 }: ColumnSelectionHeaderProps) {
+  const selectTitle = useMemo(
+    () => makeSelectColumnTitle(columnId),
+    [columnId],
+  );
+  const title = useStore(selectTitle);
+
   return (
     <header className={styles.columnHeader}>
       <div className={styles.titleGroup}>

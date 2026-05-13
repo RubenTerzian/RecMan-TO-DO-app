@@ -1,5 +1,6 @@
-import { Column } from "@/features/ColumnsGrid/Column/Column";
 import { ColumnEditor } from "@/features/ColumnsGrid/Column/components/ColumnEditor/ColumnEditor";
+import { ColumnDragGhost } from "@/features/ColumnsGrid/components/ColumnDragGhost/ColumnDragGhost";
+import { ColumnTrack } from "@/features/ColumnsGrid/components/ColumnTrack/ColumnTrack";
 import { EmptyBoardState } from "@/features/ColumnsGrid/components/EmptyBoardState/EmptyBoardState";
 import { GridHeader } from "@/features/ColumnsGrid/GridHeader/GridHeader";
 import { useColumnCreation } from "@/features/ColumnsGrid/hooks/useColumnCreation";
@@ -8,6 +9,7 @@ import {
   useColumnDragAndDrop,
 } from "@/features/ColumnsGrid/hooks/useColumnDragAndDrop";
 import { TaskDragAndDropProvider } from "@/features/ColumnsGrid/Task/components/TaskDragAndDropProvider/TaskDragAndDropProvider";
+import { TaskDragGhost } from "@/features/ColumnsGrid/Task/components/TaskDragGhost/TaskDragGhost";
 import { useTaskDragAndDrop } from "@/features/ColumnsGrid/Task/hooks/useTaskDragAndDrop";
 import { useStore } from "@/store/store";
 import { useShallow } from "zustand/react/shallow";
@@ -36,6 +38,20 @@ export function ColumnsGrid() {
     handleStartColumnCreation,
   } = useColumnCreation();
 
+  const createColumnEditor = isCreatingColumn ? (
+    <section className={columnStyles.column} data-testid="create-column-card">
+      <ColumnEditor
+        autoFocus
+        draftTitle={draftTitle}
+        mode="create"
+        onBlur={handleCreateEditorBlur}
+        onCancel={handleCancelColumnCreation}
+        onDraftTitleChange={handleDraftTitleChange}
+        onSave={handleSaveColumnCreation}
+      />
+    </section>
+  ) : null;
+
   return (
     <main className={styles.board}>
       <section className={styles.boardCanvas} data-testid="board-canvas">
@@ -56,38 +72,19 @@ export function ColumnsGrid() {
                 {isBoardEmpty && !isCreatingColumn ? (
                   <EmptyBoardState />
                 ) : (
-                  <div
+                  <ColumnTrack
                     className={styles.boardGrid}
-                    data-testid="board-column-track"
-                    data-column-track="true"
-                  >
-                    {columnIds.map((columnId) => (
-                      <Column key={columnId} columnId={columnId} />
-                    ))}
-
-                    {isCreatingColumn ? (
-                      <section
-                        className={columnStyles.column}
-                        data-testid="create-column-card"
-                      >
-                        <ColumnEditor
-                          autoFocus
-                          draftTitle={draftTitle}
-                          mode="create"
-                          onBlur={handleCreateEditorBlur}
-                          onCancel={handleCancelColumnCreation}
-                          onDraftTitleChange={handleDraftTitleChange}
-                          onSave={handleSaveColumnCreation}
-                        />
-                      </section>
-                    ) : null}
-                  </div>
+                    columnIds={columnIds}
+                    trailing={createColumnEditor}
+                  />
                 )}
               </TaskDragAndDropProvider>
             </ColumnDragAndDropContext.Provider>
           </div>
         </div>
       </section>
+      <ColumnDragGhost />
+      <TaskDragGhost />
     </main>
   );
 }

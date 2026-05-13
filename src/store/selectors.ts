@@ -24,8 +24,6 @@ export const selectMoveColumn = (state: AppStore) => state.moveColumn;
 
 export const selectTasks = (state: AppStore) => state.tasks;
 
-export const selectMoveTask = (state: AppStore) => state.moveTask;
-
 export const selectCreateTask = (state: AppStore) => state.createTask;
 
 export const selectUpdateTaskTitle = (state: AppStore) => state.updateTaskTitle;
@@ -85,4 +83,12 @@ export function makeSelectIsTaskSelected(taskId: string) {
 export function makeSelectTasksByColumnId(columnId: string) {
   return (state: AppStore) =>
     state.tasks.filter((task) => task.columnId === columnId);
+}
+
+export function makeSelectColumnTaskCount(columnId: string) {
+  return (state: AppStore) =>
+    state.tasks.reduce(
+      (count, task) => (task.columnId === columnId ? count + 1 : count),
+      0,
+    );
 }
