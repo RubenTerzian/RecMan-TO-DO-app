@@ -40,15 +40,9 @@ function ColumnHeaderComponent({
 
       <div className={styles.controls}>
         <div className={styles.actions}>
-          <EditIconButton
-            aria-label="Edit column"
-            onClick={onEdit}
-          />
+          <EditIconButton aria-label="Edit column" onClick={onEdit} />
 
-          <DeleteIconButton
-            aria-label="Delete column"
-            onClick={onDelete}
-          />
+          <DeleteIconButton aria-label="Delete column" onClick={onDelete} />
         </div>
       </div>
     </header>

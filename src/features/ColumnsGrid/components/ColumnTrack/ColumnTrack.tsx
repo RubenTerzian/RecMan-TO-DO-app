@@ -44,11 +44,7 @@ function ColumnTrackComponent({
     : -1;
 
   return (
-    <div
-      ref={handleTrackRef}
-      className={className}
-      data-column-track="true"
-    >
+    <div ref={handleTrackRef} className={className} data-column-track="true">
       {visibleColumnIds.map((columnId, index) => (
         <Fragment key={columnId}>
           {placementIndex === index && placement ? (

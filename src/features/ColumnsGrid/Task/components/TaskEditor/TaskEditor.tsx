@@ -44,11 +44,7 @@ function TaskEditorComponent({
   };
 
   return (
-    <form
-      className={styles.taskEditor}
-      onBlur={onBlur}
-      onSubmit={handleSubmit}
-    >
+    <form className={styles.taskEditor} onBlur={onBlur} onSubmit={handleSubmit}>
       <Input
         aria-label={isCreateMode ? "New task name" : "Edit task name"}
         autoFocus={autoFocus}

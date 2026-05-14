@@ -114,10 +114,7 @@ function TaskCardComponent({ taskId }: TaskCardProps) {
 
       {!selectionMode ? (
         <div className={styles.actions}>
-          <EditIconButton
-            aria-label="Edit task"
-            onClick={handleStartEditing}
-          />
+          <EditIconButton aria-label="Edit task" onClick={handleStartEditing} />
 
           <DeleteIconButton
             aria-label="Delete task"
