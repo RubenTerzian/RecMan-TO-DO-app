@@ -2,10 +2,11 @@ import { memo, useCallback } from "react";
 import { useStore } from "@/store/store";
 import styles from "./Column.module.css";
 import { clsx } from "@/utils/clsx";
-import { ColumnAddTaskControl } from "@/features/ColumnsGrid/Column/components/ColumnAddTaskControl/ColumnAddTaskControl";
 import { ColumnDefaultHeaderArea } from "@/features/ColumnsGrid/Column/components/ColumnDefaultHeaderArea/ColumnDefaultHeaderArea";
 import { ColumnSelectionHeader } from "@/features/ColumnsGrid/Column/components/ColumnSelectionHeader/ColumnSelectionHeader";
 import { ColumnTaskList } from "@/features/ColumnsGrid/Column/components/ColumnTaskList/ColumnTaskList";
+import { useColumnTaskCreation } from "@/features/ColumnsGrid/Column/hooks/useColumnTaskCreation";
+import { TaskEditor } from "@/features/ColumnsGrid/Task/components/TaskEditor/TaskEditor";
 import { useColumnDragAndDropContext } from "@/features/ColumnsGrid/hooks/useColumnDragAndDrop";
 import { useIsColumnDropTarget } from "@/features/ColumnsGrid/Task/hooks/useTaskDragAndDrop";
 
@@ -34,6 +35,16 @@ function ColumnComponent({ columnId }: ColumnProps) {
     [columnId, registerColumnDragHandle],
   );
 
+  const {
+    draftTaskTitle,
+    isCreatingTask,
+    handleCancelTaskCreation,
+    handleSaveTaskCreation,
+    handleStartTaskCreation,
+    handleTaskEditorBlur,
+    handleTaskTitleChange,
+  } = useColumnTaskCreation({ columnId });
+
   return (
     <section
       ref={handleColumnRef}
@@ -48,10 +59,24 @@ function ColumnComponent({ columnId }: ColumnProps) {
         <ColumnDefaultHeaderArea
           columnId={columnId}
           dragHandleRef={handleDragHandleRef}
+          isAddTaskDisabled={isCreatingTask}
+          onAddTask={handleStartTaskCreation}
         />
       )}
 
-      {!selectionMode ? <ColumnAddTaskControl columnId={columnId} /> : null}
+      {!selectionMode && isCreatingTask ? (
+        <div className={styles.taskCreationEditor}>
+          <TaskEditor
+            autoFocus
+            mode="create"
+            onBlur={handleTaskEditorBlur}
+            onCancel={handleCancelTaskCreation}
+            onSave={handleSaveTaskCreation}
+            onTitleChange={handleTaskTitleChange}
+            title={draftTaskTitle}
+          />
+        </div>
+      ) : null}
 
       <div className={styles.taskViewport}>
         <ColumnTaskList columnId={columnId} />

@@ -1,24 +1,24 @@
 .selectionModeToggle {
   justify-self: start;
-  border: 1px solid rgba(36, 90, 240, 0.14);
-  background: rgba(255, 255, 255, 0.84);
-  color: var(--color-accent-strong);
-  box-shadow: 0 8px 18px rgba(36, 90, 240, 0.08);
+  border: 1px solid var(--color-border);
+  background: #ffffff;
+  color: var(--color-text);
 }
 
 .selectionModeToggle:hover {
-  background: rgba(255, 255, 255, 0.96);
-  box-shadow: 0 10px 22px rgba(36, 90, 240, 0.12);
+  background: var(--control-hover-bg);
+  border-color: var(--control-hover-border);
+  color: var(--color-text);
 }
 
 .selectionModeToggle[data-enabled="true"] {
-  border-color: rgba(36, 90, 240, 0.2);
-  background: linear-gradient(180deg, #3b68f6, #245af0);
+  border-color: var(--color-accent);
+  background: var(--color-accent);
   color: #ffffff;
-  box-shadow: 0 10px 22px rgba(36, 90, 240, 0.18);
 }
 
 .selectionModeToggle[data-enabled="true"]:hover {
-  background: linear-gradient(180deg, #4772fb, #2d61f2);
-  box-shadow: 0 12px 26px rgba(36, 90, 240, 0.2);
+  background: var(--color-accent-strong);
+  border-color: var(--color-accent-strong);
+  color: #ffffff;
 }

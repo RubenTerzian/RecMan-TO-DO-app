@@ -247,7 +247,23 @@ function SelectComponent({
                       role="option"
                       type="button"
                     >
-                      {option.label}
+                      <span aria-hidden="true" className={styles.optionCheck}>
+                        <svg
+                          width="14"
+                          height="14"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                        >
+                          <path
+                            d="M5 12.5 10 17l9-10"
+                            stroke="currentColor"
+                            strokeWidth="2.2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                      </span>
+                      <span className={styles.optionLabel}>{option.label}</span>
                     </button>
                   </li>
                 );

@@ -25,16 +25,6 @@ export default function App() {
   return (
     <div className={styles.appShell}>
       <div className={styles.appFrame}>
-        <header className={styles.hero} aria-label="RecMan board introduction">
-          <span className={styles.eyebrow}>RecMan workflow hub</span>
-          <div className={styles.heroCopy}>
-            <h1 className={styles.heroTitle}>RecMan TO-DO</h1>
-            <p className={styles.heroSubtitle}>
-              Tame the chaos, charm the deadlines, and give your future self one
-              less dramatic monologue.
-            </p>
-          </div>
-        </header>
         <TopBar />
         <ColumnsGrid />
       </div>

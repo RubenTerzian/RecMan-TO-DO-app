@@ -1,13 +1,10 @@
-import { memo, useCallback } from "react";
+import { memo, useCallback, useMemo } from "react";
 import { clsx } from "@/utils/clsx";
 import dragHandleIcon from "@/assets/icons/drag-handle.svg";
 import styles from "./TaskCard.module.css";
+import { ActionMenu } from "@/components/shared/ActionMenu/ActionMenu";
 import { Checkbox } from "@/components/atoms/Checkbox/Checkbox";
 import { TaskEditor } from "@/features/ColumnsGrid/Task/components/TaskEditor/TaskEditor";
-import {
-  DeleteIconButton,
-  EditIconButton,
-} from "@/components/shared/ActionIconButton/ActionIconButton";
 import { useTaskDragAndDropContext } from "@/features/ColumnsGrid/Task/hooks/useTaskDragAndDrop";
 import { useTaskEditing } from "@/features/ColumnsGrid/Task/hooks/useTaskEditing";
 import { useTask } from "@/features/ColumnsGrid/Task/hooks/useTask";
@@ -43,6 +40,19 @@ function TaskCardComponent({ taskId }: TaskCardProps) {
       registerTaskDragHandle(taskId, element);
     },
     [registerTaskDragHandle, taskId],
+  );
+
+  const actionMenuItems = useMemo(
+    () => [
+      { key: "edit", label: "Edit", onSelect: handleStartEditing },
+      {
+        key: "delete",
+        label: "Delete",
+        variant: "danger" as const,
+        onSelect: handleDeleteTask,
+      },
+    ],
+    [handleDeleteTask, handleStartEditing],
   );
 
   if (!task) {
@@ -90,6 +100,7 @@ function TaskCardComponent({ taskId }: TaskCardProps) {
       ) : null}
 
       <Checkbox
+        shape={selectionMode ? "square" : "round"}
         checked={selectionMode ? isSelected : isComplete}
         aria-label={selectionMode ? "Select task" : "Toggle task completion"}
         onChange={handleToggle}
@@ -113,14 +124,7 @@ function TaskCardComponent({ taskId }: TaskCardProps) {
       </div>
 
       {!selectionMode ? (
-        <div className={styles.actions}>
-          <EditIconButton aria-label="Edit task" onClick={handleStartEditing} />
-
-          <DeleteIconButton
-            aria-label="Delete task"
-            onClick={handleDeleteTask}
-          />
-        </div>
+        <ActionMenu triggerAriaLabel="Task actions" items={actionMenuItems} />
       ) : null}
     </article>
   );

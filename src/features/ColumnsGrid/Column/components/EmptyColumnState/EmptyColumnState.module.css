@@ -3,26 +3,26 @@
   flex: 1;
   align-content: center;
   justify-items: center;
-  gap: 8px;
+  gap: 6px;
   min-height: 0;
   height: 100%;
-  padding: 18px;
+  padding: 16px;
   border: 1px dashed var(--color-border-strong);
-  border-radius: 18px;
+  border-radius: var(--radius-lg);
   color: var(--color-text-muted);
-  background: rgba(255, 255, 255, 0.5);
+  background: transparent;
   text-align: center;
 }
 
 .noResultsState {
   border-style: solid;
-  border-color: rgba(36, 90, 240, 0.14);
-  background: rgba(244, 248, 255, 0.9);
+  border-color: var(--color-border);
+  background: #ffffff;
 }
 
 .dropActive {
-  border-color: rgba(36, 90, 240, 0.32);
-  background: rgba(244, 248, 255, 0.92);
+  border-color: var(--color-accent);
+  background: var(--color-accent-soft);
 }
 
 .title,
@@ -31,12 +31,13 @@
 }
 
 .title {
-  color: var(--color-text-strong);
-  font-size: 1rem;
+  color: var(--color-text);
+  font-size: 0.95rem;
   line-height: 1.2;
 }
 
 .message {
   max-width: 24ch;
   line-height: 1.45;
+  font-size: 0.85rem;
 }

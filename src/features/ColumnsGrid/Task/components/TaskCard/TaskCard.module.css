@@ -3,16 +3,13 @@
   grid-template-columns: auto auto minmax(0, 1fr) auto;
   align-items: center;
   gap: 10px;
-  padding: 12px;
-  border: 1px solid rgba(32, 50, 79, 0.08);
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.88);
-  box-shadow: 0 4px 16px rgba(24, 34, 53, 0.04);
+  padding: 10px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--control-radius);
+  background: #ffffff;
   transition:
-    box-shadow 160ms ease,
-    border-color 160ms ease,
-    transform 160ms ease,
-    background 160ms ease;
+    border-color 140ms ease,
+    background 140ms ease;
 }
 
 .draggableCard {
@@ -23,47 +20,36 @@
   /*
    * The card body uses native touch behaviour (auto). Touch drags
    * only initiate from the .dragHandle child, which has
-   * touch-action: none. This is the canonical mobile DnD UX used by
-   * Trello, Notion, Linear, dnd-kit, etc.: any-finger long-press
-   * works on desktop; on touch the user must grab the handle. Mixing
-   * "native scroll on a draggable surface" is impossible on iOS
-   * because touch-action is committed at touchstart and cannot be
-   * changed for the in-flight gesture.
+   * touch-action: none. iOS commits touch-action at touchstart and
+   * cannot switch mid-gesture, so this split is required.
    */
   touch-action: auto;
 }
 
 .draggableCard:hover {
-  border-color: rgba(36, 90, 240, 0.14);
-  box-shadow: 0 8px 22px rgba(24, 34, 53, 0.07);
+  border-color: var(--control-hover-border);
 }
 
 .draggableCard:active {
   cursor: grabbing;
-  transform: scale(0.992);
 }
 
 .selectionMode {
   grid-template-columns: auto minmax(0, 1fr);
 }
 
-.dragging {
-  opacity: 0.38;
-  pointer-events: none;
-}
-
 .completed {
-  background: rgba(244, 246, 250, 0.96);
-  color: rgba(23, 32, 51, 0.48);
+  background: var(--color-surface-muted);
+  color: var(--color-text-muted);
 }
 
 .selected {
-  border-color: rgba(36, 90, 240, 0.18);
-  background: rgba(248, 250, 255, 0.94);
+  border-color: var(--color-accent);
+  background: var(--color-accent-soft);
 }
 
 .completed.selected {
-  background: rgba(244, 246, 250, 0.96);
+  background: var(--color-surface-muted);
 }
 
 .dragHandle {
@@ -85,8 +71,8 @@
 }
 
 @media (pointer: coarse) {
-  /* On touch the handle is the ONLY way to start a drag, so it
-   * needs a comfortable hit target (44x44 is the iOS HIG minimum). */
+  /* On touch the handle is the ONLY way to start a drag. 44x44 is the
+   * iOS HIG minimum hit target. */
   .dragHandle {
     min-width: 44px;
     min-height: 44px;
@@ -100,9 +86,9 @@
 }
 
 .dragHandle:focus-visible {
-  outline: 2px solid color-mix(in srgb, var(--color-accent) 30%, white);
-  outline-offset: 3px;
-  border-radius: 8px;
+  outline: none;
+  border-radius: 6px;
+  box-shadow: var(--focus-ring);
 }
 
 .dragIcon {
@@ -123,9 +109,11 @@
 .title {
   color: var(--color-text);
   font-size: 0.92rem;
+  font-weight: 500;
   line-height: 1.3;
-  word-break: normal;
-  overflow-wrap: break-word;
+  min-width: 0;
+  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
 .titleMatch {
@@ -136,14 +124,8 @@
   padding: 0 3px;
 }
 
-.actions {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-
 .completed .title {
-  color: rgba(23, 32, 51, 0.48);
+  color: var(--color-text-muted);
   text-decoration: line-through;
 }
 
@@ -153,37 +135,27 @@
 }
 
 .completed .dragHandle {
-  color: rgba(23, 32, 51, 0.48);
-}
-
-.completed .actions {
-  opacity: 0.72;
+  color: var(--color-text-muted);
 }
 
 @media (max-width: 640px) {
   .taskCard {
-    grid-template-columns: auto auto minmax(0, 1fr);
-    grid-template-areas:
-      "drag toggle title"
-      ". . actions";
+    grid-template-columns: auto auto minmax(0, 1fr) auto;
+    grid-template-areas: "drag toggle title actions";
     gap: 8px;
+  }
+
+  .selectionMode {
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas: "toggle title";
   }
 
   .dragHandle {
     grid-area: drag;
-    align-self: start;
-    margin-top: 2px;
   }
 
   .content {
     grid-area: title;
-  }
-
-  .actions {
-    grid-area: actions;
-    justify-self: end;
-    justify-content: flex-end;
-    margin-top: -2px;
   }
 }
 
@@ -194,6 +166,5 @@
 
   .title {
     font-size: 0.88rem;
-    line-height: 1.3;
   }
 }

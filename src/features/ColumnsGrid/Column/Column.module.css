@@ -9,29 +9,19 @@
   max-height: 100%;
   padding: 12px;
   border: 1px solid var(--color-border);
-  border-radius: 20px;
-  background: rgba(255, 255, 255, 0.72);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-muted);
   overflow: hidden;
   transition:
-    opacity 160ms ease,
-    transform 160ms ease;
+    border-color 140ms ease,
+    background 140ms ease;
 }
 
 .selectionMode {
-  background: rgba(255, 255, 255, 0.82);
+  background: #ffffff;
 }
 
-.addTaskButton {
-  justify-self: start;
-  flex-shrink: 0;
-}
-
-.addTaskButtonWrapper {
-  display: inline-flex;
-  align-self: start;
-}
-
-.addTaskEditor {
+.taskCreationEditor {
   flex-shrink: 0;
 }
 
@@ -46,7 +36,7 @@
 
 .taskList {
   display: grid;
-  gap: 12px;
+  gap: 10px;
   flex: 1;
   min-height: 0;
   align-content: start;
@@ -57,22 +47,13 @@
    * scroller based on initial direction:
    *  - vertical pan -> this task list (overflow-y: auto)
    *  - horizontal pan -> ancestor .boardViewport (overflow-x: auto)
-   *
-   * Using pan-y alone would block horizontal pans entirely; touch-action
-   * does NOT delegate a forbidden direction to ancestors, so the user
-   * gets stuck and can't swipe between columns when the touch starts
-   * inside a task list.
-   *
-   * overscroll-behavior-y: contain keeps vertical bounce contained
-   * without affecting the horizontal gesture chain.
    */
   touch-action: pan-x pan-y;
   overscroll-behavior-y: contain;
 }
 
 .taskDropTarget {
-  border-color: rgba(36, 90, 240, 0.45);
-  box-shadow: 0 0 0 1px rgba(36, 90, 240, 0.15);
+  border-color: var(--color-accent);
 }
 
 @media (max-width: 767px) {
@@ -81,11 +62,11 @@
   }
 
   .column {
-    max-height: calc(100vh - 320px);
+    max-height: calc(100vh - 280px);
   }
 
   .taskList {
-    max-height: calc(100vh - 380px);
+    max-height: calc(100vh - 340px);
     -webkit-overflow-scrolling: touch;
   }
 }

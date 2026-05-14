@@ -112,13 +112,24 @@ The codebase follows a feature-oriented React structure:
 
 ## Key product behavior
 
-- Create, edit, and delete columns
-- Create and manage tasks within columns
+- Create, edit, and delete columns (3-dot action menu in each column header)
+- Add tasks via the compact "+" button in the column header
+- Edit and delete tasks via the same 3-dot action menu pattern
 - Search tasks
 - Filter tasks by completion state
-- Use selection mode for bulk task interactions
+- Round checkboxes toggle task completion; square checkboxes drive multi-select
+- Selection mode supports tri-state per-column select-all (none / partial / all)
+- Bulk mark-complete, mark-incomplete, move, and delete (delete asks for confirmation when 2+ tasks are selected)
 - Drag and drop columns and tasks
 - Persist app state locally
+
+## Visual design
+
+The board uses a flat, Airbnb-inspired aesthetic. All form controls share a single
+`--control-height`, `--control-radius`, and `--control-hover-bg` token. Hierarchy
+comes from background tone and 1px borders rather than gradients or drop shadows.
+The board canvas fills the available viewport so columns scroll vertically inside
+their own track instead of pushing the whole page.
 
 ## Notes for reviewers
 

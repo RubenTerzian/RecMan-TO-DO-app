@@ -2,24 +2,28 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 30px;
-  padding: 0 10px;
+  min-height: var(--control-height-compact);
+  min-width: var(--control-height-compact);
+  padding: 0 8px;
   border: 1px solid var(--color-border);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.8);
+  border-radius: var(--control-radius-compact);
+  background: #ffffff;
   color: var(--color-brand);
   font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 0.01em;
+  font-weight: 600;
   cursor: pointer;
   transition:
-    transform 160ms ease,
-    border-color 160ms ease,
-    background 160ms ease;
+    background 140ms ease,
+    border-color 140ms ease,
+    color 140ms ease;
 }
 
 .iconButton:hover {
-  transform: translateY(-1px);
-  border-color: rgba(32, 50, 79, 0.16);
-  background: #fff;
+  background: var(--control-hover-bg);
+  border-color: var(--control-hover-border);
+}
+
+.iconButton:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
 }

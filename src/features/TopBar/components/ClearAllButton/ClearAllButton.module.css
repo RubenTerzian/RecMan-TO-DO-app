@@ -1,17 +1,16 @@
 .clearAllButton {
-  min-height: 42px !important;
   padding: 0 12px;
   width: 100%;
-  border: 1px solid rgba(32, 50, 79, 0.12);
-  background: rgba(255, 255, 255, 0.88);
-  color: var(--color-brand);
-  box-shadow: none;
+  border: 1px solid var(--color-border);
+  background: #ffffff;
+  color: var(--color-text);
   flex: 0 0 auto;
 }
 
 .clearAllButton:hover {
-  background: #ffffff;
-  box-shadow: 0 8px 20px rgba(24, 34, 53, 0.08);
+  background: var(--control-hover-bg);
+  border-color: var(--control-hover-border);
+  color: var(--color-text);
 }
 
 @media (min-width: 720px) {

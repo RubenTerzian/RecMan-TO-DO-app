@@ -34,20 +34,6 @@
   cursor: not-allowed;
 }
 
-.edit {
-  --action-color: var(--color-accent-strong);
-  --action-background: var(--color-accent-soft);
-  --action-hover-background: var(--color-accent);
-  --action-hover-border: var(--color-accent);
-}
-
-.delete {
-  --action-color: var(--color-danger);
-  --action-background: var(--color-danger-soft);
-  --action-hover-background: var(--color-danger);
-  --action-hover-border: var(--color-danger);
-}
-
 .cancel {
   --action-color: var(--color-text-muted);
   --action-background: var(--color-brand-soft);

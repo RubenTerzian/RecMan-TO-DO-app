@@ -3,9 +3,9 @@
   gap: 10px 14px;
   width: 100%;
   padding: 12px 14px;
-  border: 1px solid rgba(32, 50, 79, 0.08);
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.82);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: #ffffff;
 }
 
 .headerRow {
@@ -33,13 +33,13 @@
 .selectionPill {
   display: inline-flex;
   align-items: center;
-  min-height: 30px;
+  min-height: 28px;
   padding: 0 10px;
   border-radius: 999px;
-  background: rgba(36, 90, 240, 0.1);
+  background: var(--color-accent-soft);
   color: var(--color-accent-strong);
   font-size: 0.78rem;
-  font-weight: 700;
+  font-weight: 600;
   white-space: nowrap;
 }
 
@@ -71,7 +71,7 @@
 .moveLabel {
   color: var(--color-text-muted);
   font-size: 0.78rem;
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: 0.02em;
   text-transform: uppercase;
 }
@@ -79,31 +79,31 @@
 .secondaryAction,
 .dangerAction,
 .moveAction {
-  min-height: 36px;
   padding-inline: 14px;
-  box-shadow: none;
 }
 
 .secondaryAction {
-  border: 1px solid rgba(36, 90, 240, 0.12);
-  background: rgba(36, 90, 240, 0.08);
-  color: var(--color-accent-strong);
+  border: 1px solid var(--color-border);
+  background: #ffffff;
+  color: var(--color-text);
 }
 
 .secondaryAction:hover {
-  background: rgba(36, 90, 240, 0.12);
-  box-shadow: none;
+  background: var(--control-hover-bg);
+  border-color: var(--control-hover-border);
+  color: var(--color-text);
 }
 
 .dangerAction {
-  border: 1px solid rgba(216, 76, 76, 0.14);
-  background: rgba(216, 76, 76, 0.1);
-  color: var(--color-danger);
+  border: 1px solid var(--color-danger);
+  background: var(--color-danger);
+  color: #ffffff;
 }
 
 .dangerAction:hover {
-  background: rgba(216, 76, 76, 0.14);
-  box-shadow: none;
+  background: var(--color-danger-strong);
+  border-color: var(--color-danger-strong);
+  color: #ffffff;
 }
 
 .moveAction {
@@ -176,7 +176,6 @@
   .dangerAction,
   .moveAction {
     width: 100%;
-    min-height: 40px;
   }
 
   .moveAction {

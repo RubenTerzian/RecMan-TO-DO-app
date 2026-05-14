@@ -37,7 +37,7 @@ When working in this repository, follow these rules by default.
 - Avoid broad store subscriptions that pull unrelated values into a component.
 - Prefer named selectors in `src/store/selectors.ts` for repeated store reads instead of repeating ad hoc inline selectors across multiple hooks.
 - Do not call `useStore()` without a selector in feature hooks or components unless a task explicitly requires a broad subscription.
-- Prefer selector factories such as `makeSelectTaskById(taskId)` or `makeSelectTasksByColumnId(columnId)` when a hook needs a parameterized store read.
+- Prefer selector factories such as `selectTaskById(taskId)` or `selectTasksByColumnId(columnId)` when a hook needs a parameterized store read. Factories use the same `select*` prefix as plain selectors (no `make` prefix); callers wrap them in `useMemo` to keep selector identity stable across renders.
 - When a component needs only a boolean or count derived from shared state, subscribe to that derived value rather than the full backing collection.
 
 ## Rendering and rerender safety
@@ -87,6 +87,24 @@ When working in this repository, follow these rules by default.
 - Before finishing a change, check whether any state, selector, prop, or memo can be simplified or moved closer to where it is used.
 - Use `ColumnsGrid` + `Column` + `TaskCard` as the main performance reference: parent layout reads should stay narrow, item lookups should happen through focused selectors, and leaf hooks should own task-level subscriptions.
 - Use `TopBar` as the input-performance reference: the layout component stays stateless, each control owns only its own subscription, and debounced store writes should not introduce value-mirroring effects.
-- Use the create-column flow as the reference for transient entity creation: trigger from a narrow header prop, keep the in-progress draft local in a focused hook, render inline editor UI near the owning feature, save through a single store action, and make blur/disabled-button behavior focus-safe.
+- Use `useInlineEditor` (in `src/hooks/`) for any transient create / edit flow with a single draft value: it owns the open/closed flag, the draft, normalize-on-save, focus-safe blur-to-cancel, and the start/save/cancel/update handlers. Wrappers like `useColumnEditing`, `useColumnCreation`, `useColumnTaskCreation`, and `useTaskEditing` only adapt names and wire the store action. Do not re-implement this state machine inline.
+- For touch-friendly drag-and-drop on the same surface that must also scroll natively, use a dedicated `[data-drag-handle="true"]` element with `touch-action: none` while the surrounding surface keeps `touch-action: auto`. iOS commits `touch-action` at touchstart and cannot switch mid-gesture, so a single surface cannot both pan-scroll and host a long-press drag. Mouse / pen may still drag from anywhere on the surface (`MOUSE_ACTIVATION_PIXELS`); touch must originate on a handle. See `src/features/ColumnsGrid/dnd/createPointerDragSession.ts` and `pointerDragActivation.ts` for the canonical implementation.
+- Use the generic `createGhostPointerStore()` factory in `src/features/ColumnsGrid/dnd/ghostPointerStore.ts` whenever a new draggable type needs a ghost overlay; do not roll a fresh listener+snapshot triple inline.
+
+## Dead code & exports
+
+- Run `npx knip` before finishing a meaningful refactor to catch unused files, exports, and exported types. Delete or unexport whatever it flags unless the export is part of a public API used outside `src/`.
+- A helper hook used by exactly one consumer should be inlined into that consumer; do not keep one-off internal helpers as their own module. The shared boundary is for code reused in two or more places.
+- A selector wrapper that no component reads is just noise — remove it instead of leaving it as "future API".
+- A `data-testid` attribute that is not driven by an automated test or production logic should be removed; do not preserve them speculatively.
+
+## Visual design defaults
+
+- The board is minimalist and Airbnb-flat: no gradients (`linear-gradient` / `radial-gradient`) and no `box-shadow` on surfaces. Hierarchy comes from background tone and 1px borders.
+- All form controls (`Button`, `Input`, `Select` trigger, `IconButton`, `Checkbox` square hit area) share one `--control-height` and one `--control-radius` token. Match the search input radius (modest rounding, never pill).
+- Hover affordance is uniform and subtle: a single `--control-hover-bg` token, no glow/shadow change. Active/focus rings use the accent color from `tokens.css` only.
+- Square checkboxes are reserved for selection mode (multi-select). Round checkboxes mean "toggle completion". Tri-state header checkboxes use a filled background for the indeterminate (dash) state so partial selection reads at a glance.
+- Prefer one shared `ActionMenu` (3-dot trigger + popover with Edit / Delete) over scattering individual edit/delete icon buttons. Destructive items render in the danger color.
+- Bulk destructive actions (delete N tasks, delete column with tasks) must go through `ConfirmationModal`. Single-item destructive actions on already-confirmed UI may skip it.
 
 For more detail and examples, see `docs/react-architecture-skill.md`.

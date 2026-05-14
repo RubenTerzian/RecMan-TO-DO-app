@@ -1,16 +1,16 @@
 import type { Ref } from "react";
 import { memo } from "react";
 import dragHandleIcon from "@/assets/icons/drag-handle.svg";
-import {
-  DeleteIconButton,
-  EditIconButton,
-} from "@/components/shared/ActionIconButton/ActionIconButton";
+import { ActionMenu } from "@/components/shared/ActionMenu/ActionMenu";
+import { CircleAddButton } from "@/components/shared/CircleAddButton/CircleAddButton";
 import styles from "./ColumnHeader.module.css";
 
 type ColumnHeaderProps = {
   title: string;
   onDelete(): void;
   onEdit(): void;
+  onAddTask(): void;
+  isAddTaskDisabled?: boolean;
   dragHandleRef?: Ref<HTMLElement>;
 };
 
@@ -18,6 +18,8 @@ function ColumnHeaderComponent({
   title,
   onDelete,
   onEdit,
+  onAddTask,
+  isAddTaskDisabled = false,
   dragHandleRef,
 }: ColumnHeaderProps) {
   return (
@@ -39,11 +41,23 @@ function ColumnHeaderComponent({
       </div>
 
       <div className={styles.controls}>
-        <div className={styles.actions}>
-          <EditIconButton aria-label="Edit column" onClick={onEdit} />
-
-          <DeleteIconButton aria-label="Delete column" onClick={onDelete} />
-        </div>
+        <CircleAddButton
+          aria-label={`Add task to ${title}`}
+          disabled={isAddTaskDisabled}
+          onClick={onAddTask}
+        />
+        <ActionMenu
+          triggerAriaLabel={`Column actions for ${title}`}
+          items={[
+            { key: "edit", label: "Edit", onSelect: onEdit },
+            {
+              key: "delete",
+              label: "Delete",
+              variant: "danger",
+              onSelect: onDelete,
+            },
+          ]}
+        />
       </div>
     </header>
   );
