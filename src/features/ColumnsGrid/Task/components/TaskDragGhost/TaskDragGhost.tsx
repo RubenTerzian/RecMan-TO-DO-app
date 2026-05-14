@@ -23,7 +23,6 @@ export function TaskDragGhost() {
       getPointer={getGhostPointerSnapshot}
       subscribeToPointer={subscribeToGhostPointer}
       rotateDegrees={3}
-      testId="task-drag-ghost"
     />
   );
 }

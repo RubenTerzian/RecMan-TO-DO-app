@@ -21,7 +21,6 @@ type DragGhostProps = {
   subscribeToPointer(listener: () => void): () => void;
   /** Visual rotation while dragging, e.g. "3deg" for tasks, "2deg" for columns. */
   rotateDegrees: number;
-  testId?: string;
 };
 
 function applyTransform(
@@ -54,7 +53,6 @@ function DragGhostComponent({
   getPointer,
   subscribeToPointer,
   rotateDegrees,
-  testId,
 }: DragGhostProps) {
   const wrapperRef = useRef<HTMLDivElement | null>(null);
 
@@ -113,7 +111,6 @@ function DragGhostComponent({
         applyTransform(node, getPointer, rotateDegrees);
       }}
       className={styles.ghost}
-      data-testid={testId}
       style={{
         width: `${snapshot.width}px`,
         height: `${snapshot.height}px`,

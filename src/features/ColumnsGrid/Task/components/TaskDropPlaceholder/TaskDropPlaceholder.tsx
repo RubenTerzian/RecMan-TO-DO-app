@@ -10,7 +10,7 @@ function TaskDropPlaceholderComponent({ height }: TaskDropPlaceholderProps) {
     <div
       aria-hidden="true"
       className={styles.placeholder}
-      data-testid="task-drop-placeholder"
+      data-task-drop-placeholder="true"
       style={{ height: `${height}px` }}
     />
   );

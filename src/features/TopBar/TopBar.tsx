@@ -8,7 +8,7 @@ export function TopBar() {
   useTopBarQuerySync();
 
   return (
-    <header className={styles.topBar} data-testid="top-bar">
+    <header className={styles.topBar}>
       <div className={styles.controlsCard}>
         <div className={styles.controls}>
           <SearchInput />

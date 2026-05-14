@@ -37,7 +37,6 @@ function ColumnAddTaskControlComponent({
       <div onPointerDown={handleAddTaskButtonPointerDown}>
         <Button
           className={styles.addTaskButton}
-          data-testid="add-task-button"
           disabled={isCreatingTask}
           onClick={isCreatingTask ? undefined : handleStartTaskCreation}
         >

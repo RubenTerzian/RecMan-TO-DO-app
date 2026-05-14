@@ -20,6 +20,17 @@
   -webkit-touch-callout: none;
   -webkit-user-select: none;
   user-select: none;
+  /*
+   * touch-action: none forbids the browser from interpreting touches
+   * that start on the card as scroll/zoom gestures. Without this iOS
+   * Safari commits the gesture to the nearest scroller as soon as the
+   * user moves a finger, and we cannot reclaim it via touchmove
+   * preventDefault once the long-press fires. Vertical scrolling
+   * inside a column still works from the gap between cards and the
+   * column padding; horizontal board scrolling still works from any
+   * area outside cards / headers.
+   */
+  touch-action: none;
 }
 
 .draggableCard:hover {

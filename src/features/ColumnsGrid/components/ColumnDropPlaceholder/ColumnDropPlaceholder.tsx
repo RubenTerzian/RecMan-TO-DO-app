@@ -14,7 +14,7 @@ function ColumnDropPlaceholderComponent({
     <div
       aria-hidden="true"
       className={styles.placeholder}
-      data-testid="column-drop-placeholder"
+      data-column-drop-placeholder="true"
       style={{ width: `${width}px`, height: `${height}px` }}
     />
   );

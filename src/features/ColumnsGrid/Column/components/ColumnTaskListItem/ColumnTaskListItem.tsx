@@ -4,14 +4,10 @@ import { useTaskDragAndDropContext } from "@/features/ColumnsGrid/Task/hooks/use
 import styles from "../../Column.module.css";
 
 type ColumnTaskListItemProps = {
-  selectionMode: boolean;
   taskId: string;
 };
 
-function ColumnTaskListItemComponent({
-  selectionMode,
-  taskId,
-}: ColumnTaskListItemProps) {
+function ColumnTaskListItemComponent({ taskId }: ColumnTaskListItemProps) {
   const { registerTaskElement } = useTaskDragAndDropContext();
   const handleTaskItemRef = useCallback(
     (element: HTMLDivElement | null) => {
@@ -22,10 +18,7 @@ function ColumnTaskListItemComponent({
 
   return (
     <div ref={handleTaskItemRef} className={styles.taskItem}>
-      <TaskCard
-        taskId={taskId}
-        mode={selectionMode ? "selection" : "default"}
-      />
+      <TaskCard taskId={taskId} />
     </div>
   );
 }

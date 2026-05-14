@@ -3,7 +3,7 @@ import styles from "./EmptyBoardState.module.css";
 
 export function EmptyBoardState() {
   return (
-    <section className={styles.emptyBoardState} data-testid="empty-board-state">
+    <section className={styles.emptyBoardState} data-empty-board="true">
       <img
         className={styles.gif}
         src={emptyBoardIllustration}

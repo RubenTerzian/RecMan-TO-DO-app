@@ -47,7 +47,6 @@ function ColumnTrackComponent({
     <div
       ref={handleTrackRef}
       className={className}
-      data-testid="board-column-track"
       data-column-track="true"
     >
       {visibleColumnIds.map((columnId, index) => (

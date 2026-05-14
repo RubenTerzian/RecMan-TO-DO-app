@@ -23,7 +23,6 @@ export function ColumnDragGhost() {
       getPointer={getColumnGhostPointerSnapshot}
       subscribeToPointer={subscribeToColumnGhostPointer}
       rotateDegrees={2}
-      testId="column-drag-ghost"
     />
   );
 }

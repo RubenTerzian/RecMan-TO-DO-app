@@ -12,21 +12,11 @@ import { useTaskDragAndDropContext } from "@/features/ColumnsGrid/Task/hooks/use
 import { useTaskEditing } from "@/features/ColumnsGrid/Task/hooks/useTaskEditing";
 import { useTask } from "@/features/ColumnsGrid/Task/hooks/useTask";
 
-type BaseTaskCardProps = {
+type TaskCardProps = {
   taskId: string;
 };
 
-type DefaultTaskCardProps = BaseTaskCardProps & {
-  mode: "default";
-};
-
-type SelectionTaskCardProps = BaseTaskCardProps & {
-  mode: "selection";
-};
-
-type TaskCardProps = DefaultTaskCardProps | SelectionTaskCardProps;
-
-function TaskCardComponent({ taskId, ...props }: TaskCardProps) {
+function TaskCardComponent({ taskId }: TaskCardProps) {
   const {
     task,
     titleSegments,
@@ -34,10 +24,7 @@ function TaskCardComponent({ taskId, ...props }: TaskCardProps) {
     isSelected,
     isComplete,
     handleToggle,
-  } = useTask({
-    taskId,
-    mode: props.mode,
-  });
+  } = useTask({ taskId });
 
   const {
     draftTitle,
@@ -85,13 +72,11 @@ function TaskCardComponent({ taskId, ...props }: TaskCardProps) {
         [styles.selected]: isSelected,
         [styles.selectionMode]: selectionMode,
       })}
-      data-testid="task-card"
     >
       {!selectionMode ? (
         <button
           className={styles.dragHandle}
           data-drag-handle="true"
-          data-testid="task-drag-handle"
           type="button"
           aria-label="Drag task"
         >
@@ -106,13 +91,12 @@ function TaskCardComponent({ taskId, ...props }: TaskCardProps) {
 
       <Checkbox
         checked={selectionMode ? isSelected : isComplete}
-        data-testid="task-complete-toggle"
         aria-label={selectionMode ? "Select task" : "Toggle task completion"}
         onChange={handleToggle}
       />
 
       <div className={styles.content}>
-        <strong className={styles.title} data-testid="task-title">
+        <strong className={styles.title}>
           {titleSegments.map((segment, index) =>
             segment.isMatch ? (
               <mark
@@ -131,13 +115,11 @@ function TaskCardComponent({ taskId, ...props }: TaskCardProps) {
       {!selectionMode ? (
         <div className={styles.actions}>
           <EditIconButton
-            data-testid="task-edit"
             aria-label="Edit task"
             onClick={handleStartEditing}
           />
 
           <DeleteIconButton
-            data-testid="task-delete"
             aria-label="Delete task"
             onClick={handleDeleteTask}
           />

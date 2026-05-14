@@ -10,10 +10,7 @@ type SelectionActionBarProps = {
 
 export function SelectionActionBar({ className }: SelectionActionBarProps) {
   return (
-    <section
-      className={clsx(styles.selectionActionBar, className)}
-      data-testid="selection-action-bar"
-    >
+    <section className={clsx(styles.selectionActionBar, className)}>
       <div className={styles.headerRow}>
         <div>
           <h3 className={styles.title}>Bulk update</h3>

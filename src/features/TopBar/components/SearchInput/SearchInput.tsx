@@ -22,7 +22,6 @@ function SearchInputComponent() {
       <Input
         ref={inputRef}
         className={styles.searchInput}
-        data-testid="search-input"
         defaultValue={initialValue}
         onChange={onChange}
         placeholder="Search tasks"

@@ -46,7 +46,6 @@ function TaskEditorComponent({
   return (
     <form
       className={styles.taskEditor}
-      data-testid="task-editor"
       onBlur={onBlur}
       onSubmit={handleSubmit}
     >
@@ -68,13 +67,11 @@ function TaskEditorComponent({
       <div className={styles.actions}>
         <CancelIconButton
           aria-label={isCreateMode ? "Cancel new task" : "Cancel task edit"}
-          data-testid="cancel-task-editor"
           onClick={onCancel}
           onPointerDown={handleActionPointerDown}
         />
         <SaveIconButton
           aria-label={isCreateMode ? "Save new task" : "Save task changes"}
-          data-testid="save-task-editor"
           onPointerDown={handleActionPointerDown}
           type="submit"
         />

@@ -10,6 +10,8 @@
   -webkit-touch-callout: none;
   -webkit-user-select: none;
   user-select: none;
+  /* See TaskCard.module.css .draggableCard for rationale. */
+  touch-action: none;
 }
 
 .draggableHeader:active {

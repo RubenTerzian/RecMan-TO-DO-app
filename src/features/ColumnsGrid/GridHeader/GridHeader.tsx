@@ -1,5 +1,5 @@
 import type { PointerEventHandler } from "react";
-import { CreateColumnButton } from "@/components/shared/CreateColumnButton/CreateColumnButton";
+import { Button } from "@/components/atoms/Button/Button";
 import { SelectionActionBar } from "@/features/ColumnsGrid/GridHeader/components/SelectionActionBar/SelectionActionBar";
 import { SelectionModeToggle } from "@/features/ColumnsGrid/GridHeader/components/SelectionModeToggle/SelectionModeToggle";
 import styles from "./GridHeader.module.css";
@@ -29,7 +29,7 @@ export function GridHeader({
   const { selectionMode, handleSelectionModeToggle } = useGridHeaderActions();
 
   return (
-    <header className={styles.gridHeader} data-testid="grid-header">
+    <header className={styles.gridHeader}>
       <div className={styles.actionsRow}>
         {hasColumns ? (
           <SelectionModeToggle
@@ -44,11 +44,13 @@ export function GridHeader({
             className={styles.createColumnButtonWrapper}
             onPointerDown={handleCreateColumnPointerDown}
           >
-            <CreateColumnButton
+            <Button
               className={styles.createColumnButton}
               disabled={isCreateColumnDisabled}
               onClick={isCreateColumnDisabled ? undefined : onCreateColumn}
-            />
+            >
+              Add New Column
+            </Button>
           </div>
         ) : null}
       </div>

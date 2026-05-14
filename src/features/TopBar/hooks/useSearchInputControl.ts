@@ -13,11 +13,14 @@ const SEARCH_INPUT_DEBOUNCE_MS = 250;
  * via the returned `inputRef`.
  */
 export function useSearchInputControl() {
-  const initialValueRef = useRef(useStore.getState().searchTerm);
+  // Captured once. The input is uncontrolled after this point, so we
+  // hold the seed value in state (read at mount) instead of a ref so
+  // we never read a ref's `.current` during render.
+  const [initialValue] = useState(() => useStore.getState().searchTerm);
   const inputRef = useRef<HTMLInputElement | null>(null);
-  const lastWrittenValueRef = useRef(initialValueRef.current);
+  const lastWrittenValueRef = useRef(initialValue);
   const [hasValue, setHasValue] = useState(
-    () => initialValueRef.current.trim().length > 0,
+    () => initialValue.trim().length > 0,
   );
 
   const { schedule, cancel } = useDebounce((nextValue: string) => {
@@ -69,7 +72,7 @@ export function useSearchInputControl() {
 
   return {
     inputRef,
-    initialValue: initialValueRef.current,
+    initialValue,
     hasValue,
     handleInputChange,
     handleClear,

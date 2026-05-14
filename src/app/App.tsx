@@ -23,7 +23,7 @@ export default function App() {
   }, []);
 
   return (
-    <div className={styles.appShell} data-testid="app-shell">
+    <div className={styles.appShell}>
       <div className={styles.appFrame}>
         <header className={styles.hero} aria-label="RecMan board introduction">
           <span className={styles.eyebrow}>RecMan workflow hub</span>

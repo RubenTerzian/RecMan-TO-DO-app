@@ -64,7 +64,7 @@ export function ColumnsGrid() {
   }, [boardViewportRef, isCreatingColumn]);
 
   const createColumnEditor = isCreatingColumn ? (
-    <section className={columnStyles.column} data-testid="create-column-card">
+    <section className={columnStyles.column}>
       <ColumnEditor
         autoFocus
         draftTitle={draftTitle}
@@ -79,7 +79,7 @@ export function ColumnsGrid() {
 
   return (
     <main className={styles.board}>
-      <section className={styles.boardCanvas} data-testid="board-canvas">
+      <section className={styles.boardCanvas}>
         <div className={styles.boardContent}>
           <GridHeader
             hasColumns={!isBoardEmpty}

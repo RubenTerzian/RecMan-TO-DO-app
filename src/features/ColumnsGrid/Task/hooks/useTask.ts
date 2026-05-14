@@ -4,6 +4,7 @@ import {
   makeSelectIsTaskSelected,
   makeSelectTaskById,
   selectSearchTerm,
+  selectSelectionMode,
   selectToggleTaskCompletion,
   selectToggleTaskSelection,
 } from "@/store/selectors";
@@ -60,10 +61,9 @@ function getTaskTitleSegments(title: string, searchTerm: string) {
 
 type UseTaskOptions = {
   taskId: string;
-  mode: "default" | "selection";
 };
 
-export function useTask({ taskId, mode }: UseTaskOptions) {
+export function useTask({ taskId }: UseTaskOptions) {
   const selectTask = useMemo(() => makeSelectTaskById(taskId), [taskId]);
   const selectIsSelected = useMemo(
     () => makeSelectIsTaskSelected(taskId),
@@ -73,10 +73,10 @@ export function useTask({ taskId, mode }: UseTaskOptions) {
   const task = useStore(selectTask);
   const isSelected = useStore(selectIsSelected);
   const searchTerm = useStore(selectSearchTerm);
+  const selectionMode = useStore(selectSelectionMode);
   const toggleTaskCompletion = useStore(selectToggleTaskCompletion);
   const toggleTaskSelection = useStore(selectToggleTaskSelection);
 
-  const selectionMode = mode === "selection";
   const titleSegments = useMemo(
     () => getTaskTitleSegments(task?.title ?? "", searchTerm),
     [searchTerm, task?.title],

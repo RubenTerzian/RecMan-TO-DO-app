@@ -28,7 +28,6 @@ type SelectProps = {
   disabled?: boolean;
   onChange?(event: SelectChangeEvent): void;
   "aria-label"?: string;
-  "data-testid"?: string;
   name?: string;
 };
 
@@ -83,7 +82,6 @@ function SelectComponent({
   disabled = false,
   onChange,
   "aria-label": ariaLabel,
-  "data-testid": dataTestId,
   name,
 }: SelectProps) {
   const [isOpen, setIsOpen] = useState(false);
@@ -269,7 +267,6 @@ function SelectComponent({
         aria-haspopup="listbox"
         aria-label={ariaLabel}
         className={styles.trigger}
-        data-testid={dataTestId}
         disabled={disabled}
         onClick={handleToggle}
         type="button"

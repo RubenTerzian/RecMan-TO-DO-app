@@ -102,7 +102,10 @@ export function createPointerDragSession(descriptor: DragSessionDescriptor) {
   // `touch-action: none`); on the rest of the surface we must leave
   // the gesture to the browser so it can still scroll if the user
   // moves before the long-press fires.
-  if (!isTouch || isPointerOnDragHandle(pointerDownEvent.target, handleElement)) {
+  if (
+    !isTouch ||
+    isPointerOnDragHandle(pointerDownEvent.target, handleElement)
+  ) {
     pointerDownEvent.preventDefault();
   }
 

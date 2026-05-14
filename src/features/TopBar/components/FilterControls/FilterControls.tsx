@@ -13,7 +13,7 @@ function FilterControlsComponent() {
       value={activeFilter}
       onChange={(event) => handleChange(event.target.value as TaskFilter)}
       aria-label="Task filter"
-      data-testid="filter-controls"
+      data-active-filter={activeFilter}
     >
       <option value="all">All</option>
       <option value="complete">Complete</option>

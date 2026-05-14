@@ -18,7 +18,6 @@ function SelectionModeToggleComponent({
   return (
     <Button
       className={clsx(styles.selectionModeToggle, className)}
-      data-testid="selection-mode-toggle"
       data-enabled={enabled}
       aria-pressed={enabled}
       onClick={onToggle}

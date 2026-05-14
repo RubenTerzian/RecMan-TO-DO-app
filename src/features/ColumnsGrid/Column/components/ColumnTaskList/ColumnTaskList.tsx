@@ -15,7 +15,6 @@ import styles from "../../Column.module.css";
 
 type ColumnTaskListProps = {
   columnId: string;
-  selectionMode: boolean;
 };
 
 const DEFAULT_EMPTY_STATE = {
@@ -30,10 +29,7 @@ const NO_RESULTS_EMPTY_STATE = {
   message: "Try a different search or filter to see tasks here.",
 } as const;
 
-function ColumnTaskListComponent({
-  columnId,
-  selectionMode,
-}: ColumnTaskListProps) {
+function ColumnTaskListComponent({ columnId }: ColumnTaskListProps) {
   const allVisibleTaskIds = useVisibleTaskIds(columnId);
   const totalTaskCount = useStore(makeSelectColumnTaskCount(columnId));
   const placement = useColumnDropPlacement(columnId);
@@ -106,7 +102,7 @@ function ColumnTaskListComponent({
           {placementIndex === index && placement ? (
             <TaskDropPlaceholder height={placement.height} />
           ) : null}
-          <ColumnTaskListItem selectionMode={selectionMode} taskId={taskId} />
+          <ColumnTaskListItem taskId={taskId} />
         </Fragment>
       ))}
       {placementIndex === visibleTaskIds.length && placement ? (

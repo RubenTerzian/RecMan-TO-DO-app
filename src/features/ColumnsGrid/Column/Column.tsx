@@ -19,12 +19,14 @@ function ColumnComponent({ columnId }: ColumnProps) {
 
   const { registerColumnElement, registerColumnDragHandle } =
     useColumnDragAndDropContext();
+
   const handleColumnRef = useCallback(
     (element: HTMLElement | null) => {
       registerColumnElement(columnId, element);
     },
     [columnId, registerColumnElement],
   );
+
   const handleDragHandleRef = useCallback(
     (element: HTMLElement | null) => {
       registerColumnDragHandle(columnId, element);
@@ -39,7 +41,6 @@ function ColumnComponent({ columnId }: ColumnProps) {
         [styles.selectionMode]: selectionMode,
         [styles.taskDropTarget]: isDropTarget,
       })}
-      data-testid="column-card"
     >
       {selectionMode ? (
         <ColumnSelectionHeader columnId={columnId} />
@@ -53,7 +54,7 @@ function ColumnComponent({ columnId }: ColumnProps) {
       {!selectionMode ? <ColumnAddTaskControl columnId={columnId} /> : null}
 
       <div className={styles.taskViewport}>
-        <ColumnTaskList columnId={columnId} selectionMode={selectionMode} />
+        <ColumnTaskList columnId={columnId} />
       </div>
     </section>
   );

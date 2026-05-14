@@ -29,7 +29,6 @@ function ColumnHeaderComponent({
         <button
           className={styles.dragCue}
           data-drag-handle="true"
-          data-testid="column-drag-handle"
           type="button"
           aria-label="Drag column"
         >
@@ -42,13 +41,11 @@ function ColumnHeaderComponent({
       <div className={styles.controls}>
         <div className={styles.actions}>
           <EditIconButton
-            data-testid="edit-column-button"
             aria-label="Edit column"
             onClick={onEdit}
           />
 
           <DeleteIconButton
-            data-testid="delete-column-button"
             aria-label="Delete column"
             onClick={onDelete}
           />

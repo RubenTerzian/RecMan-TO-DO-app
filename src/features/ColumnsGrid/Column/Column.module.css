@@ -81,11 +81,11 @@
   }
 
   .column {
-    max-height: calc(100vh - 220px);
+    max-height: calc(100vh - 320px);
   }
 
   .taskList {
-    max-height: calc(100vh - 300px);
+    max-height: calc(100vh - 380px);
     -webkit-overflow-scrolling: touch;
   }
 }

@@ -46,7 +46,6 @@ function ColumnEditorComponent({
   return (
     <form
       className={styles.columnEditor}
-      data-testid="column-editor"
       onBlur={onBlur}
       onSubmit={handleSubmit}
     >
@@ -73,13 +72,11 @@ function ColumnEditorComponent({
             }
             onClick={onCancel}
             onPointerDown={handleActionPointerDown}
-            data-testid="cancel-column-editor"
           />
           <SaveIconButton
             aria-label={
               isCreateMode ? "Save new column" : "Save column changes"
             }
-            data-testid="save-column-editor"
             onPointerDown={handleActionPointerDown}
             type="submit"
           />
