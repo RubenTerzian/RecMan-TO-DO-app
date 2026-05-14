@@ -10,6 +10,7 @@ import {
 import { useStore } from "@/store/store";
 import { columnGhostNodeSlot } from "@/features/ColumnsGrid/dnd/ghostNodeSlot";
 import { createPointerDragSession } from "@/features/ColumnsGrid/dnd/createPointerDragSession";
+import { createGhostPointerStore } from "@/features/ColumnsGrid/dnd/ghostPointerStore";
 import { setDraggingDocumentState } from "@/features/ColumnsGrid/dnd/pointerDragActivation";
 
 type ColumnDragSnapshot = {
@@ -82,40 +83,12 @@ const columnDragStore = createColumnDragStore();
  * the task ghost store: read directly by the ghost component which
  * mutates its own DOM transform, never re-rendering React.
  */
-type GhostPointer = {
-  x: number;
-  y: number;
-  offsetX: number;
-  offsetY: number;
-  active: boolean;
-};
+const columnGhostPointerStore = createGhostPointerStore();
 
-const ghostPointer: GhostPointer = {
-  x: 0,
-  y: 0,
-  offsetX: 0,
-  offsetY: 0,
-  active: false,
-};
+const setGhostPointer = columnGhostPointerStore.setPointer;
 
-const ghostListeners = new Set<Listener>();
-
-function setGhostPointer(next: Partial<GhostPointer>) {
-  Object.assign(ghostPointer, next);
-  ghostListeners.forEach((listener) => listener());
-}
-
-export function subscribeToColumnGhostPointer(listener: Listener) {
-  ghostListeners.add(listener);
-
-  return () => {
-    ghostListeners.delete(listener);
-  };
-}
-
-export function getColumnGhostPointerSnapshot() {
-  return ghostPointer;
-}
+export const subscribeToColumnGhostPointer = columnGhostPointerStore.subscribe;
+export const getColumnGhostPointerSnapshot = columnGhostPointerStore.getSnapshot;
 
 export const ColumnDragAndDropContext =
   createContext<ColumnDragAndDropContextValue | null>(null);

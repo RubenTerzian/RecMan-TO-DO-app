@@ -1,14 +1,7 @@
 import { useCallback } from "react";
-import { useDraftSession } from "@/hooks/useDraftSession";
-import { useEditorBlur } from "@/hooks/useEditorBlur";
+import { useInlineEditor } from "@/hooks/useInlineEditor";
 import { useStore } from "@/store/store";
 import { selectDeleteTask, selectUpdateTaskTitle } from "@/store/selectors";
-
-function normalizeTaskTitle(title: string, fallbackTitle: string) {
-  const normalizedTitle = title.trim();
-
-  return normalizedTitle || fallbackTitle;
-}
 
 type UseTaskEditingOptions = {
   taskId: string;
@@ -18,32 +11,26 @@ type UseTaskEditingOptions = {
 export function useTaskEditing({ taskId, title }: UseTaskEditingOptions) {
   const updateTaskTitle = useStore(selectUpdateTaskTitle);
   const deleteTask = useStore(selectDeleteTask);
-  const { draft, isActive, resetSession, startSession, updateDraft } =
-    useDraftSession("");
 
-  const handleStartEditing = useCallback(() => {
-    startSession(title);
-  }, [startSession, title]);
-
-  const handleEditorBlur = useEditorBlur(resetSession);
-
-  const handleSaveEditing = useCallback(() => {
-    updateTaskTitle(taskId, normalizeTaskTitle(draft, title));
-    resetSession();
-  }, [draft, resetSession, taskId, title, updateTaskTitle]);
+  const editor = useInlineEditor<string>({
+    initialDraft: title,
+    emptyDraft: "",
+    normalize: (draft) => draft.trim() || title,
+    onCommit: (nextTitle) => updateTaskTitle(taskId, nextTitle),
+  });
 
   const handleDeleteTask = useCallback(() => {
     deleteTask(taskId);
   }, [deleteTask, taskId]);
 
   return {
-    draftTitle: draft,
-    isEditing: isActive,
-    handleCancelEditing: resetSession,
+    draftTitle: editor.draft,
+    isEditing: editor.isActive,
+    handleCancelEditing: editor.cancel,
     handleDeleteTask,
-    handleEditorBlur,
-    handleSaveEditing,
-    handleStartEditing,
-    handleTitleChange: updateDraft,
+    handleEditorBlur: editor.handleBlur,
+    handleSaveEditing: editor.save,
+    handleStartEditing: editor.start,
+    handleTitleChange: editor.update,
   };
 }

@@ -7,17 +7,18 @@
  *   `MOUSE_ACTIVATION_PIXELS` pixels from the registered handle. The
  *   entire handle surface is draggable, except interactive children
  *   (buttons, inputs, links, etc.).
- * - Touch: drag activates only after a long-press of
- *   `TOUCH_LONG_PRESS_MS` without significant movement, anywhere on the
- *   handle surface. Any pre-activation movement exceeding
- *   `TOUCH_PRE_ACTIVATION_CANCEL_PIXELS` cancels the long-press timer
- *   and lets the browser scroll naturally — preventing the "stuck in
- *   DnD while trying to scroll" state on mobile.
+ * - Touch: drag only initiates when the pointer lands on a
+ *   `[data-drag-handle]` descendant. The rest of the surface keeps
+ *   native scroll behaviour. This is the only design that lets the
+ *   same surface scroll AND drag on iOS, because `touch-action` is
+ *   committed at touchstart and cannot be changed mid-gesture. Once
+ *   the user grabs the handle, drag activates after a short
+ *   `TOUCH_LONG_PRESS_MS` hold so accidental taps on the handle do
+ *   not start a drag. Significant pre-activation movement cancels
+ *   the timer.
  */
 
 export const MOUSE_ACTIVATION_PIXELS = 6;
-export const TOUCH_LONG_PRESS_MS = 280;
-export const TOUCH_PRE_ACTIVATION_CANCEL_PIXELS = 8;
 
 const INTERACTIVE_SELECTOR =
   'button, input, textarea, select, option, a, label, [role="button"], [contenteditable="true"], [data-no-drag="true"]';

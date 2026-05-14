@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { useShallow } from "zustand/react/shallow";
 import { useStore } from "@/store/store";
-import { makeSelectTasksByColumnId } from "@/store/selectors";
+import { selectTasksByColumnId } from "@/store/selectors";
 import type { TaskFilter } from "@/features/TopBar/types";
 
 function matchesSearchTerm(title: string, searchTerm: string) {
@@ -33,7 +33,7 @@ function matchesActiveFilter(isComplete: boolean, activeFilter: TaskFilter) {
  */
 export function useVisibleTaskIds(columnId: string) {
   const selectTasks = useMemo(
-    () => makeSelectTasksByColumnId(columnId),
+    () => selectTasksByColumnId(columnId),
     [columnId],
   );
   const tasks = useStore(useShallow(selectTasks));

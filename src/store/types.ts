@@ -1,11 +1,11 @@
 import type { TaskFilter } from "@/features/TopBar/types";
 
-export type Column = {
+type Column = {
   id: string;
   title: string;
 };
 
-export type Task = {
+type Task = {
   id: string;
   columnId: string;
   title: string;

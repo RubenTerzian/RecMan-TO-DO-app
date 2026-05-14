@@ -5,7 +5,7 @@ import { ConfirmationModal } from "@/components/shared/ConfirmationModal/Confirm
 import { ColumnEditor } from "@/features/ColumnsGrid/Column/components/ColumnEditor/ColumnEditor";
 import { ColumnHeader } from "@/features/ColumnsGrid/Column/components/ColumnHeader/ColumnHeader";
 import { useColumnEditing } from "@/features/ColumnsGrid/Column/hooks/useColumnEditing";
-import { makeSelectColumnTitle } from "@/store/selectors";
+import { selectColumnTitle } from "@/store/selectors";
 
 type ColumnDefaultHeaderAreaProps = {
   columnId: string;
@@ -26,7 +26,7 @@ function ColumnDefaultHeaderAreaComponent({
   dragHandleRef,
 }: ColumnDefaultHeaderAreaProps) {
   const selectTitle = useMemo(
-    () => makeSelectColumnTitle(columnId),
+    () => selectColumnTitle(columnId),
     [columnId],
   );
   const title = useStore(selectTitle);

@@ -11,6 +11,7 @@ import {
 import { useStore } from "@/store/store";
 import { taskGhostNodeSlot } from "@/features/ColumnsGrid/dnd/ghostNodeSlot";
 import { createPointerDragSession } from "@/features/ColumnsGrid/dnd/createPointerDragSession";
+import { createGhostPointerStore } from "@/features/ColumnsGrid/dnd/ghostPointerStore";
 import { setDraggingDocumentState } from "@/features/ColumnsGrid/dnd/pointerDragActivation";
 
 type TaskDropTarget = {
@@ -98,40 +99,12 @@ const taskDragStore = createTaskDragStore();
  * pointer events. The ghost component reads it directly and mutates its
  * own DOM transform, so pointer movement never re-renders React.
  */
-type GhostPointer = {
-  x: number;
-  y: number;
-  offsetX: number;
-  offsetY: number;
-  active: boolean;
-};
+const ghostPointerStore = createGhostPointerStore();
 
-const ghostPointer: GhostPointer = {
-  x: 0,
-  y: 0,
-  offsetX: 0,
-  offsetY: 0,
-  active: false,
-};
+const setGhostPointer = ghostPointerStore.setPointer;
 
-const ghostListeners = new Set<Listener>();
-
-function setGhostPointer(next: Partial<GhostPointer>) {
-  Object.assign(ghostPointer, next);
-  ghostListeners.forEach((listener) => listener());
-}
-
-export function subscribeToGhostPointer(listener: Listener) {
-  ghostListeners.add(listener);
-
-  return () => {
-    ghostListeners.delete(listener);
-  };
-}
-
-export function getGhostPointerSnapshot() {
-  return ghostPointer;
-}
+export const subscribeToGhostPointer = ghostPointerStore.subscribe;
+export const getGhostPointerSnapshot = ghostPointerStore.getSnapshot;
 
 export const TaskDragAndDropContext =
   createContext<TaskDragAndDropContextValue | null>(null);

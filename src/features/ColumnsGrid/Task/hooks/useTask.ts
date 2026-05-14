@@ -1,8 +1,8 @@
 import { useCallback, useMemo } from "react";
 import { useStore } from "@/store/store";
 import {
-  makeSelectIsTaskSelected,
-  makeSelectTaskById,
+  selectIsTaskSelected,
+  selectTaskById,
   selectSearchTerm,
   selectSelectionMode,
   selectToggleTaskCompletion,
@@ -64,9 +64,9 @@ type UseTaskOptions = {
 };
 
 export function useTask({ taskId }: UseTaskOptions) {
-  const selectTask = useMemo(() => makeSelectTaskById(taskId), [taskId]);
+  const selectTask = useMemo(() => selectTaskById(taskId), [taskId]);
   const selectIsSelected = useMemo(
-    () => makeSelectIsTaskSelected(taskId),
+    () => selectIsTaskSelected(taskId),
     [taskId],
   );
 

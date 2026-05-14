@@ -1,7 +1,5 @@
 import {
   MOUSE_ACTIVATION_PIXELS,
-  TOUCH_LONG_PRESS_MS,
-  TOUCH_PRE_ACTIVATION_CANCEL_PIXELS,
   isPointerOnDragHandle,
   setDraggingDocumentState,
   shouldIgnoreDragStart,
@@ -88,37 +86,33 @@ export function createPointerDragSession(descriptor: DragSessionDescriptor) {
     return;
   }
 
-  const isTouch = pointerDownEvent.pointerType === "touch";
+  // On touch, only initiate a drag when the user grabs a dedicated
+  // `[data-drag-handle]` element. Touch surfaces cannot both scroll
+  // natively and host a "tap-anywhere-and-hold" drag on iOS because
+  // `touch-action` is committed at touchstart and cannot be changed
+  // for the in-flight gesture. By scoping touch drags to handles
+  // (which have `touch-action: none`) we get reliable drag with no
+  // scroll conflict, while the rest of the card/header keeps full
+  // native scroll. Mouse / pen still allow tap-anywhere drag.
+  if (
+    pointerDownEvent.pointerType === "touch" &&
+    !isPointerOnDragHandle(pointerDownEvent.target, handleElement)
+  ) {
+    return;
+  }
+
   const dragStartX = pointerDownEvent.clientX;
   const dragStartY = pointerDownEvent.clientY;
   const pointerId = pointerDownEvent.pointerId;
 
   let isActive = false;
-  let touchActivationTimerId: number | null = null;
 
-  // For mouse / pen we always preventDefault to avoid text selection
-  // and the OS callout. For touch we only consume pointerdown when it
-  // landed on a real `[data-drag-handle]` element (which sets
-  // `touch-action: none`); on the rest of the surface we must leave
-  // the gesture to the browser so it can still scroll if the user
-  // moves before the long-press fires.
-  if (
-    !isTouch ||
-    isPointerOnDragHandle(pointerDownEvent.target, handleElement)
-  ) {
-    pointerDownEvent.preventDefault();
-  }
-
-  const cancelTouchActivationTimer = () => {
-    if (touchActivationTimerId !== null) {
-      window.clearTimeout(touchActivationTimerId);
-      touchActivationTimerId = null;
-    }
-  };
+  // The gesture is now committed to drag (mouse always, touch only
+  // when landed on a handle). preventDefault stops text selection,
+  // OS context menu / callout, and any residual native scroll.
+  pointerDownEvent.preventDefault();
 
   const cleanup = () => {
-    cancelTouchActivationTimer();
-
     window.removeEventListener("pointermove", handlePointerMove);
     window.removeEventListener("pointerup", handlePointerUp);
     window.removeEventListener("pointercancel", handlePointerCancel);
@@ -179,17 +173,10 @@ export function createPointerDragSession(descriptor: DragSessionDescriptor) {
       const deltaY = event.clientY - dragStartY;
       const distance = Math.hypot(deltaX, deltaY);
 
-      if (isTouch) {
-        // Pre-activation movement on touch cancels the long-press and
-        // lets the browser scroll naturally — preventing the user
-        // from getting stuck in DnD when they meant to scroll.
-        if (distance > TOUCH_PRE_ACTIVATION_CANCEL_PIXELS) {
-          cleanup();
-        }
-
-        return;
-      }
-
+      // Same activation distance for mouse and touch. Touch drags
+      // start only on a `[data-drag-handle]` (touch-action: none),
+      // so there is no scroll gesture to compete with — the user
+      // can begin moving immediately and the drag follows.
       if (distance < MOUSE_ACTIVATION_PIXELS) {
         return;
       }
@@ -232,12 +219,4 @@ export function createPointerDragSession(descriptor: DragSessionDescriptor) {
   window.addEventListener("pointercancel", handlePointerCancel);
   window.addEventListener("contextmenu", handleContextMenu, true);
   window.addEventListener("touchmove", handleTouchMove, { passive: false });
-
-  if (isTouch) {
-    touchActivationTimerId = window.setTimeout(() => {
-      touchActivationTimerId = null;
-      activate(dragStartX, dragStartY);
-      onMove({ clientX: dragStartX, clientY: dragStartY });
-    }, TOUCH_LONG_PRESS_MS);
-  }
 }

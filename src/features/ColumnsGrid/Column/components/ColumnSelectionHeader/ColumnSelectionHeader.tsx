@@ -1,7 +1,7 @@
 import { memo, useMemo } from "react";
 import styles from "../ColumnHeader/ColumnHeader.module.css";
 import { useStore } from "@/store/store";
-import { makeSelectColumnTitle } from "@/store/selectors";
+import { selectColumnTitle } from "@/store/selectors";
 import { ColumnSelectAllToggle } from "../ColumnSelectAllToggle/ColumnSelectAllToggle";
 
 type ColumnSelectionHeaderProps = {
@@ -12,7 +12,7 @@ function ColumnSelectionHeaderComponent({
   columnId,
 }: ColumnSelectionHeaderProps) {
   const selectTitle = useMemo(
-    () => makeSelectColumnTitle(columnId),
+    () => selectColumnTitle(columnId),
     [columnId],
   );
   const title = useStore(selectTitle);

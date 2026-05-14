@@ -10,8 +10,12 @@
   -webkit-touch-callout: none;
   -webkit-user-select: none;
   user-select: none;
-  /* See TaskCard.module.css .draggableCard for rationale. */
-  touch-action: none;
+  /*
+   * The header surface uses native touch behaviour. Touch drags
+   * only initiate from the .dragCue child (touch-action: none).
+   * See TaskCard.module.css .draggableCard for the full rationale.
+   */
+  touch-action: auto;
 }
 
 .draggableHeader:active {
@@ -41,6 +45,21 @@
   user-select: none;
   -webkit-user-select: none;
   -webkit-touch-callout: none;
+}
+
+@media (pointer: coarse) {
+  /* On touch the cue is the ONLY way to start a column drag. */
+  .dragCue {
+    min-width: 44px;
+    min-height: 44px;
+    justify-content: center;
+    margin: -8px 0 -8px -10px;
+  }
+
+  .dragIcon {
+    width: 14px;
+    height: 18px;
+  }
 }
 
 .dragIcon {

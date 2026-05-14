@@ -1,6 +1,13 @@
 import { useCallback, useEffect, useRef } from "react";
 
-export function useDebounce<T extends (...args: never[]) => void>(
+/**
+ * Generic callable constraint. `never[]` is the contravariant
+ * "any tuple of args" — it accepts any concrete callback shape via
+ * `Parameters<T>` while satisfying `@typescript-eslint/no-explicit-any`.
+ */
+type AnyCallback = (...args: never[]) => void;
+
+export function useDebounce<T extends AnyCallback>(
   callback: T,
   delayMs: number,
 ) {

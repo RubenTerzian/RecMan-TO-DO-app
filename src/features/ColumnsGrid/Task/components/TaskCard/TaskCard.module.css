@@ -21,16 +21,16 @@
   -webkit-user-select: none;
   user-select: none;
   /*
-   * touch-action: none forbids the browser from interpreting touches
-   * that start on the card as scroll/zoom gestures. Without this iOS
-   * Safari commits the gesture to the nearest scroller as soon as the
-   * user moves a finger, and we cannot reclaim it via touchmove
-   * preventDefault once the long-press fires. Vertical scrolling
-   * inside a column still works from the gap between cards and the
-   * column padding; horizontal board scrolling still works from any
-   * area outside cards / headers.
+   * The card body uses native touch behaviour (auto). Touch drags
+   * only initiate from the .dragHandle child, which has
+   * touch-action: none. This is the canonical mobile DnD UX used by
+   * Trello, Notion, Linear, dnd-kit, etc.: any-finger long-press
+   * works on desktop; on touch the user must grab the handle. Mixing
+   * "native scroll on a draggable surface" is impossible on iOS
+   * because touch-action is committed at touchstart and cannot be
+   * changed for the in-flight gesture.
    */
-  touch-action: none;
+  touch-action: auto;
 }
 
 .draggableCard:hover {
@@ -82,6 +82,21 @@
   user-select: none;
   -webkit-user-select: none;
   -webkit-touch-callout: none;
+}
+
+@media (pointer: coarse) {
+  /* On touch the handle is the ONLY way to start a drag, so it
+   * needs a comfortable hit target (44x44 is the iOS HIG minimum). */
+  .dragHandle {
+    min-width: 44px;
+    min-height: 44px;
+    margin: -7px 0;
+  }
+
+  .dragIcon {
+    width: 14px;
+    height: 18px;
+  }
 }
 
 .dragHandle:focus-visible {

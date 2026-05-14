@@ -10,7 +10,7 @@ import {
   useTaskDragAndDropContext,
 } from "@/features/ColumnsGrid/Task/hooks/useTaskDragAndDrop";
 import { useVisibleTaskIds } from "@/features/ColumnsGrid/Column/hooks/useVisibleTaskIds";
-import { makeSelectColumnTaskCount } from "@/store/selectors";
+import { selectColumnTaskCount } from "@/store/selectors";
 import styles from "../../Column.module.css";
 
 type ColumnTaskListProps = {
@@ -31,7 +31,7 @@ const NO_RESULTS_EMPTY_STATE = {
 
 function ColumnTaskListComponent({ columnId }: ColumnTaskListProps) {
   const allVisibleTaskIds = useVisibleTaskIds(columnId);
-  const totalTaskCount = useStore(makeSelectColumnTaskCount(columnId));
+  const totalTaskCount = useStore(selectColumnTaskCount(columnId));
   const placement = useColumnDropPlacement(columnId);
   const draggingTaskId = useDraggingTaskId();
   const dragSourceColumnId = useDragSourceColumnId();

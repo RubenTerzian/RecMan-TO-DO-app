@@ -1,6 +1,5 @@
 import { useCallback } from "react";
-import { useDraftSession } from "@/hooks/useDraftSession";
-import { useEditorBlur } from "@/hooks/useEditorBlur";
+import { useInlineEditor } from "@/hooks/useInlineEditor";
 import { useStore } from "@/store/store";
 import { selectDeleteColumn, selectUpdateColumnTitle } from "@/store/selectors";
 
@@ -9,41 +8,29 @@ type UseColumnEditingOptions = {
   title: string;
 };
 
-function normalizeColumnTitle(title: string, fallbackTitle: string) {
-  const normalizedTitle = title.trim();
-
-  return normalizedTitle || fallbackTitle;
-}
-
 export function useColumnEditing({ columnId, title }: UseColumnEditingOptions) {
   const updateColumnTitle = useStore(selectUpdateColumnTitle);
   const deleteColumn = useStore(selectDeleteColumn);
-  const { draft, isActive, resetSession, startSession, updateDraft } =
-    useDraftSession("");
 
-  const handleStartEditing = useCallback(() => {
-    startSession(title);
-  }, [startSession, title]);
-
-  const handleEditorBlur = useEditorBlur(resetSession);
-
-  const handleSaveEditing = useCallback(() => {
-    updateColumnTitle(columnId, normalizeColumnTitle(draft, title));
-    resetSession();
-  }, [columnId, draft, resetSession, title, updateColumnTitle]);
+  const editor = useInlineEditor<string>({
+    initialDraft: title,
+    emptyDraft: "",
+    normalize: (draft) => draft.trim() || title,
+    onCommit: (nextTitle) => updateColumnTitle(columnId, nextTitle),
+  });
 
   const handleDeleteColumn = useCallback(() => {
     deleteColumn(columnId);
   }, [columnId, deleteColumn]);
 
   return {
-    draftTitle: draft,
-    isEditing: isActive,
-    handleCancelEditing: resetSession,
+    draftTitle: editor.draft,
+    isEditing: editor.isActive,
+    handleCancelEditing: editor.cancel,
     handleDeleteColumn,
-    handleDraftTitleChange: updateDraft,
-    handleEditorBlur,
-    handleSaveEditing,
-    handleStartEditing,
+    handleDraftTitleChange: editor.update,
+    handleEditorBlur: editor.handleBlur,
+    handleSaveEditing: editor.save,
+    handleStartEditing: editor.start,
   };
 }

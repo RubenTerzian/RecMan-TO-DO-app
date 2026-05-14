@@ -19,8 +19,6 @@ export const selectUpdateTaskTitle = (state: AppStore) => state.updateTaskTitle;
 
 export const selectDeleteTask = (state: AppStore) => state.deleteTask;
 
-export const selectSetSearchTerm = (state: AppStore) => state.setSearchTerm;
-
 export const selectSetActiveFilter = (state: AppStore) => state.setActiveFilter;
 
 export const selectResetTaskFilters = (state: AppStore) =>
@@ -29,22 +27,8 @@ export const selectResetTaskFilters = (state: AppStore) =>
 export const selectHasActiveTaskFilters = (state: AppStore) =>
   state.activeFilter !== "all" || state.searchTerm.trim().length > 0;
 
-export const selectSelectedTaskIds = (state: AppStore) => state.selectedTaskIds;
-
-export const selectSelectedTaskCount = (state: AppStore) =>
-  state.selectedTaskIds.length;
-
 export const selectToggleSelectionMode = (state: AppStore) =>
   state.toggleSelectionMode;
-
-export const selectMarkSelectedTasksComplete = (state: AppStore) =>
-  state.markSelectedTasksComplete;
-
-export const selectDeleteSelectedTasks = (state: AppStore) =>
-  state.deleteSelectedTasks;
-
-export const selectMoveSelectedTasks = (state: AppStore) =>
-  state.moveSelectedTasks;
 
 export const selectToggleTaskCompletion = (state: AppStore) =>
   state.toggleTaskCompletion;
@@ -52,29 +36,26 @@ export const selectToggleTaskCompletion = (state: AppStore) =>
 export const selectToggleTaskSelection = (state: AppStore) =>
   state.toggleTaskSelection;
 
-export const selectToggleAllTaskSelection = (state: AppStore) =>
-  state.toggleAllTaskSelection;
-
-export function makeSelectTaskById(taskId: string) {
+export function selectTaskById(taskId: string) {
   return (state: AppStore) =>
     state.tasks.find((currentTask) => currentTask.id === taskId);
 }
 
-export function makeSelectColumnTitle(columnId: string) {
+export function selectColumnTitle(columnId: string) {
   return (state: AppStore) =>
     state.columns.find((column) => column.id === columnId)?.title ?? "";
 }
 
-export function makeSelectIsTaskSelected(taskId: string) {
+export function selectIsTaskSelected(taskId: string) {
   return (state: AppStore) => state.selectedTaskIds.includes(taskId);
 }
 
-export function makeSelectTasksByColumnId(columnId: string) {
+export function selectTasksByColumnId(columnId: string) {
   return (state: AppStore) =>
     state.tasks.filter((task) => task.columnId === columnId);
 }
 
-export function makeSelectColumnTaskCount(columnId: string) {
+export function selectColumnTaskCount(columnId: string) {
   return (state: AppStore) =>
     state.tasks.reduce(
       (count, task) => (task.columnId === columnId ? count + 1 : count),
