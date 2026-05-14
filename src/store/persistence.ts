@@ -1,6 +1,6 @@
 import type { StoreState } from "./types";
 
-export const APP_STORAGE_KEY = "recman-todo:v1";
+const APP_STORAGE_KEY = "recman-todo:v1";
 
 export type PersistedStoreState = Pick<StoreState, "columns" | "tasks">;
 

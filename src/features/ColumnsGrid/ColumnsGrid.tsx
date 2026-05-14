@@ -1,14 +1,16 @@
 import { BoardSurface } from "@/features/ColumnsGrid/components/BoardSurface/BoardSurface";
 import { ColumnDragGhost } from "@/features/ColumnsGrid/components/ColumnDragGhost/ColumnDragGhost";
-import { ColumnCreationProvider } from "@/features/ColumnsGrid/context/ColumnCreationContext";
+import { ColumnCreationProvider } from "@/features/ColumnsGrid/context/ColumnCreationProvider";
 import { GridHeader } from "@/features/ColumnsGrid/GridHeader/GridHeader";
 import {
   ColumnDragAndDropContext,
   useColumnDragAndDrop,
 } from "@/features/ColumnsGrid/hooks/useColumnDragAndDrop";
-import { TaskDragAndDropProvider } from "@/features/ColumnsGrid/Task/components/TaskDragAndDropProvider/TaskDragAndDropProvider";
 import { TaskDragGhost } from "@/features/ColumnsGrid/Task/components/TaskDragGhost/TaskDragGhost";
-import { useTaskDragAndDrop } from "@/features/ColumnsGrid/Task/hooks/useTaskDragAndDrop";
+import {
+  TaskDragAndDropContext,
+  useTaskDragAndDrop,
+} from "@/features/ColumnsGrid/Task/hooks/useTaskDragAndDrop";
 import { useStore } from "@/store/store";
 import { useShallow } from "zustand/react/shallow";
 import styles from "./ColumnsGrid.module.css";
@@ -45,13 +47,13 @@ export function ColumnsGrid() {
               </div>
 
               <ColumnDragAndDropContext.Provider value={columnDragContextValue}>
-                <TaskDragAndDropProvider value={taskDragAndDrop}>
+                <TaskDragAndDropContext.Provider value={taskDragAndDrop}>
                   <BoardSurface
                     boardViewportRef={boardViewportRef}
                     className={styles.boardGrid}
                     columnIds={columnIds}
                   />
-                </TaskDragAndDropProvider>
+                </TaskDragAndDropContext.Provider>
               </ColumnDragAndDropContext.Provider>
             </div>
           </div>

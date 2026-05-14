@@ -1,8 +1,12 @@
 import { AddColumnButton } from "@/features/ColumnsGrid/GridHeader/components/AddColumnButton/AddColumnButton";
 import { SelectionActionBar } from "@/features/ColumnsGrid/GridHeader/components/SelectionActionBar/SelectionActionBar";
 import { SelectionModeToggle } from "@/features/ColumnsGrid/GridHeader/components/SelectionModeToggle/SelectionModeToggle";
+import {
+  selectSelectionMode,
+  selectToggleSelectionMode,
+} from "@/store/selectors";
+import { useStore } from "@/store/store";
 import styles from "./GridHeader.module.css";
-import { useGridHeaderActions } from "./hooks/useGridHeaderActions";
 
 type GridHeaderProps = {
   hasColumns: boolean;
@@ -15,7 +19,8 @@ type GridHeaderProps = {
  * opens, closes, or commits.
  */
 export function GridHeader({ hasColumns }: GridHeaderProps) {
-  const { selectionMode, handleSelectionModeToggle } = useGridHeaderActions();
+  const selectionMode = useStore(selectSelectionMode);
+  const toggleSelectionMode = useStore(selectToggleSelectionMode);
 
   return (
     <header className={styles.gridHeader}>
@@ -24,7 +29,7 @@ export function GridHeader({ hasColumns }: GridHeaderProps) {
           <SelectionModeToggle
             className={styles.selectionModeButton}
             enabled={selectionMode}
-            onToggle={handleSelectionModeToggle}
+            onToggle={toggleSelectionMode}
           />
         ) : null}
 

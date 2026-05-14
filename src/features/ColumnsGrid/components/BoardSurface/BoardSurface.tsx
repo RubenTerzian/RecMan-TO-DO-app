@@ -2,7 +2,7 @@ import type { RefObject } from "react";
 import { ColumnTrack } from "@/features/ColumnsGrid/components/ColumnTrack/ColumnTrack";
 import { CreateColumnSection } from "@/features/ColumnsGrid/components/CreateColumnSection/CreateColumnSection";
 import { EmptyBoardState } from "@/features/ColumnsGrid/components/EmptyBoardState/EmptyBoardState";
-import { useColumnCreationContext } from "@/features/ColumnsGrid/context/ColumnCreationContext";
+import { useColumnCreationContext } from "@/features/ColumnsGrid/context/columnCreationContext";
 
 type BoardSurfaceProps = {
   className: string;

@@ -1,5 +1,5 @@
 import { TaskEditor } from "@/features/ColumnsGrid/Task/components/TaskEditor/TaskEditor";
-import { useTaskCreationContext } from "@/features/ColumnsGrid/Column/context/TaskCreationContext";
+import { useTaskCreationContext } from "@/features/ColumnsGrid/Column/context/taskCreationContext";
 import styles from "./TaskCreationSlot.module.css";
 
 /**

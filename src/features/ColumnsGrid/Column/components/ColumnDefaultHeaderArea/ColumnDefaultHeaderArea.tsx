@@ -5,21 +5,12 @@ import { ConfirmationModal } from "@/components/shared/ConfirmationModal/Confirm
 import { ColumnEditor } from "@/features/ColumnsGrid/Column/components/ColumnEditor/ColumnEditor";
 import { ColumnHeader } from "@/features/ColumnsGrid/Column/components/ColumnHeader/ColumnHeader";
 import { useColumnEditing } from "@/features/ColumnsGrid/Column/hooks/useColumnEditing";
-import { selectColumnTitle } from "@/store/selectors";
+import { selectColumnTaskCount, selectColumnTitle } from "@/store/selectors";
 
 type ColumnDefaultHeaderAreaProps = {
   columnId: string;
   dragHandleRef: Ref<HTMLElement>;
 };
-
-function getColumnTaskCount(columnId: string) {
-  return useStore
-    .getState()
-    .tasks.reduce(
-      (count, task) => (task.columnId === columnId ? count + 1 : count),
-      0,
-    );
-}
 
 function ColumnDefaultHeaderAreaComponent({
   columnId,
@@ -50,7 +41,7 @@ function ColumnDefaultHeaderAreaComponent({
   }, [handleDeleteColumn]);
 
   const handleRequestDeleteColumn = useCallback(() => {
-    const taskCount = getColumnTaskCount(columnId);
+    const taskCount = selectColumnTaskCount(columnId)(useStore.getState());
 
     if (taskCount === 0) {
       handleDeleteColumn();

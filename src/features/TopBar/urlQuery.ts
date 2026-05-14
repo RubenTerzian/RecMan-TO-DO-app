@@ -8,12 +8,12 @@ export type TaskQueryState = {
   activeFilter: TaskFilter;
 };
 
-export const DEFAULT_TASK_QUERY_STATE: TaskQueryState = {
+const DEFAULT_TASK_QUERY_STATE: TaskQueryState = {
   searchTerm: "",
   activeFilter: "all",
 };
 
-export function isTaskFilter(value: string | null): value is TaskFilter {
+function isTaskFilter(value: string | null): value is TaskFilter {
   return value === "all" || value === "complete" || value === "incomplete";
 }
 

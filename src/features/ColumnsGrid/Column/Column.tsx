@@ -6,7 +6,7 @@ import { ColumnDefaultHeaderArea } from "@/features/ColumnsGrid/Column/component
 import { ColumnSelectionHeader } from "@/features/ColumnsGrid/Column/components/ColumnSelectionHeader/ColumnSelectionHeader";
 import { ColumnTaskList } from "@/features/ColumnsGrid/Column/components/ColumnTaskList/ColumnTaskList";
 import { TaskCreationSlot } from "@/features/ColumnsGrid/Column/components/TaskCreationSlot/TaskCreationSlot";
-import { TaskCreationProvider } from "@/features/ColumnsGrid/Column/context/TaskCreationContext";
+import { TaskCreationProvider } from "@/features/ColumnsGrid/Column/context/TaskCreationProvider";
 import { useColumnDragAndDropContext } from "@/features/ColumnsGrid/hooks/useColumnDragAndDrop";
 import { useIsColumnDropTarget } from "@/features/ColumnsGrid/Task/hooks/useTaskDragAndDrop";
 

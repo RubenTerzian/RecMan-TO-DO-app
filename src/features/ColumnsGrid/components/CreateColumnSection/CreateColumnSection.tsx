@@ -1,7 +1,7 @@
 import type { RefObject } from "react";
 import { useEffect, useRef } from "react";
 import { ColumnEditor } from "@/features/ColumnsGrid/Column/components/ColumnEditor/ColumnEditor";
-import { useColumnCreationContext } from "@/features/ColumnsGrid/context/ColumnCreationContext";
+import { useColumnCreationContext } from "@/features/ColumnsGrid/context/columnCreationContext";
 import columnStyles from "@/features/ColumnsGrid/Column/Column.module.css";
 
 type CreateColumnSectionProps = {

@@ -1,6 +1,6 @@
 import type { PointerEventHandler } from "react";
 import { Button } from "@/components/atoms/Button/Button";
-import { useColumnCreationContext } from "@/features/ColumnsGrid/context/ColumnCreationContext";
+import { useColumnCreationContext } from "@/features/ColumnsGrid/context/columnCreationContext";
 import styles from "./AddColumnButton.module.css";
 
 /**

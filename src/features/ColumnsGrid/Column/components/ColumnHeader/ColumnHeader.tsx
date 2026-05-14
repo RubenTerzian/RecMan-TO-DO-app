@@ -3,6 +3,7 @@ import { memo } from "react";
 import dragHandleIcon from "@/assets/icons/drag-handle.svg";
 import { ActionMenu } from "@/components/shared/ActionMenu/ActionMenu";
 import { AddTaskButton } from "@/features/ColumnsGrid/Column/components/AddTaskButton/AddTaskButton";
+import { clsx } from "@/utils/clsx";
 import styles from "./ColumnHeader.module.css";
 
 type ColumnHeaderProps = {
@@ -21,7 +22,7 @@ function ColumnHeaderComponent({
   return (
     <header
       ref={dragHandleRef}
-      className={`${styles.columnHeader} ${styles.draggableHeader}`}
+      className={clsx(styles.columnHeader, styles.draggableHeader)}
     >
       <div className={styles.titleGroup}>
         <button

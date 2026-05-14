@@ -2,16 +2,18 @@ import { memo } from "react";
 import styles from "./FilterControls.module.css";
 import { Select } from "@/components/atoms/Select/Select";
 import type { TaskFilter } from "@/features/TopBar/types";
-import { useFilterControl } from "@/features/TopBar/hooks/useFilterControl";
+import { selectActiveFilter, selectSetActiveFilter } from "@/store/selectors";
+import { useStore } from "@/store/store";
 
 function FilterControlsComponent() {
-  const { activeFilter, handleChange } = useFilterControl();
+  const activeFilter = useStore(selectActiveFilter);
+  const setActiveFilter = useStore(selectSetActiveFilter);
 
   return (
     <Select
       className={styles.filterControls}
       value={activeFilter}
-      onChange={(event) => handleChange(event.target.value as TaskFilter)}
+      onChange={(event) => setActiveFilter(event.target.value as TaskFilter)}
       aria-label="Task filter"
       data-active-filter={activeFilter}
     >

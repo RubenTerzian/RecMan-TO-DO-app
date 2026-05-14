@@ -14,7 +14,7 @@ import { clsx } from "@/utils/clsx";
 import { useRafThrottle } from "@/hooks/useRafThrottle";
 import styles from "./ActionMenu.module.css";
 
-export type ActionMenuItem = {
+type ActionMenuItem = {
   key: string;
   label: string;
   icon?: ReactNode;

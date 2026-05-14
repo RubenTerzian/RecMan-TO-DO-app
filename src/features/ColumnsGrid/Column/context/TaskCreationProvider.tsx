@@ -1,9 +1,6 @@
-import { createContext, useContext, type ReactNode } from "react";
+import type { ReactNode } from "react";
+import { TaskCreationContext } from "@/features/ColumnsGrid/Column/context/taskCreationContext";
 import { useColumnTaskCreation } from "@/features/ColumnsGrid/Column/hooks/useColumnTaskCreation";
-
-type TaskCreationGate = ReturnType<typeof useColumnTaskCreation>;
-
-const Ctx = createContext<TaskCreationGate | null>(null);
 
 /**
  * Hosts the per-column task-creation hook in a context so the trigger
@@ -20,15 +17,9 @@ export function TaskCreationProvider({
   children: ReactNode;
 }) {
   const gate = useColumnTaskCreation({ columnId });
-  return <Ctx.Provider value={gate}>{children}</Ctx.Provider>;
-}
-
-export function useTaskCreationContext() {
-  const value = useContext(Ctx);
-  if (!value) {
-    throw new Error(
-      "useTaskCreationContext must be used inside <TaskCreationProvider>",
-    );
-  }
-  return value;
+  return (
+    <TaskCreationContext.Provider value={gate}>
+      {children}
+    </TaskCreationContext.Provider>
+  );
 }
