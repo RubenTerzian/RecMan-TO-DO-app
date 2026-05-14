@@ -49,6 +49,7 @@ function SelectionMutationButtonsComponent() {
     <>
       <div className={styles.actionGroup}>
         <Button
+          variant="secondary"
           className={styles.secondaryAction}
           disabled={!hasSelection}
           onClick={handleMarkComplete}
@@ -56,6 +57,7 @@ function SelectionMutationButtonsComponent() {
           Mark complete
         </Button>
         <Button
+          variant="secondary"
           className={styles.secondaryAction}
           disabled={!hasSelection}
           onClick={handleMarkIncomplete}
@@ -63,6 +65,7 @@ function SelectionMutationButtonsComponent() {
           Mark incomplete
         </Button>
         <Button
+          variant="danger"
           className={styles.dangerAction}
           disabled={!hasSelection}
           onClick={handleDeleteRequest}

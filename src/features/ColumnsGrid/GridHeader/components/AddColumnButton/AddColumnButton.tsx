@@ -25,6 +25,7 @@ export function AddColumnButton() {
     <div className={styles.wrapper} onPointerDown={handlePointerDown}>
       <Button
         className={styles.button}
+        variant="primary"
         disabled={isCreatingColumn}
         onClick={isCreatingColumn ? undefined : handleStartColumnCreation}
       >

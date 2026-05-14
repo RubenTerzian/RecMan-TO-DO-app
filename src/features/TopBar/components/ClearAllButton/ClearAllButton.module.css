@@ -13,6 +13,12 @@
   color: var(--color-text);
 }
 
+@media (max-width: 719px) {
+  .clearAllButton {
+    min-height: var(--control-height);
+  }
+}
+
 @media (min-width: 720px) {
   .clearAllButton {
     width: auto;

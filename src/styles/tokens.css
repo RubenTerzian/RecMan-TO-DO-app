@@ -1,37 +1,41 @@
 :root {
   color-scheme: light;
   --font-sans: "Avenir Next", "Inter", "Segoe UI", "Helvetica Neue", sans-serif;
-  --font-display: "Avenir Next", "Inter", "Segoe UI", "Helvetica Neue", sans-serif;
+  --font-display:
+    "Avenir Next", "Inter", "Segoe UI", "Helvetica Neue", sans-serif;
 
   /* Surfaces — clean, flat, Recman-style. */
-  --color-bg: #f6f7f9;
+  --color-bg: #f4f6f8;
   --color-bg-elevated: #ffffff;
   --color-surface: #ffffff;
   --color-surface-strong: #ffffff;
-  --color-surface-muted: #f1f3f6;
-  --color-border: #e3e6ec;
-  --color-border-strong: #ccd1da;
+  --color-surface-muted: #eef2f6;
+  --color-board-surface: #e9eff7;
+  --color-complete-surface: #f2f4f7;
+  --color-complete-border: #d9e0e8;
+  --color-border: #e1e6ed;
+  --color-border-strong: #cad2dd;
 
   /* Text */
-  --color-text: #1d2433;
-  --color-text-muted: #6b7280;
+  --color-text: #202733;
+  --color-text-muted: #7a8290;
 
   /* Primary action: Recman green. Used for "Add Column", primary CTAs. */
-  --color-accent: #16a36a;
-  --color-accent-strong: #0e8757;
+  --color-accent: #11a86b;
+  --color-accent-strong: #0d8a58;
   --color-accent-soft: #e7f6ee;
 
   /* Secondary highlight: blue (used for selection / focus / matches). */
-  --color-highlight: #2563eb;
-  --color-highlight-strong: #1d4fd8;
-  --color-highlight-soft: #eaf1ff;
+  --color-highlight: #2f64f5;
+  --color-highlight-strong: #2450cd;
+  --color-highlight-soft: #ebf1ff;
 
-  --color-brand: #1d2433;
+  --color-brand: #202733;
   --color-brand-soft: #f1f3f7;
   --color-danger: #d84c4c;
   --color-danger-strong: #b53333;
   --color-danger-soft: #fdecec;
-  --color-success: #16a36a;
+  --color-success: #11a86b;
   --color-success-soft: #e7f6ee;
 
   /* Form-control sizing (Button / Input / Select trigger / IconButton). */
@@ -41,11 +45,11 @@
   --control-radius-compact: 8px;
 
   /* Hover affordance shared across controls (subtle, no shadow). */
-  --control-hover-bg: #eef0f4;
-  --control-hover-border: #ccd1da;
+  --control-hover-bg: #f2f4f7;
+  --control-hover-border: #cfd6e0;
 
   /* Focus ring uses the secondary highlight (blue). */
-  --focus-ring: 0 0 0 3px rgba(37, 99, 235, 0.18);
+  --focus-ring: 0 0 0 3px rgba(47, 100, 245, 0.16);
 
   /* Layout */
   --radius-lg: 14px;

@@ -1,6 +1,6 @@
 .button {
   appearance: none;
-  border: 1px solid var(--color-accent);
+  border: 1px solid transparent;
   border-radius: 999px;
   min-height: var(--control-height);
   padding: 0 18px;
@@ -8,8 +8,6 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  background: var(--color-accent);
-  color: #ffffff;
   font-size: 0.9rem;
   font-weight: 600;
   letter-spacing: -0.005em;
@@ -21,9 +19,37 @@
     color 140ms ease;
 }
 
-.button:hover {
-  background: var(--color-accent-strong);
-  border-color: var(--color-accent-strong);
+.primary {
+  background: var(--color-highlight);
+  border-color: var(--color-highlight);
+  color: #ffffff;
+}
+
+.primary:hover {
+  background: var(--color-highlight-strong);
+  border-color: var(--color-highlight-strong);
+}
+
+.secondary {
+  background: #ffffff;
+  border-color: var(--color-border);
+  color: var(--color-text);
+}
+
+.secondary:hover {
+  background: var(--control-hover-bg);
+  border-color: var(--control-hover-border);
+}
+
+.danger {
+  background: var(--color-danger);
+  border-color: var(--color-danger);
+  color: #ffffff;
+}
+
+.danger:hover {
+  background: var(--color-danger-strong);
+  border-color: var(--color-danger-strong);
 }
 
 .button:disabled {

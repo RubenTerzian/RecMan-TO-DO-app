@@ -44,24 +44,7 @@
   gap: 10px;
 }
 
-.secondaryButton {
-  background: #ffffff;
-  border-color: var(--color-border);
-  color: var(--color-text);
-}
-
-.secondaryButton:hover {
-  background: var(--control-hover-bg);
-  border-color: var(--control-hover-border);
-  color: var(--color-text);
-}
-
+.secondaryButton,
 .dangerButton {
-  background: var(--color-danger);
-  border-color: var(--color-danger);
-}
-
-.dangerButton:hover {
-  background: var(--color-danger-strong);
-  border-color: var(--color-danger-strong);
+  min-width: 0;
 }

@@ -12,13 +12,13 @@
 }
 
 .selectionModeToggle[data-enabled="true"] {
-  border-color: var(--color-accent);
-  background: var(--color-accent);
+  border-color: var(--color-highlight);
+  background: var(--color-highlight);
   color: #ffffff;
 }
 
 .selectionModeToggle[data-enabled="true"]:hover {
-  background: var(--color-accent-strong);
-  border-color: var(--color-accent-strong);
+  background: var(--color-highlight-strong);
+  border-color: var(--color-highlight-strong);
   color: #ffffff;
 }

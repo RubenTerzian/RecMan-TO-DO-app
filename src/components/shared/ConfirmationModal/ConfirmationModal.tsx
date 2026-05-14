@@ -56,6 +56,7 @@ export function ConfirmationModal({
 
         <div className={styles.actions}>
           <Button
+            variant="secondary"
             autoFocus
             className={styles.secondaryButton}
             onClick={onCancel}
@@ -63,6 +64,7 @@ export function ConfirmationModal({
             {cancelLabel}
           </Button>
           <Button
+            variant="danger"
             className={clsx(styles.confirmButton, styles.dangerButton)}
             onClick={onConfirm}
           >

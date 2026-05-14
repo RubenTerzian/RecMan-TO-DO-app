@@ -19,6 +19,28 @@
   padding-inline: 16px;
 }
 
+@media (max-width: 1023px) {
+  .gridHeader {
+    justify-items: stretch;
+  }
+
+  .actionsRow {
+    width: 100%;
+    justify-self: stretch;
+    justify-content: stretch;
+  }
+
+  .actionsRow > * {
+    flex: 1 1 calc(50% - 5px);
+    min-width: min(100%, 220px);
+  }
+
+  .selectionModeButton {
+    width: 100%;
+    min-height: 44px;
+  }
+}
+
 .selectionActionBar {
   width: 100%;
   max-width: none;

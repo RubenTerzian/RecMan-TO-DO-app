@@ -50,6 +50,7 @@ function MoveSelectionControlComponent() {
         {moveOptions}
       </Select>
       <Button
+        variant="secondary"
         className={styles.moveAction}
         disabled={!hasSelection || !moveTargetId}
         onClick={handleMove}

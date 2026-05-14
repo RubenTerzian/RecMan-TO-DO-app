@@ -39,8 +39,8 @@
 }
 
 .completed {
-  background: var(--color-success-soft);
-  border-color: color-mix(in srgb, var(--color-success) 22%, white);
+  background: var(--color-complete-surface);
+  border-color: var(--color-complete-border);
 }
 
 .selected {
@@ -49,7 +49,11 @@
 }
 
 .completed.selected {
-  background: var(--color-success-soft);
+  background: color-mix(
+    in srgb,
+    var(--color-complete-surface) 72%,
+    var(--color-highlight-soft)
+  );
   border-color: var(--color-highlight);
 }
 
@@ -128,7 +132,11 @@
 .completed .title {
   color: var(--color-text-muted);
   text-decoration: line-through;
-  text-decoration-color: color-mix(in srgb, var(--color-success) 60%, transparent);
+  text-decoration-color: color-mix(
+    in srgb,
+    var(--color-text-muted) 55%,
+    transparent
+  );
 }
 
 .completed .titleMatch {

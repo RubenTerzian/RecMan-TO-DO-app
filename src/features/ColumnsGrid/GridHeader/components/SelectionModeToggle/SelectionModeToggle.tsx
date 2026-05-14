@@ -17,6 +17,7 @@ function SelectionModeToggleComponent({
 }: SelectionModeToggleProps) {
   return (
     <Button
+      variant="secondary"
       className={clsx(styles.selectionModeToggle, className)}
       data-enabled={enabled}
       aria-pressed={enabled}

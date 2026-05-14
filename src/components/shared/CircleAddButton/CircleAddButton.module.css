@@ -19,9 +19,9 @@
 }
 
 .circleAddButton:hover:not(:disabled) {
-  background: var(--control-hover-bg);
-  border-color: var(--color-border);
-  color: var(--color-text);
+  background: var(--color-highlight-soft);
+  border-color: color-mix(in srgb, var(--color-highlight) 26%, white);
+  color: var(--color-highlight);
 }
 
 .circleAddButton:focus-visible {
