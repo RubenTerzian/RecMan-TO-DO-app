@@ -15,6 +15,9 @@
   --color-complete-border: #d9e0e8;
   --color-border: #e1e6ed;
   --color-border-strong: #cad2dd;
+  --color-scrollbar-thumb: #c4ccd8;
+  --color-scrollbar-thumb-hover: #9aa7bb;
+  --color-scrollbar-track: rgba(255, 255, 255, 0.35);
 
   /* Text */
   --color-text: #202733;
