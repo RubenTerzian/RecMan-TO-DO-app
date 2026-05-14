@@ -1,20 +1,16 @@
-import type {
-  FocusEventHandler,
-  PointerEventHandler,
-  SubmitEventHandler,
-} from "react";
-import { memo, useCallback, useLayoutEffect, useRef } from "react";
+import { memo } from "react";
 import { Input } from "@/components/atoms/Input/Input";
 import {
   CancelIconButton,
   SaveIconButton,
 } from "@/components/shared/ActionIconButton/ActionIconButton";
+import { useInlineTitleEditorForm } from "@/hooks/useInlineTitleEditorForm";
 import styles from "./ColumnEditor.module.css";
 
 type ColumnEditorProps = {
   /**
-   * Initial value seeded into the uncontrolled input. Editing happens
-   * entirely inside the editor — the parent never sees keystrokes.
+   * Pre-existing title shown in edit mode (and selected on mount).
+   * Ignored in create mode — the input opens empty with a placeholder.
    */
   initialTitle: string;
   mode: "create" | "edit";
@@ -34,52 +30,14 @@ function ColumnEditorComponent({
   onSave,
   onCancel,
 }: ColumnEditorProps) {
-  const isCreateMode = mode === "create";
-  const inputRef = useRef<HTMLInputElement | null>(null);
-
-  useLayoutEffect(() => {
-    if (isCreateMode || !inputRef.current) {
-      return;
-    }
-
-    inputRef.current.focus();
-    inputRef.current.select();
-  }, [isCreateMode]);
-
-  const handleSubmit = useCallback<SubmitEventHandler<HTMLFormElement>>(
-    (event) => {
-      event.preventDefault();
-      onSave(inputRef.current?.value ?? "");
-    },
-    [onSave],
-  );
-
-  // Focus-safe blur: only collapse the editor when focus leaves the
-  // entire form surface. Focus shifts between the input and the
-  // action buttons must not cancel.
-  const handleBlur = useCallback<FocusEventHandler<HTMLFormElement>>(
-    (event) => {
-      const next = event.relatedTarget;
-      if (next instanceof Node && event.currentTarget.contains(next)) {
-        return;
-      }
-      if (
-        next === null &&
-        document.activeElement instanceof Node &&
-        event.currentTarget.contains(document.activeElement)
-      ) {
-        return;
-      }
-      onCancel();
-    },
-    [onCancel],
-  );
-
-  const handleActionPointerDown: PointerEventHandler<HTMLButtonElement> = (
-    event,
-  ) => {
-    event.preventDefault();
-  };
+  const {
+    inputRef,
+    isCreateMode,
+    handleSubmit,
+    handleBlur,
+    handleInputKeyDown,
+    handleActionPointerDown,
+  } = useInlineTitleEditorForm({ mode, onSave, onCancel });
 
   return (
     <form
@@ -94,12 +52,7 @@ function ColumnEditorComponent({
           autoFocus={autoFocus}
           className={styles.titleInput}
           defaultValue={isCreateMode ? undefined : initialTitle}
-          onKeyDown={(event) => {
-            if (event.key === "Escape") {
-              event.preventDefault();
-              onCancel();
-            }
-          }}
+          onKeyDown={handleInputKeyDown}
           placeholder={isCreateMode ? "Enter column name" : "Rename column"}
         />
 
