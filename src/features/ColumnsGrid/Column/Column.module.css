@@ -40,7 +40,7 @@
   flex: 1;
   min-height: 0;
   align-content: start;
-  overflow-y: auto;
+  overflow-y: scroll;
   padding-right: 2px;
   /*
    * Allow both axes so the browser can route the gesture to the right
@@ -50,6 +50,7 @@
    */
   touch-action: pan-x pan-y;
   overscroll-behavior-y: contain;
+  scrollbar-gutter: stable;
   scrollbar-width: thin;
   scrollbar-color: var(--color-scrollbar-thumb) transparent;
 }

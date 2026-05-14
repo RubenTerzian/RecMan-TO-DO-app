@@ -33,7 +33,7 @@
   min-width: 0;
   min-height: 0;
   height: 100%;
-  overflow-x: auto;
+  overflow-x: scroll;
   overflow-y: hidden;
   padding: 4px;
   padding-bottom: 4px;
