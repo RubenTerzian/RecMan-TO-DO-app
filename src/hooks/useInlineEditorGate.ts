@@ -9,6 +9,12 @@ type UseInlineEditorGateOptions = {
   onCommit(title: string): void;
   /** Trimmed empty drafts fall back to this string. */
   fallbackTitle?: string;
+  /**
+   * Controls what happens when the user tries to save an empty value.
+   * - `fallback` (default): commit the fallback title and close.
+   * - `keep-open`: ignore the save and keep the editor open.
+   */
+  emptyValueBehavior?: "fallback" | "keep-open";
 };
 
 /**
@@ -26,6 +32,7 @@ type UseInlineEditorGateOptions = {
 export function useInlineEditorGate({
   onCommit,
   fallbackTitle,
+  emptyValueBehavior = "fallback",
 }: UseInlineEditorGateOptions) {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -33,6 +40,7 @@ export function useInlineEditorGate({
   // identity even if these change per render.
   const fallbackRef = useRef<string | undefined>(fallbackTitle);
   const onCommitRef = useRef(onCommit);
+  const emptyValueBehaviorRef = useRef(emptyValueBehavior);
 
   useEffect(() => {
     fallbackRef.current = fallbackTitle;
@@ -41,6 +49,10 @@ export function useInlineEditorGate({
   useEffect(() => {
     onCommitRef.current = onCommit;
   }, [onCommit]);
+
+  useEffect(() => {
+    emptyValueBehaviorRef.current = emptyValueBehavior;
+  }, [emptyValueBehavior]);
 
   const start = useCallback(() => {
     setIsOpen(true);
@@ -52,6 +64,11 @@ export function useInlineEditorGate({
 
   const save = useCallback((rawTitle: string) => {
     const trimmed = rawTitle.trim();
+
+    if (trimmed.length === 0 && emptyValueBehaviorRef.current === "keep-open") {
+      return;
+    }
+
     const fallback = fallbackRef.current ?? "";
     onCommitRef.current(trimmed || fallback);
     setIsOpen(false);

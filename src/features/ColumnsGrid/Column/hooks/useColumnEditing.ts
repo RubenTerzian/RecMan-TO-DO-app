@@ -23,7 +23,7 @@ export function useColumnEditing({ columnId, title }: UseColumnEditingOptions) {
 
   const { isOpen, start, cancel, save } = useInlineEditorGate({
     onCommit: handleCommit,
-    fallbackTitle: title,
+    emptyValueBehavior: "keep-open",
   });
 
   const handleDeleteColumn = useCallback(() => {

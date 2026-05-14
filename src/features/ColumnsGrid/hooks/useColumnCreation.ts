@@ -2,8 +2,6 @@ import { useStore } from "@/store/store";
 import { selectCreateColumn } from "@/store/selectors";
 import { useInlineEditorGate } from "@/hooks/useInlineEditorGate";
 
-const DEFAULT_COLUMN_TITLE = "New Column";
-
 /**
  * Owns the open/closed flag for the trailing column-creation editor.
  * The editor itself is uncontrolled, so this hook (and any component
@@ -15,7 +13,7 @@ export function useColumnCreation() {
 
   const { isOpen, start, cancel, save } = useInlineEditorGate({
     onCommit: createColumn,
-    fallbackTitle: DEFAULT_COLUMN_TITLE,
+    emptyValueBehavior: "keep-open",
   });
 
   return {

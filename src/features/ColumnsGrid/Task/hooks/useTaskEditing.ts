@@ -23,7 +23,7 @@ export function useTaskEditing({ taskId, title }: UseTaskEditingOptions) {
 
   const { isOpen, start, cancel, save } = useInlineEditorGate({
     onCommit: handleCommit,
-    fallbackTitle: title,
+    emptyValueBehavior: "keep-open",
   });
 
   const handleDeleteTask = useCallback(() => {

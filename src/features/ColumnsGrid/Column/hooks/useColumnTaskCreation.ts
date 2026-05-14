@@ -3,8 +3,6 @@ import { useStore } from "@/store/store";
 import { selectCreateTask } from "@/store/selectors";
 import { useInlineEditorGate } from "@/hooks/useInlineEditorGate";
 
-const DEFAULT_TASK_TITLE = "New Task";
-
 type UseColumnTaskCreationOptions = {
   columnId: string;
 };
@@ -25,7 +23,7 @@ export function useColumnTaskCreation({
 
   const { isOpen, start, cancel, save } = useInlineEditorGate({
     onCommit: handleCommit,
-    fallbackTitle: DEFAULT_TASK_TITLE,
+    emptyValueBehavior: "keep-open",
   });
 
   return {

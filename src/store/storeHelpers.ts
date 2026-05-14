@@ -1,9 +1,6 @@
 import type { StoreState } from "./types";
 
-export type AppSelectionState = Pick<
-  StoreState,
-  "tasks" | "selectedTaskIds"
->;
+export type AppSelectionState = Pick<StoreState, "tasks" | "selectedTaskIds">;
 
 export function moveItem<TItem>(
   items: TItem[],
@@ -42,10 +39,7 @@ export function clearSelectionAfterTaskMutation<
   };
 }
 
-export function getColumnTasks(
-  tasks: StoreState["tasks"],
-  columnId: string,
-) {
+export function getColumnTasks(tasks: StoreState["tasks"], columnId: string) {
   return tasks.filter((task) => task.columnId === columnId);
 }
 
