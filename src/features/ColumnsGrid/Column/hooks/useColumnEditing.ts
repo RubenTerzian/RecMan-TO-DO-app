@@ -1,22 +1,29 @@
 import { useCallback } from "react";
-import { useInlineEditor } from "@/hooks/useInlineEditor";
 import { useStore } from "@/store/store";
 import { selectDeleteColumn, selectUpdateColumnTitle } from "@/store/selectors";
+import { useInlineEditorGate } from "@/hooks/useInlineEditorGate";
 
 type UseColumnEditingOptions = {
   columnId: string;
   title: string;
 };
 
+/**
+ * Owns the open/closed flag for inline column-title editing. The
+ * editor is uncontrolled — keystrokes never reach this hook.
+ */
 export function useColumnEditing({ columnId, title }: UseColumnEditingOptions) {
   const updateColumnTitle = useStore(selectUpdateColumnTitle);
   const deleteColumn = useStore(selectDeleteColumn);
 
-  const editor = useInlineEditor<string>({
-    initialDraft: title,
-    emptyDraft: "",
-    normalize: (draft) => draft.trim() || title,
-    onCommit: (nextTitle) => updateColumnTitle(columnId, nextTitle),
+  const handleCommit = useCallback(
+    (nextTitle: string) => updateColumnTitle(columnId, nextTitle),
+    [columnId, updateColumnTitle],
+  );
+
+  const { isOpen, start, cancel, save } = useInlineEditorGate({
+    onCommit: handleCommit,
+    fallbackTitle: title,
   });
 
   const handleDeleteColumn = useCallback(() => {
@@ -24,13 +31,11 @@ export function useColumnEditing({ columnId, title }: UseColumnEditingOptions) {
   }, [columnId, deleteColumn]);
 
   return {
-    draftTitle: editor.draft,
-    isEditing: editor.isActive,
-    handleCancelEditing: editor.cancel,
+    isEditing: isOpen,
+    initialTitle: title,
+    handleCancelEditing: cancel,
     handleDeleteColumn,
-    handleDraftTitleChange: editor.update,
-    handleEditorBlur: editor.handleBlur,
-    handleSaveEditing: editor.save,
-    handleStartEditing: editor.start,
+    handleSaveEditing: save,
+    handleStartEditing: start,
   };
 }

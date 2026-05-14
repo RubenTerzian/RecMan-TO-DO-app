@@ -13,30 +13,10 @@
   justify-self: end;
 }
 
-.selectionModeButton,
-.createColumnButton {
-  min-width: 0;
-}
-
-.createColumnButtonWrapper {
-  display: inline-flex;
-  min-width: 220px;
-  max-width: 100%;
-}
-
-.createColumnButtonWrapper:has(.createColumnButton:disabled) {
-  cursor: not-allowed;
-}
-
 .selectionModeButton {
+  min-width: 0;
   min-height: 42px;
   padding-inline: 16px;
-}
-
-.createColumnButton {
-  min-width: 220px;
-  min-height: 42px;
-  padding-inline: 22px;
 }
 
 .selectionActionBar {
@@ -64,22 +44,9 @@
     flex: 1 1 100%;
   }
 
-  .selectionModeButton,
-  .createColumnButton {
-    width: 100%;
-  }
-
   .selectionModeButton {
+    width: 100%;
     min-height: 48px;
     padding-inline: 18px;
-  }
-
-  .createColumnButtonWrapper {
-    width: 100%;
-    min-width: 0;
-  }
-
-  .createColumnButton {
-    min-width: 0;
   }
 }

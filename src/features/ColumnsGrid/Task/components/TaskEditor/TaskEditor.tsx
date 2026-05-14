@@ -3,7 +3,7 @@ import type {
   PointerEventHandler,
   SubmitEventHandler,
 } from "react";
-import { memo } from "react";
+import { memo, useCallback, useRef } from "react";
 import { Input } from "@/components/atoms/Input/Input";
 import {
   CancelIconButton,
@@ -12,30 +12,57 @@ import {
 import styles from "./TaskEditor.module.css";
 
 type TaskEditorProps = {
-  title: string;
+  /**
+   * Initial value seeded into the uncontrolled input. The editor
+   * owns its own draft so keystrokes never reach the parent.
+   */
+  initialTitle: string;
   autoFocus?: boolean;
   mode: "create" | "edit";
-  onBlur?: FocusEventHandler<HTMLFormElement>;
+  /**
+   * Receives the final title on submit only — once per save, never
+   * per keystroke.
+   */
+  onSave(title: string): void;
   onCancel(): void;
-  onSave(): void;
-  onTitleChange(title: string): void;
 };
 
 function TaskEditorComponent({
-  title,
+  initialTitle,
   autoFocus = false,
   mode,
-  onBlur,
-  onCancel,
   onSave,
-  onTitleChange,
+  onCancel,
 }: TaskEditorProps) {
   const isCreateMode = mode === "create";
+  const inputRef = useRef<HTMLInputElement | null>(null);
 
-  const handleSubmit: SubmitEventHandler<HTMLFormElement> = (event) => {
-    event.preventDefault();
-    onSave();
-  };
+  const handleSubmit = useCallback<SubmitEventHandler<HTMLFormElement>>(
+    (event) => {
+      event.preventDefault();
+      onSave(inputRef.current?.value ?? "");
+    },
+    [onSave],
+  );
+
+  // Focus-safe blur: only collapse when focus actually leaves the form.
+  const handleBlur = useCallback<FocusEventHandler<HTMLFormElement>>(
+    (event) => {
+      const next = event.relatedTarget;
+      if (next instanceof Node && event.currentTarget.contains(next)) {
+        return;
+      }
+      if (
+        next === null &&
+        document.activeElement instanceof Node &&
+        event.currentTarget.contains(document.activeElement)
+      ) {
+        return;
+      }
+      onCancel();
+    },
+    [onCancel],
+  );
 
   const handleActionPointerDown: PointerEventHandler<HTMLButtonElement> = (
     event,
@@ -44,12 +71,17 @@ function TaskEditorComponent({
   };
 
   return (
-    <form className={styles.taskEditor} onBlur={onBlur} onSubmit={handleSubmit}>
+    <form
+      className={styles.taskEditor}
+      onBlur={handleBlur}
+      onSubmit={handleSubmit}
+    >
       <Input
+        ref={inputRef}
         aria-label={isCreateMode ? "New task name" : "Edit task name"}
         autoFocus={autoFocus}
         className={styles.input}
-        onChange={(event) => onTitleChange(event.target.value)}
+        defaultValue={initialTitle}
         onKeyDown={(event) => {
           if (event.key === "Escape") {
             event.preventDefault();
@@ -57,7 +89,6 @@ function TaskEditorComponent({
           }
         }}
         placeholder={isCreateMode ? "New task" : "Edit task"}
-        value={title}
       />
 
       <div className={styles.actions}>

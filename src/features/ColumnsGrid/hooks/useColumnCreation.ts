@@ -1,25 +1,28 @@
-import { useInlineEditor } from "@/hooks/useInlineEditor";
 import { useStore } from "@/store/store";
 import { selectCreateColumn } from "@/store/selectors";
+import { useInlineEditorGate } from "@/hooks/useInlineEditorGate";
 
 const DEFAULT_COLUMN_TITLE = "New Column";
 
+/**
+ * Owns the open/closed flag for the trailing column-creation editor.
+ * The editor itself is uncontrolled, so this hook (and any component
+ * subscribed to it) only re-renders on open / close / commit, not on
+ * keystrokes.
+ */
 export function useColumnCreation() {
   const createColumn = useStore(selectCreateColumn);
 
-  const editor = useInlineEditor<string>({
-    initialDraft: DEFAULT_COLUMN_TITLE,
-    normalize: (draft) => draft.trim() || DEFAULT_COLUMN_TITLE,
+  const { isOpen, start, cancel, save } = useInlineEditorGate({
     onCommit: createColumn,
+    fallbackTitle: DEFAULT_COLUMN_TITLE,
   });
 
   return {
-    draftTitle: editor.draft,
-    isCreatingColumn: editor.isActive,
-    handleCreateEditorBlur: editor.handleBlur,
-    handleDraftTitleChange: editor.update,
-    handleCancelColumnCreation: editor.cancel,
-    handleSaveColumnCreation: editor.save,
-    handleStartColumnCreation: editor.start,
+    isCreatingColumn: isOpen,
+    defaultTitle: DEFAULT_COLUMN_TITLE,
+    handleStartColumnCreation: start,
+    handleCancelColumnCreation: cancel,
+    handleSaveColumnCreation: save,
   };
 }

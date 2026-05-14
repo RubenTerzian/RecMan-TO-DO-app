@@ -9,8 +9,6 @@ import { selectColumnTitle } from "@/store/selectors";
 
 type ColumnDefaultHeaderAreaProps = {
   columnId: string;
-  isAddTaskDisabled: boolean;
-  onAddTask(): void;
   dragHandleRef: Ref<HTMLElement>;
 };
 
@@ -25,19 +23,15 @@ function getColumnTaskCount(columnId: string) {
 
 function ColumnDefaultHeaderAreaComponent({
   columnId,
-  isAddTaskDisabled,
-  onAddTask,
   dragHandleRef,
 }: ColumnDefaultHeaderAreaProps) {
   const selectTitle = useMemo(() => selectColumnTitle(columnId), [columnId]);
   const title = useStore(selectTitle);
   const {
-    draftTitle,
     isEditing,
+    initialTitle,
     handleCancelEditing,
     handleDeleteColumn,
-    handleDraftTitleChange,
-    handleEditorBlur,
     handleSaveEditing,
     handleStartEditing,
   } = useColumnEditing({ columnId, title });
@@ -80,11 +74,9 @@ function ColumnDefaultHeaderAreaComponent({
     return (
       <ColumnEditor
         autoFocus
-        draftTitle={draftTitle}
+        initialTitle={initialTitle}
         mode="edit"
-        onBlur={handleEditorBlur}
         onCancel={handleCancelEditing}
-        onDraftTitleChange={handleDraftTitleChange}
         onSave={handleSaveEditing}
       />
     );
@@ -94,8 +86,6 @@ function ColumnDefaultHeaderAreaComponent({
     <>
       <ColumnHeader
         dragHandleRef={dragHandleRef}
-        isAddTaskDisabled={isAddTaskDisabled}
-        onAddTask={onAddTask}
         onDelete={handleRequestDeleteColumn}
         onEdit={handleStartEditing}
         title={title}

@@ -24,14 +24,12 @@ function TaskCardComponent({ taskId }: TaskCardProps) {
   } = useTask({ taskId });
 
   const {
-    draftTitle,
     isEditing,
+    initialTitle,
     handleCancelEditing,
     handleDeleteTask,
-    handleEditorBlur,
     handleSaveEditing,
     handleStartEditing,
-    handleTitleChange,
   } = useTaskEditing({ taskId, title: task?.title ?? "" });
 
   const { registerTaskDragHandle } = useTaskDragAndDropContext();
@@ -64,11 +62,9 @@ function TaskCardComponent({ taskId }: TaskCardProps) {
       <TaskEditor
         autoFocus
         mode="edit"
-        onBlur={handleEditorBlur}
+        initialTitle={initialTitle}
         onCancel={handleCancelEditing}
         onSave={handleSaveEditing}
-        onTitleChange={handleTitleChange}
-        title={draftTitle}
       />
     );
   }

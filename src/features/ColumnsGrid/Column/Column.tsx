@@ -5,8 +5,8 @@ import { clsx } from "@/utils/clsx";
 import { ColumnDefaultHeaderArea } from "@/features/ColumnsGrid/Column/components/ColumnDefaultHeaderArea/ColumnDefaultHeaderArea";
 import { ColumnSelectionHeader } from "@/features/ColumnsGrid/Column/components/ColumnSelectionHeader/ColumnSelectionHeader";
 import { ColumnTaskList } from "@/features/ColumnsGrid/Column/components/ColumnTaskList/ColumnTaskList";
-import { useColumnTaskCreation } from "@/features/ColumnsGrid/Column/hooks/useColumnTaskCreation";
-import { TaskEditor } from "@/features/ColumnsGrid/Task/components/TaskEditor/TaskEditor";
+import { TaskCreationSlot } from "@/features/ColumnsGrid/Column/components/TaskCreationSlot/TaskCreationSlot";
+import { TaskCreationProvider } from "@/features/ColumnsGrid/Column/context/TaskCreationContext";
 import { useColumnDragAndDropContext } from "@/features/ColumnsGrid/hooks/useColumnDragAndDrop";
 import { useIsColumnDropTarget } from "@/features/ColumnsGrid/Task/hooks/useTaskDragAndDrop";
 
@@ -35,53 +35,38 @@ function ColumnComponent({ columnId }: ColumnProps) {
     [columnId, registerColumnDragHandle],
   );
 
-  const {
-    draftTaskTitle,
-    isCreatingTask,
-    handleCancelTaskCreation,
-    handleSaveTaskCreation,
-    handleStartTaskCreation,
-    handleTaskEditorBlur,
-    handleTaskTitleChange,
-  } = useColumnTaskCreation({ columnId });
-
   return (
-    <section
-      ref={handleColumnRef}
-      className={clsx(styles.column, {
-        [styles.selectionMode]: selectionMode,
-        [styles.taskDropTarget]: isDropTarget,
-      })}
-    >
-      {selectionMode ? (
-        <ColumnSelectionHeader columnId={columnId} />
-      ) : (
-        <ColumnDefaultHeaderArea
-          columnId={columnId}
-          dragHandleRef={handleDragHandleRef}
-          isAddTaskDisabled={isCreatingTask}
-          onAddTask={handleStartTaskCreation}
-        />
-      )}
-
-      {!selectionMode && isCreatingTask ? (
-        <div className={styles.taskCreationEditor}>
-          <TaskEditor
-            autoFocus
-            mode="create"
-            onBlur={handleTaskEditorBlur}
-            onCancel={handleCancelTaskCreation}
-            onSave={handleSaveTaskCreation}
-            onTitleChange={handleTaskTitleChange}
-            title={draftTaskTitle}
+    /*
+     * The task-creation provider wraps both the trigger
+     * (`AddTaskButton` inside `ColumnHeader`) and the editor slot
+     * (`TaskCreationSlot`). `Column`, `ColumnHeader`, and
+     * `ColumnTaskList` never subscribe to the gate, so they don't
+     * re-render when the editor opens, closes, or commits.
+     */
+    <TaskCreationProvider columnId={columnId}>
+      <section
+        ref={handleColumnRef}
+        className={clsx(styles.column, {
+          [styles.selectionMode]: selectionMode,
+          [styles.taskDropTarget]: isDropTarget,
+        })}
+      >
+        {selectionMode ? (
+          <ColumnSelectionHeader columnId={columnId} />
+        ) : (
+          <ColumnDefaultHeaderArea
+            columnId={columnId}
+            dragHandleRef={handleDragHandleRef}
           />
-        </div>
-      ) : null}
+        )}
 
-      <div className={styles.taskViewport}>
-        <ColumnTaskList columnId={columnId} />
-      </div>
-    </section>
+        {!selectionMode ? <TaskCreationSlot /> : null}
+
+        <div className={styles.taskViewport}>
+          <ColumnTaskList columnId={columnId} />
+        </div>
+      </section>
+    </TaskCreationProvider>
   );
 }
 

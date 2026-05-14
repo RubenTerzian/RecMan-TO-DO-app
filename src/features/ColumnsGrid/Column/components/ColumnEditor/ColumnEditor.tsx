@@ -3,7 +3,7 @@ import type {
   PointerEventHandler,
   SubmitEventHandler,
 } from "react";
-import { memo } from "react";
+import { memo, useCallback, useRef } from "react";
 import { Input } from "@/components/atoms/Input/Input";
 import {
   CancelIconButton,
@@ -12,30 +12,59 @@ import {
 import styles from "./ColumnEditor.module.css";
 
 type ColumnEditorProps = {
-  draftTitle: string;
+  /**
+   * Initial value seeded into the uncontrolled input. Editing happens
+   * entirely inside the editor — the parent never sees keystrokes.
+   */
+  initialTitle: string;
   mode: "create" | "edit";
   autoFocus?: boolean;
-  onBlur?: FocusEventHandler<HTMLFormElement>;
+  /**
+   * Receives the final title on submit. The editor reads its own
+   * input value, so this fires once per save, never per keystroke.
+   */
+  onSave(title: string): void;
   onCancel(): void;
-  onDraftTitleChange(title: string): void;
-  onSave(): void;
 };
 
 function ColumnEditorComponent({
-  draftTitle,
+  initialTitle,
   mode,
   autoFocus = false,
-  onBlur,
-  onCancel,
-  onDraftTitleChange,
   onSave,
+  onCancel,
 }: ColumnEditorProps) {
   const isCreateMode = mode === "create";
+  const inputRef = useRef<HTMLInputElement | null>(null);
 
-  const handleSubmit: SubmitEventHandler<HTMLFormElement> = (event) => {
-    event.preventDefault();
-    onSave();
-  };
+  const handleSubmit = useCallback<SubmitEventHandler<HTMLFormElement>>(
+    (event) => {
+      event.preventDefault();
+      onSave(inputRef.current?.value ?? "");
+    },
+    [onSave],
+  );
+
+  // Focus-safe blur: only collapse the editor when focus leaves the
+  // entire form surface. Focus shifts between the input and the
+  // action buttons must not cancel.
+  const handleBlur = useCallback<FocusEventHandler<HTMLFormElement>>(
+    (event) => {
+      const next = event.relatedTarget;
+      if (next instanceof Node && event.currentTarget.contains(next)) {
+        return;
+      }
+      if (
+        next === null &&
+        document.activeElement instanceof Node &&
+        event.currentTarget.contains(document.activeElement)
+      ) {
+        return;
+      }
+      onCancel();
+    },
+    [onCancel],
+  );
 
   const handleActionPointerDown: PointerEventHandler<HTMLButtonElement> = (
     event,
@@ -46,15 +75,16 @@ function ColumnEditorComponent({
   return (
     <form
       className={styles.columnEditor}
-      onBlur={onBlur}
+      onBlur={handleBlur}
       onSubmit={handleSubmit}
     >
       <div className={styles.headerRow}>
         <Input
+          ref={inputRef}
           aria-label={isCreateMode ? "New column name" : "Edit column name"}
           autoFocus={autoFocus}
           className={styles.titleInput}
-          onChange={(event) => onDraftTitleChange(event.target.value)}
+          defaultValue={initialTitle}
           onKeyDown={(event) => {
             if (event.key === "Escape") {
               event.preventDefault();
@@ -62,7 +92,6 @@ function ColumnEditorComponent({
             }
           }}
           placeholder={isCreateMode ? "New column" : "Rename column"}
-          value={draftTitle}
         />
 
         <div className={styles.actions}>

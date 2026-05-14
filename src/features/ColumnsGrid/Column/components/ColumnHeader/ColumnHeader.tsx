@@ -2,15 +2,13 @@ import type { Ref } from "react";
 import { memo } from "react";
 import dragHandleIcon from "@/assets/icons/drag-handle.svg";
 import { ActionMenu } from "@/components/shared/ActionMenu/ActionMenu";
-import { CircleAddButton } from "@/components/shared/CircleAddButton/CircleAddButton";
+import { AddTaskButton } from "@/features/ColumnsGrid/Column/components/AddTaskButton/AddTaskButton";
 import styles from "./ColumnHeader.module.css";
 
 type ColumnHeaderProps = {
   title: string;
   onDelete(): void;
   onEdit(): void;
-  onAddTask(): void;
-  isAddTaskDisabled?: boolean;
   dragHandleRef?: Ref<HTMLElement>;
 };
 
@@ -18,8 +16,6 @@ function ColumnHeaderComponent({
   title,
   onDelete,
   onEdit,
-  onAddTask,
-  isAddTaskDisabled = false,
   dragHandleRef,
 }: ColumnHeaderProps) {
   return (
@@ -41,11 +37,7 @@ function ColumnHeaderComponent({
       </div>
 
       <div className={styles.controls}>
-        <CircleAddButton
-          aria-label={`Add task to ${title}`}
-          disabled={isAddTaskDisabled}
-          onClick={onAddTask}
-        />
+        <AddTaskButton columnTitle={title} />
         <ActionMenu
           triggerAriaLabel={`Column actions for ${title}`}
           items={[

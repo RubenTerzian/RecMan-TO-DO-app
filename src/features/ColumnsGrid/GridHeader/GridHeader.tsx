@@ -1,5 +1,4 @@
-import type { PointerEventHandler } from "react";
-import { Button } from "@/components/atoms/Button/Button";
+import { AddColumnButton } from "@/features/ColumnsGrid/GridHeader/components/AddColumnButton/AddColumnButton";
 import { SelectionActionBar } from "@/features/ColumnsGrid/GridHeader/components/SelectionActionBar/SelectionActionBar";
 import { SelectionModeToggle } from "@/features/ColumnsGrid/GridHeader/components/SelectionModeToggle/SelectionModeToggle";
 import styles from "./GridHeader.module.css";
@@ -7,25 +6,15 @@ import { useGridHeaderActions } from "./hooks/useGridHeaderActions";
 
 type GridHeaderProps = {
   hasColumns: boolean;
-  isCreateColumnDisabled?: boolean;
-  onCreateColumn?(): void;
 };
 
-export function GridHeader({
-  hasColumns,
-  isCreateColumnDisabled = false,
-  onCreateColumn,
-}: GridHeaderProps) {
-  const handleCreateColumnPointerDown: PointerEventHandler<HTMLDivElement> = (
-    event,
-  ) => {
-    if (!isCreateColumnDisabled) {
-      return;
-    }
-
-    event.preventDefault();
-  };
-
+/**
+ * Stateless layout for the board header. The "Add Column" trigger is
+ * a leaf consumer of `<ColumnCreationProvider>` (`AddColumnButton`),
+ * so this component never re-renders when the column-creation editor
+ * opens, closes, or commits.
+ */
+export function GridHeader({ hasColumns }: GridHeaderProps) {
   const { selectionMode, handleSelectionModeToggle } = useGridHeaderActions();
 
   return (
@@ -39,20 +28,7 @@ export function GridHeader({
           />
         ) : null}
 
-        {!selectionMode ? (
-          <div
-            className={styles.createColumnButtonWrapper}
-            onPointerDown={handleCreateColumnPointerDown}
-          >
-            <Button
-              className={styles.createColumnButton}
-              disabled={isCreateColumnDisabled}
-              onClick={isCreateColumnDisabled ? undefined : onCreateColumn}
-            >
-              Add New Column
-            </Button>
-          </div>
-        ) : null}
+        {!selectionMode ? <AddColumnButton /> : null}
       </div>
 
       {selectionMode && hasColumns ? (

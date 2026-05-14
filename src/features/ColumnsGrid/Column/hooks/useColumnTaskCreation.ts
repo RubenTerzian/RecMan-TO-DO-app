@@ -1,6 +1,7 @@
-import { useInlineEditor } from "@/hooks/useInlineEditor";
+import { useCallback } from "react";
 import { useStore } from "@/store/store";
 import { selectCreateTask } from "@/store/selectors";
+import { useInlineEditorGate } from "@/hooks/useInlineEditorGate";
 
 const DEFAULT_TASK_TITLE = "New Task";
 
@@ -8,24 +9,30 @@ type UseColumnTaskCreationOptions = {
   columnId: string;
 };
 
+/**
+ * Owns the open/closed flag for a column's task-creation editor. The
+ * editor is uncontrolled — keystrokes never reach this hook.
+ */
 export function useColumnTaskCreation({
   columnId,
 }: UseColumnTaskCreationOptions) {
   const createTask = useStore(selectCreateTask);
 
-  const editor = useInlineEditor<string>({
-    initialDraft: DEFAULT_TASK_TITLE,
-    normalize: (draft) => draft.trim() || DEFAULT_TASK_TITLE,
-    onCommit: (nextTitle) => createTask(columnId, nextTitle),
+  const handleCommit = useCallback(
+    (title: string) => createTask(columnId, title),
+    [columnId, createTask],
+  );
+
+  const { isOpen, start, cancel, save } = useInlineEditorGate({
+    onCommit: handleCommit,
+    fallbackTitle: DEFAULT_TASK_TITLE,
   });
 
   return {
-    draftTaskTitle: editor.draft,
-    isCreatingTask: editor.isActive,
-    handleCancelTaskCreation: editor.cancel,
-    handleSaveTaskCreation: editor.save,
-    handleStartTaskCreation: editor.start,
-    handleTaskEditorBlur: editor.handleBlur,
-    handleTaskTitleChange: editor.update,
+    isCreatingTask: isOpen,
+    defaultTitle: DEFAULT_TASK_TITLE,
+    handleStartTaskCreation: start,
+    handleCancelTaskCreation: cancel,
+    handleSaveTaskCreation: save,
   };
 }

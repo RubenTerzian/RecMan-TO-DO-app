@@ -1,10 +1,7 @@
-import { useEffect } from "react";
-import { ColumnEditor } from "@/features/ColumnsGrid/Column/components/ColumnEditor/ColumnEditor";
+import { BoardSurface } from "@/features/ColumnsGrid/components/BoardSurface/BoardSurface";
 import { ColumnDragGhost } from "@/features/ColumnsGrid/components/ColumnDragGhost/ColumnDragGhost";
-import { ColumnTrack } from "@/features/ColumnsGrid/components/ColumnTrack/ColumnTrack";
-import { EmptyBoardState } from "@/features/ColumnsGrid/components/EmptyBoardState/EmptyBoardState";
+import { ColumnCreationProvider } from "@/features/ColumnsGrid/context/ColumnCreationContext";
 import { GridHeader } from "@/features/ColumnsGrid/GridHeader/GridHeader";
-import { useColumnCreation } from "@/features/ColumnsGrid/hooks/useColumnCreation";
 import {
   ColumnDragAndDropContext,
   useColumnDragAndDrop,
@@ -14,7 +11,6 @@ import { TaskDragGhost } from "@/features/ColumnsGrid/Task/components/TaskDragGh
 import { useTaskDragAndDrop } from "@/features/ColumnsGrid/Task/hooks/useTaskDragAndDrop";
 import { useStore } from "@/store/store";
 import { useShallow } from "zustand/react/shallow";
-import columnStyles from "@/features/ColumnsGrid/Column/Column.module.css";
 import styles from "./ColumnsGrid.module.css";
 
 export function ColumnsGrid() {
@@ -29,84 +25,37 @@ export function ColumnsGrid() {
     boardViewportRef,
   });
 
-  const {
-    draftTitle,
-    isCreatingColumn,
-    handleCreateEditorBlur,
-    handleDraftTitleChange,
-    handleCancelColumnCreation,
-    handleSaveColumnCreation,
-    handleStartColumnCreation,
-  } = useColumnCreation();
-
-  // When the user opens the create-column editor, scroll the board to the
-  // far right so the trailing editor (and its action buttons) are in view.
-  useEffect(() => {
-    if (!isCreatingColumn) {
-      return;
-    }
-
-    const viewport = boardViewportRef.current;
-
-    if (!viewport) {
-      return;
-    }
-
-    // Wait one frame so the trailing editor section is mounted and
-    // contributes to scrollWidth before we scroll.
-    const frameId = window.requestAnimationFrame(() => {
-      viewport.scrollTo({ left: viewport.scrollWidth, behavior: "smooth" });
-    });
-
-    return () => {
-      window.cancelAnimationFrame(frameId);
-    };
-  }, [boardViewportRef, isCreatingColumn]);
-
-  const createColumnEditor = isCreatingColumn ? (
-    <section className={columnStyles.column}>
-      <ColumnEditor
-        autoFocus
-        draftTitle={draftTitle}
-        mode="create"
-        onBlur={handleCreateEditorBlur}
-        onCancel={handleCancelColumnCreation}
-        onDraftTitleChange={handleDraftTitleChange}
-        onSave={handleSaveColumnCreation}
-      />
-    </section>
-  ) : null;
-
   return (
     <main className={styles.board}>
       <section className={styles.boardCanvas}>
-        <div className={styles.boardContent}>
-          <GridHeader
-            hasColumns={!isBoardEmpty}
-            isCreateColumnDisabled={isCreatingColumn}
-            onCreateColumn={handleStartColumnCreation}
-          />
+        {/*
+         * The column-creation provider wraps both the trigger
+         * (`AddColumnButton` inside `GridHeader`) and the trailing
+         * editor (inside `BoardSurface`) so they share the gate without
+         * any common ancestor subscribing to it. `ColumnsGrid` and
+         * `GridHeader` never re-render on open / close / commit.
+         */}
+        <ColumnCreationProvider>
+          <div className={styles.boardContent}>
+            <GridHeader hasColumns={!isBoardEmpty} />
 
-          <div ref={boardViewportRef} className={styles.boardViewport}>
-            <div className={styles.mobileScrollHint} aria-hidden="true">
-              Swipe to see more columns →
-            </div>
+            <div ref={boardViewportRef} className={styles.boardViewport}>
+              <div className={styles.mobileScrollHint} aria-hidden="true">
+                Swipe to see more columns →
+              </div>
 
-            <ColumnDragAndDropContext.Provider value={columnDragContextValue}>
-              <TaskDragAndDropProvider value={taskDragAndDrop}>
-                {isBoardEmpty && !isCreatingColumn ? (
-                  <EmptyBoardState />
-                ) : (
-                  <ColumnTrack
+              <ColumnDragAndDropContext.Provider value={columnDragContextValue}>
+                <TaskDragAndDropProvider value={taskDragAndDrop}>
+                  <BoardSurface
+                    boardViewportRef={boardViewportRef}
                     className={styles.boardGrid}
                     columnIds={columnIds}
-                    trailing={createColumnEditor}
                   />
-                )}
-              </TaskDragAndDropProvider>
-            </ColumnDragAndDropContext.Provider>
+                </TaskDragAndDropProvider>
+              </ColumnDragAndDropContext.Provider>
+            </div>
           </div>
-        </div>
+        </ColumnCreationProvider>
       </section>
       <ColumnDragGhost />
       <TaskDragGhost />

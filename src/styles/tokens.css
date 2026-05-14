@@ -1,48 +1,54 @@
 :root {
   color-scheme: light;
-  --font-sans: "Avenir Next", "Segoe UI", "Helvetica Neue", sans-serif;
-  --font-display: "Avenir Next", "Segoe UI", "Helvetica Neue", sans-serif;
+  --font-sans: "Avenir Next", "Inter", "Segoe UI", "Helvetica Neue", sans-serif;
+  --font-display: "Avenir Next", "Inter", "Segoe UI", "Helvetica Neue", sans-serif;
 
-  /* Surfaces — plain, Airbnb-flat. No gradients, no shadows. */
-  --color-bg: #f7f7f5;
+  /* Surfaces — clean, flat, Recman-style. */
+  --color-bg: #f6f7f9;
   --color-bg-elevated: #ffffff;
   --color-surface: #ffffff;
   --color-surface-strong: #ffffff;
-  --color-surface-muted: #f3f3f1;
-  --color-border: #e6e6e3;
-  --color-border-strong: #d8d8d4;
+  --color-surface-muted: #f1f3f6;
+  --color-border: #e3e6ec;
+  --color-border-strong: #ccd1da;
 
   /* Text */
-  --color-text: #172033;
+  --color-text: #1d2433;
   --color-text-muted: #6b7280;
 
-  /* Accent palette (unchanged hues, soft tints flattened). */
-  --color-accent: #245af0;
-  --color-accent-strong: #0a2c9a;
-  --color-accent-soft: #eef2ff;
-  --color-brand: #20324f;
+  /* Primary action: Recman green. Used for "Add Column", primary CTAs. */
+  --color-accent: #16a36a;
+  --color-accent-strong: #0e8757;
+  --color-accent-soft: #e7f6ee;
+
+  /* Secondary highlight: blue (used for selection / focus / matches). */
+  --color-highlight: #2563eb;
+  --color-highlight-strong: #1d4fd8;
+  --color-highlight-soft: #eaf1ff;
+
+  --color-brand: #1d2433;
   --color-brand-soft: #f1f3f7;
   --color-danger: #d84c4c;
   --color-danger-strong: #b53333;
   --color-danger-soft: #fdecec;
-  --color-success: #1f9b62;
-  --color-success-soft: #e6f5ee;
+  --color-success: #16a36a;
+  --color-success-soft: #e7f6ee;
 
   /* Form-control sizing (Button / Input / Select trigger / IconButton). */
-  --control-height: 40px;
+  --control-height: 38px;
   --control-height-compact: 32px;
-  --control-radius: 12px;
-  --control-radius-compact: 10px;
+  --control-radius: 10px;
+  --control-radius-compact: 8px;
 
   /* Hover affordance shared across controls (subtle, no shadow). */
-  --control-hover-bg: #f1f1ef;
-  --control-hover-border: #d8d8d4;
+  --control-hover-bg: #eef0f4;
+  --control-hover-border: #ccd1da;
 
-  /* Focus ring */
-  --focus-ring: 0 0 0 3px rgba(36, 90, 240, 0.18);
+  /* Focus ring uses the secondary highlight (blue). */
+  --focus-ring: 0 0 0 3px rgba(37, 99, 235, 0.18);
 
   /* Layout */
-  --radius-lg: 16px;
-  --radius-xl: 20px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
   --app-shell-max-width: 1840px;
 }

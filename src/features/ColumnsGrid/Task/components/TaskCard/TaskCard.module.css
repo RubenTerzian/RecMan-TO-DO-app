@@ -39,17 +39,18 @@
 }
 
 .completed {
-  background: var(--color-surface-muted);
-  color: var(--color-text-muted);
+  background: var(--color-success-soft);
+  border-color: color-mix(in srgb, var(--color-success) 22%, white);
 }
 
 .selected {
-  border-color: var(--color-accent);
-  background: var(--color-accent-soft);
+  border-color: var(--color-highlight);
+  background: var(--color-highlight-soft);
 }
 
 .completed.selected {
-  background: var(--color-surface-muted);
+  background: var(--color-success-soft);
+  border-color: var(--color-highlight);
 }
 
 .dragHandle {
@@ -117,8 +118,8 @@
 }
 
 .titleMatch {
-  background: color-mix(in srgb, var(--color-accent) 22%, white);
-  color: var(--color-accent-strong);
+  background: color-mix(in srgb, var(--color-highlight) 22%, white);
+  color: var(--color-highlight-strong);
   font-weight: 700;
   border-radius: 4px;
   padding: 0 3px;
@@ -127,11 +128,12 @@
 .completed .title {
   color: var(--color-text-muted);
   text-decoration: line-through;
+  text-decoration-color: color-mix(in srgb, var(--color-success) 60%, transparent);
 }
 
 .completed .titleMatch {
-  color: var(--color-accent-strong);
-  background: color-mix(in srgb, var(--color-accent) 28%, white);
+  color: var(--color-highlight-strong);
+  background: color-mix(in srgb, var(--color-highlight) 28%, white);
 }
 
 .completed .dragHandle {
