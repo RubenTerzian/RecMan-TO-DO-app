@@ -20,7 +20,6 @@ export function useColumnCreation() {
 
   return {
     isCreatingColumn: isOpen,
-    defaultTitle: DEFAULT_COLUMN_TITLE,
     handleStartColumnCreation: start,
     handleCancelColumnCreation: cancel,
     handleSaveColumnCreation: save,

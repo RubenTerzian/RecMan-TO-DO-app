@@ -3,7 +3,7 @@ import type {
   PointerEventHandler,
   SubmitEventHandler,
 } from "react";
-import { memo, useCallback, useRef } from "react";
+import { memo, useCallback, useLayoutEffect, useRef } from "react";
 import { Input } from "@/components/atoms/Input/Input";
 import {
   CancelIconButton,
@@ -36,6 +36,15 @@ function TaskEditorComponent({
 }: TaskEditorProps) {
   const isCreateMode = mode === "create";
   const inputRef = useRef<HTMLInputElement | null>(null);
+
+  useLayoutEffect(() => {
+    if (isCreateMode || !inputRef.current) {
+      return;
+    }
+
+    inputRef.current.focus();
+    inputRef.current.select();
+  }, [isCreateMode]);
 
   const handleSubmit = useCallback<SubmitEventHandler<HTMLFormElement>>(
     (event) => {
@@ -81,14 +90,14 @@ function TaskEditorComponent({
         aria-label={isCreateMode ? "New task name" : "Edit task name"}
         autoFocus={autoFocus}
         className={styles.input}
-        defaultValue={initialTitle}
+        defaultValue={isCreateMode ? undefined : initialTitle}
         onKeyDown={(event) => {
           if (event.key === "Escape") {
             event.preventDefault();
             onCancel();
           }
         }}
-        placeholder={isCreateMode ? "New task" : "Edit task"}
+        placeholder={isCreateMode ? "Enter task name" : "Edit task"}
       />
 
       <div className={styles.actions}>

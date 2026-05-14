@@ -10,12 +10,8 @@ import styles from "./TaskCreationSlot.module.css";
  * reach this component either.
  */
 export function TaskCreationSlot() {
-  const {
-    isCreatingTask,
-    defaultTitle,
-    handleSaveTaskCreation,
-    handleCancelTaskCreation,
-  } = useTaskCreationContext();
+  const { isCreatingTask, handleSaveTaskCreation, handleCancelTaskCreation } =
+    useTaskCreationContext();
 
   if (!isCreatingTask) {
     return null;
@@ -26,7 +22,7 @@ export function TaskCreationSlot() {
       <TaskEditor
         autoFocus
         mode="create"
-        initialTitle={defaultTitle}
+        initialTitle=""
         onCancel={handleCancelTaskCreation}
         onSave={handleSaveTaskCreation}
       />

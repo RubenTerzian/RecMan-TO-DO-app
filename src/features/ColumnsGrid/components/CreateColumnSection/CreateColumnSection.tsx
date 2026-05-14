@@ -23,7 +23,6 @@ export function CreateColumnSection({
 }: CreateColumnSectionProps) {
   const {
     isCreatingColumn,
-    defaultTitle,
     handleSaveColumnCreation,
     handleCancelColumnCreation,
   } = useColumnCreationContext();
@@ -64,7 +63,7 @@ export function CreateColumnSection({
     <section className={columnStyles.column}>
       <ColumnEditor
         autoFocus
-        initialTitle={defaultTitle}
+        initialTitle=""
         mode="create"
         onCancel={handleCancelColumnCreation}
         onSave={handleSaveColumnCreation}

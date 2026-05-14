@@ -30,7 +30,6 @@ export function useColumnTaskCreation({
 
   return {
     isCreatingTask: isOpen,
-    defaultTitle: DEFAULT_TASK_TITLE,
     handleStartTaskCreation: start,
     handleCancelTaskCreation: cancel,
     handleSaveTaskCreation: save,

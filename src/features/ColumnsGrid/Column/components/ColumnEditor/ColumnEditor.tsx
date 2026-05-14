@@ -3,7 +3,7 @@ import type {
   PointerEventHandler,
   SubmitEventHandler,
 } from "react";
-import { memo, useCallback, useRef } from "react";
+import { memo, useCallback, useLayoutEffect, useRef } from "react";
 import { Input } from "@/components/atoms/Input/Input";
 import {
   CancelIconButton,
@@ -36,6 +36,15 @@ function ColumnEditorComponent({
 }: ColumnEditorProps) {
   const isCreateMode = mode === "create";
   const inputRef = useRef<HTMLInputElement | null>(null);
+
+  useLayoutEffect(() => {
+    if (isCreateMode || !inputRef.current) {
+      return;
+    }
+
+    inputRef.current.focus();
+    inputRef.current.select();
+  }, [isCreateMode]);
 
   const handleSubmit = useCallback<SubmitEventHandler<HTMLFormElement>>(
     (event) => {
@@ -84,14 +93,14 @@ function ColumnEditorComponent({
           aria-label={isCreateMode ? "New column name" : "Edit column name"}
           autoFocus={autoFocus}
           className={styles.titleInput}
-          defaultValue={initialTitle}
+          defaultValue={isCreateMode ? undefined : initialTitle}
           onKeyDown={(event) => {
             if (event.key === "Escape") {
               event.preventDefault();
               onCancel();
             }
           }}
-          placeholder={isCreateMode ? "New column" : "Rename column"}
+          placeholder={isCreateMode ? "Enter column name" : "Rename column"}
         />
 
         <div className={styles.actions}>
