@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { useStore } from "@/store/store";
 import { selectCreateColumn } from "@/store/selectors";
 import { useInlineEditorGate } from "@/hooks/useInlineEditorGate";
@@ -16,10 +17,13 @@ export function useColumnCreation() {
     emptyValueBehavior: "keep-open",
   });
 
-  return {
-    isCreatingColumn: isOpen,
-    handleStartColumnCreation: start,
-    handleCancelColumnCreation: cancel,
-    handleSaveColumnCreation: save,
-  };
+  return useMemo(
+    () => ({
+      isCreatingColumn: isOpen,
+      handleStartColumnCreation: start,
+      handleCancelColumnCreation: cancel,
+      handleSaveColumnCreation: save,
+    }),
+    [cancel, isOpen, save, start],
+  );
 }

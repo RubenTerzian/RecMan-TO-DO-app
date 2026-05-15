@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import type { TaskFilter } from "@/features/TopBar/types";
+import { readTaskQueryState } from "@/features/TopBar/urlQuery";
 import { createUniquePrefixedId } from "@/utils/ids";
 import { getVisibleTaskIds } from "@/utils/taskVisibility";
 import { createInitialState } from "./initialState";
@@ -50,8 +51,17 @@ type Actions = {
 
 export type AppStore = StoreState & Actions;
 
+/**
+ * One-shot URL hydration. Read once at module load so initial render
+ * already reflects `?search=...&filter=...`. `resetStore()` returns
+ * to factory defaults (empty query) regardless of current URL.
+ */
+const URL_QUERY_SEED = readTaskQueryState();
+
 export const useStore = create<AppStore>()((set) => ({
   ...createInitialState(),
+  searchTerm: URL_QUERY_SEED.searchTerm,
+  activeFilter: URL_QUERY_SEED.activeFilter,
   resetStore() {
     set(createInitialState());
   },

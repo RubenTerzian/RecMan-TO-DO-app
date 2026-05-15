@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { useStore } from "@/store/store";
 import { selectCreateTask } from "@/store/selectors";
 import { useInlineEditorGate } from "@/hooks/useInlineEditorGate";
@@ -26,10 +26,13 @@ export function useColumnTaskCreation({
     emptyValueBehavior: "keep-open",
   });
 
-  return {
-    isCreatingTask: isOpen,
-    handleStartTaskCreation: start,
-    handleCancelTaskCreation: cancel,
-    handleSaveTaskCreation: save,
-  };
+  return useMemo(
+    () => ({
+      isCreatingTask: isOpen,
+      handleStartTaskCreation: start,
+      handleCancelTaskCreation: cancel,
+      handleSaveTaskCreation: save,
+    }),
+    [cancel, isOpen, save, start],
+  );
 }

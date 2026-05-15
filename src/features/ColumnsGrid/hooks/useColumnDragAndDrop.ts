@@ -9,11 +9,18 @@ import {
 } from "react";
 import { useStore } from "@/store/store";
 import { columnGhostNodeSlot } from "@/features/ColumnsGrid/dnd/ghostNodeSlot";
+import { createDragStateStore } from "@/features/ColumnsGrid/dnd/createDragStateStore";
 import { createPointerDragSession } from "@/features/ColumnsGrid/dnd/createPointerDragSession";
 import { createGhostPointerStore } from "@/features/ColumnsGrid/dnd/ghostPointerStore";
 import { setDraggingDocumentState } from "@/features/ColumnsGrid/dnd/pointerDragActivation";
 
-type ColumnDragSnapshot = {
+/**
+ * Raw drag fields written by pointer handlers. Derived projections
+ * (`ghost`, `placement`) are computed from these and stored alongside
+ * them in the snapshot for stable references without any module-level
+ * cache.
+ */
+type ColumnDragRaw = {
   draggingColumnId: string | null;
   draggingColumnWidth: number;
   draggingColumnHeight: number;
@@ -21,7 +28,24 @@ type ColumnDragSnapshot = {
   dropIndex: number | null;
 };
 
-type Listener = () => void;
+type ColumnDragGhost = {
+  columnId: string;
+  width: number;
+  height: number;
+};
+
+type ColumnDropPlacement = {
+  index: number;
+  width: number;
+  height: number;
+};
+
+type ColumnDragSnapshot = ColumnDragRaw & {
+  /** Stable while geometry is unchanged; null when no drag is active. */
+  ghost: ColumnDragGhost | null;
+  /** Stable while geometry/index are unchanged; null when no drag is active. */
+  placement: ColumnDropPlacement | null;
+};
 
 export type ColumnDragAndDropContextValue = {
   registerColumnElement(columnId: string, element: HTMLElement | null): void;
@@ -30,53 +54,99 @@ export type ColumnDragAndDropContextValue = {
   registerColumnTrack(element: HTMLElement | null): void;
 };
 
-const DEFAULT_SNAPSHOT: ColumnDragSnapshot = {
+const DEFAULT_RAW: ColumnDragRaw = {
   draggingColumnId: null,
   draggingColumnWidth: 0,
   draggingColumnHeight: 0,
   dropIndex: null,
 };
 
-function createColumnDragStore() {
-  let state = DEFAULT_SNAPSHOT;
-  const listeners = new Set<Listener>();
+const DEFAULT_SNAPSHOT: ColumnDragSnapshot = {
+  ...DEFAULT_RAW,
+  ghost: null,
+  placement: null,
+};
+
+function equalsColumnDragSnapshot(
+  a: ColumnDragSnapshot,
+  b: ColumnDragSnapshot,
+) {
+  return (
+    a.draggingColumnId === b.draggingColumnId &&
+    a.draggingColumnWidth === b.draggingColumnWidth &&
+    a.draggingColumnHeight === b.draggingColumnHeight &&
+    a.dropIndex === b.dropIndex
+  );
+}
+
+function deriveGhost(
+  previous: ColumnDragGhost | null,
+  raw: ColumnDragRaw,
+): ColumnDragGhost | null {
+  if (raw.draggingColumnId === null || raw.draggingColumnWidth === 0) {
+    return null;
+  }
+
+  if (
+    previous &&
+    previous.columnId === raw.draggingColumnId &&
+    previous.width === raw.draggingColumnWidth &&
+    previous.height === raw.draggingColumnHeight
+  ) {
+    return previous;
+  }
 
   return {
-    getSnapshot() {
-      return state;
-    },
-    reset() {
-      if (state === DEFAULT_SNAPSHOT) {
-        return;
-      }
-
-      state = DEFAULT_SNAPSHOT;
-      listeners.forEach((listener) => listener());
-    },
-    setState(nextState: ColumnDragSnapshot) {
-      if (
-        state.draggingColumnId === nextState.draggingColumnId &&
-        state.draggingColumnWidth === nextState.draggingColumnWidth &&
-        state.draggingColumnHeight === nextState.draggingColumnHeight &&
-        state.dropIndex === nextState.dropIndex
-      ) {
-        return;
-      }
-
-      state = nextState;
-      listeners.forEach((listener) => listener());
-    },
-    subscribe(listener: Listener) {
-      listeners.add(listener);
-
-      return () => {
-        listeners.delete(listener);
-      };
-    },
+    columnId: raw.draggingColumnId,
+    width: raw.draggingColumnWidth,
+    height: raw.draggingColumnHeight,
   };
 }
 
-const columnDragStore = createColumnDragStore();
+function derivePlacement(
+  previous: ColumnDropPlacement | null,
+  raw: ColumnDragRaw,
+): ColumnDropPlacement | null {
+  if (raw.draggingColumnId === null || raw.dropIndex === null) {
+    return null;
+  }
+
+  if (
+    previous &&
+    previous.index === raw.dropIndex &&
+    previous.width === raw.draggingColumnWidth &&
+    previous.height === raw.draggingColumnHeight
+  ) {
+    return previous;
+  }
+
+  return {
+    index: raw.dropIndex,
+    width: raw.draggingColumnWidth,
+    height: raw.draggingColumnHeight,
+  };
+}
+
+const columnDragStateStore = createDragStateStore<ColumnDragSnapshot>(
+  DEFAULT_SNAPSHOT,
+  equalsColumnDragSnapshot,
+);
+
+function setColumnDragRaw(raw: ColumnDragRaw) {
+  const previous = columnDragStateStore.getSnapshot();
+  columnDragStateStore.setState({
+    ...raw,
+    ghost: deriveGhost(previous.ghost, raw),
+    placement: derivePlacement(previous.placement, raw),
+  });
+}
+
+const columnDragStore = {
+  getSnapshot: columnDragStateStore.getSnapshot,
+  subscribe: columnDragStateStore.subscribe,
+  reset: columnDragStateStore.reset,
+  setRaw: setColumnDragRaw,
+};
 
 /**
  * Pointer position store for the floating column ghost. Same pattern as
@@ -88,7 +158,8 @@ const columnGhostPointerStore = createGhostPointerStore();
 const setGhostPointer = columnGhostPointerStore.setPointer;
 
 export const subscribeToColumnGhostPointer = columnGhostPointerStore.subscribe;
-export const getColumnGhostPointerSnapshot = columnGhostPointerStore.getSnapshot;
+export const getColumnGhostPointerSnapshot =
+  columnGhostPointerStore.getSnapshot;
 
 export const ColumnDragAndDropContext =
   createContext<ColumnDragAndDropContextValue | null>(null);
@@ -256,7 +327,7 @@ export function useColumnDragAndDrop() {
 
           const dropIndex = computeDropIndex(clientX, clientY, columnId);
 
-          columnDragStore.setState({
+          columnDragStore.setRaw({
             ...columnDragStore.getSnapshot(),
             dropIndex,
           });
@@ -318,7 +389,7 @@ export function useColumnDragAndDrop() {
             sourceClone.style.height = `${columnRect.height}px`;
             columnGhostNodeSlot.set(sourceClone);
 
-            columnDragStore.setState({
+            columnDragStore.setRaw({
               draggingColumnId: columnId,
               draggingColumnWidth: columnRect.width,
               draggingColumnHeight: columnRect.height,
@@ -400,100 +471,23 @@ export function useDraggingColumnId() {
   );
 }
 
-type ColumnDropPlacement = {
-  index: number;
-  width: number;
-  height: number;
-};
-
-const placementCache: { value: ColumnDropPlacement | null } = { value: null };
-
 /**
- * Returns the placement of the column drop placeholder, or null when no
- * drag is in progress (or pointer is outside the column track). Cached
- * to keep identity stable across pointer moves that don't change values.
+ * Returns the column drop placeholder placement, or null when no drag
+ * is in progress (or the pointer is outside the column track).
+ * Identity is stable across pointer moves; cache lives in the snapshot.
  */
 export function useColumnDropPlacement(): ColumnDropPlacement | null {
   return useSyncExternalStore(
     columnDragStore.subscribe,
-    () => {
-      const snapshot = columnDragStore.getSnapshot();
-
-      if (snapshot.draggingColumnId === null || snapshot.dropIndex === null) {
-        placementCache.value = null;
-
-        return null;
-      }
-
-      const cached = placementCache.value;
-
-      if (
-        cached &&
-        cached.index === snapshot.dropIndex &&
-        cached.width === snapshot.draggingColumnWidth &&
-        cached.height === snapshot.draggingColumnHeight
-      ) {
-        return cached;
-      }
-
-      const next: ColumnDropPlacement = {
-        index: snapshot.dropIndex,
-        width: snapshot.draggingColumnWidth,
-        height: snapshot.draggingColumnHeight,
-      };
-
-      placementCache.value = next;
-
-      return next;
-    },
+    () => columnDragStore.getSnapshot().placement,
     () => null,
   );
 }
 
-type ColumnDragGhostSnapshot = {
-  columnId: string;
-  width: number;
-  height: number;
-} | null;
-
-const columnGhostCache: { value: ColumnDragGhostSnapshot } = { value: null };
-
-export function useColumnDragGhostSnapshot(): ColumnDragGhostSnapshot {
+export function useColumnDragGhostSnapshot(): ColumnDragGhost | null {
   return useSyncExternalStore(
     columnDragStore.subscribe,
-    () => {
-      const snapshot = columnDragStore.getSnapshot();
-
-      if (
-        snapshot.draggingColumnId === null ||
-        snapshot.draggingColumnWidth === 0
-      ) {
-        columnGhostCache.value = null;
-
-        return null;
-      }
-
-      const cached = columnGhostCache.value;
-
-      if (
-        cached &&
-        cached.columnId === snapshot.draggingColumnId &&
-        cached.width === snapshot.draggingColumnWidth &&
-        cached.height === snapshot.draggingColumnHeight
-      ) {
-        return cached;
-      }
-
-      const next: ColumnDragGhostSnapshot = {
-        columnId: snapshot.draggingColumnId,
-        width: snapshot.draggingColumnWidth,
-        height: snapshot.draggingColumnHeight,
-      };
-
-      columnGhostCache.value = next;
-
-      return next;
-    },
+    () => columnDragStore.getSnapshot().ghost,
     () => null,
   );
 }

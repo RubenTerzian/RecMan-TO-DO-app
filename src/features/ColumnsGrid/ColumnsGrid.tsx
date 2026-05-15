@@ -11,21 +11,23 @@ import {
   TaskDragAndDropContext,
   useTaskDragAndDrop,
 } from "@/features/ColumnsGrid/Task/hooks/useTaskDragAndDrop";
-import { useStore } from "@/store/store";
-import { useShallow } from "zustand/react/shallow";
 import styles from "./ColumnsGrid.module.css";
 
+/**
+ * Static layout for the board. Intentionally has zero store
+ * subscriptions — `GridHeader` and `BoardSurface` own their own
+ * narrow subscriptions, so column reorder / create / delete and
+ * selection-mode toggles never re-render this component or the
+ * surrounding DnD provider chain.
+ *
+ * `useColumnDragAndDrop` and `useTaskDragAndDrop` themselves do
+ * not subscribe via React state — they install pointer listeners
+ * imperatively and expose stable context values via `useMemo`.
+ */
 export function ColumnsGrid() {
-  const columnIds = useStore(
-    useShallow((state) => state.columns.map((column) => column.id)),
-  );
-  const isBoardEmpty = columnIds.length === 0;
-
   const { boardViewportRef, contextValue: columnDragContextValue } =
     useColumnDragAndDrop();
-  const taskDragAndDrop = useTaskDragAndDrop({
-    boardViewportRef,
-  });
+  const taskDragAndDrop = useTaskDragAndDrop({ boardViewportRef });
 
   return (
     <main className={styles.board}>
@@ -33,13 +35,12 @@ export function ColumnsGrid() {
         {/*
          * The column-creation provider wraps both the trigger
          * (`AddColumnButton` inside `GridHeader`) and the trailing
-         * editor (inside `BoardSurface`) so they share the gate without
-         * any common ancestor subscribing to it. `ColumnsGrid` and
-         * `GridHeader` never re-render on open / close / commit.
+         * editor (inside `BoardSurface`) so they share the gate
+         * without any common ancestor subscribing to it.
          */}
         <ColumnCreationProvider>
           <div className={styles.boardContent}>
-            <GridHeader hasColumns={!isBoardEmpty} />
+            <GridHeader />
 
             <div ref={boardViewportRef} className={styles.boardViewport}>
               <div className={styles.mobileScrollHint} aria-hidden="true">
@@ -51,7 +52,6 @@ export function ColumnsGrid() {
                   <BoardSurface
                     boardViewportRef={boardViewportRef}
                     className={styles.boardGrid}
-                    columnIds={columnIds}
                   />
                 </TaskDragAndDropContext.Provider>
               </ColumnDragAndDropContext.Provider>

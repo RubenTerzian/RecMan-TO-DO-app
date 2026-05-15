@@ -10,6 +10,7 @@ import {
 } from "react";
 import { useStore } from "@/store/store";
 import { taskGhostNodeSlot } from "@/features/ColumnsGrid/dnd/ghostNodeSlot";
+import { createDragStateStore } from "@/features/ColumnsGrid/dnd/createDragStateStore";
 import { createPointerDragSession } from "@/features/ColumnsGrid/dnd/createPointerDragSession";
 import { createGhostPointerStore } from "@/features/ColumnsGrid/dnd/ghostPointerStore";
 import { setDraggingDocumentState } from "@/features/ColumnsGrid/dnd/pointerDragActivation";
@@ -20,7 +21,13 @@ type TaskDropTarget = {
   index: number;
 };
 
-type TaskDragSnapshot = {
+/**
+ * Raw drag fields written by pointer handlers. Derived projections
+ * (`ghost`, `placement`) are computed from these and stored alongside
+ * them in the snapshot so React subscribers get stable references
+ * without any module-level cache.
+ */
+type TaskDragRaw = {
   draggingTaskId: string | null;
   draggingTaskHeight: number;
   draggingTaskWidth: number;
@@ -28,6 +35,29 @@ type TaskDragSnapshot = {
   sourceColumnId: string | null;
   previewColumnId: string | null;
   previewIndex: number | null;
+};
+
+type TaskDragGhost = {
+  taskId: string;
+  width: number;
+  height: number;
+};
+
+type TaskDropPlacement = {
+  index: number;
+  height: number;
+  width: number;
+};
+
+type TaskDragSnapshot = TaskDragRaw & {
+  /** Stable while geometry is unchanged; null when no drag is active. */
+  ghost: TaskDragGhost | null;
+  /**
+   * Stable while geometry is unchanged. Bound to `previewColumnId`,
+   * so per-column hooks check `previewColumnId === columnId` before
+   * returning it.
+   */
+  placement: TaskDropPlacement | null;
 };
 
 export type TaskDragAndDropContextValue = {
@@ -40,9 +70,7 @@ type UseTaskDragAndDropOptions = {
   boardViewportRef: RefObject<HTMLDivElement | null>;
 };
 
-type Listener = () => void;
-
-const DEFAULT_SNAPSHOT: TaskDragSnapshot = {
+const DEFAULT_RAW: TaskDragRaw = {
   draggingTaskId: null,
   draggingTaskHeight: 0,
   draggingTaskWidth: 0,
@@ -51,48 +79,95 @@ const DEFAULT_SNAPSHOT: TaskDragSnapshot = {
   previewIndex: null,
 };
 
-function createTaskDragStore() {
-  let state = DEFAULT_SNAPSHOT;
-  const listeners = new Set<Listener>();
+const DEFAULT_SNAPSHOT: TaskDragSnapshot = {
+  ...DEFAULT_RAW,
+  ghost: null,
+  placement: null,
+};
+
+function equalsTaskDragSnapshot(a: TaskDragSnapshot, b: TaskDragSnapshot) {
+  return (
+    a.draggingTaskId === b.draggingTaskId &&
+    a.draggingTaskHeight === b.draggingTaskHeight &&
+    a.draggingTaskWidth === b.draggingTaskWidth &&
+    a.sourceColumnId === b.sourceColumnId &&
+    a.previewColumnId === b.previewColumnId &&
+    a.previewIndex === b.previewIndex
+  );
+}
+
+function deriveGhost(
+  previous: TaskDragGhost | null,
+  raw: TaskDragRaw,
+): TaskDragGhost | null {
+  if (raw.draggingTaskId === null || raw.draggingTaskHeight === 0) {
+    return null;
+  }
+
+  if (
+    previous &&
+    previous.taskId === raw.draggingTaskId &&
+    previous.width === raw.draggingTaskWidth &&
+    previous.height === raw.draggingTaskHeight
+  ) {
+    return previous;
+  }
 
   return {
-    getSnapshot() {
-      return state;
-    },
-    reset() {
-      if (state === DEFAULT_SNAPSHOT) {
-        return;
-      }
-
-      state = DEFAULT_SNAPSHOT;
-      listeners.forEach((listener) => listener());
-    },
-    setState(nextState: TaskDragSnapshot) {
-      if (
-        state.draggingTaskId === nextState.draggingTaskId &&
-        state.draggingTaskHeight === nextState.draggingTaskHeight &&
-        state.draggingTaskWidth === nextState.draggingTaskWidth &&
-        state.sourceColumnId === nextState.sourceColumnId &&
-        state.previewColumnId === nextState.previewColumnId &&
-        state.previewIndex === nextState.previewIndex
-      ) {
-        return;
-      }
-
-      state = nextState;
-      listeners.forEach((listener) => listener());
-    },
-    subscribe(listener: Listener) {
-      listeners.add(listener);
-
-      return () => {
-        listeners.delete(listener);
-      };
-    },
+    taskId: raw.draggingTaskId,
+    width: raw.draggingTaskWidth,
+    height: raw.draggingTaskHeight,
   };
 }
 
-const taskDragStore = createTaskDragStore();
+function derivePlacement(
+  previous: TaskDropPlacement | null,
+  raw: TaskDragRaw,
+): TaskDropPlacement | null {
+  if (raw.previewColumnId === null || raw.previewIndex === null) {
+    return null;
+  }
+
+  if (
+    previous &&
+    previous.index === raw.previewIndex &&
+    previous.height === raw.draggingTaskHeight &&
+    previous.width === raw.draggingTaskWidth
+  ) {
+    return previous;
+  }
+
+  return {
+    index: raw.previewIndex,
+    height: raw.draggingTaskHeight,
+    width: raw.draggingTaskWidth,
+  };
+}
+
+const taskDragStateStore = createDragStateStore<TaskDragSnapshot>(
+  DEFAULT_SNAPSHOT,
+  equalsTaskDragSnapshot,
+);
+
+/**
+ * Apply a raw update; derived projections are recomputed and reused
+ * by reference when their inputs are unchanged.
+ */
+function setTaskDragRaw(raw: TaskDragRaw) {
+  const previous = taskDragStateStore.getSnapshot();
+  taskDragStateStore.setState({
+    ...raw,
+    ghost: deriveGhost(previous.ghost, raw),
+    placement: derivePlacement(previous.placement, raw),
+  });
+}
+
+const taskDragStore = {
+  getSnapshot: taskDragStateStore.getSnapshot,
+  subscribe: taskDragStateStore.subscribe,
+  reset: taskDragStateStore.reset,
+  setRaw: setTaskDragRaw,
+};
 
 /**
  * Pointer position store for the drag ghost. Updated imperatively from
@@ -337,8 +412,11 @@ export function useTaskDragAndDrop({
           const snapshot = taskDragStore.getSnapshot();
 
           if (!columnAtPoint) {
-            taskDragStore.setState({
-              ...snapshot,
+            taskDragStore.setRaw({
+              draggingTaskId: snapshot.draggingTaskId,
+              draggingTaskHeight: snapshot.draggingTaskHeight,
+              draggingTaskWidth: snapshot.draggingTaskWidth,
+              sourceColumnId: snapshot.sourceColumnId,
               previewColumnId: null,
               previewIndex: null,
             });
@@ -352,8 +430,11 @@ export function useTaskDragAndDrop({
             currentTask.id,
           );
 
-          taskDragStore.setState({
-            ...snapshot,
+          taskDragStore.setRaw({
+            draggingTaskId: snapshot.draggingTaskId,
+            draggingTaskHeight: snapshot.draggingTaskHeight,
+            draggingTaskWidth: snapshot.draggingTaskWidth,
+            sourceColumnId: snapshot.sourceColumnId,
             previewColumnId: columnAtPoint.columnId,
             previewIndex: dropIndex,
           });
@@ -420,7 +501,7 @@ export function useTaskDragAndDrop({
             sourceClone.style.height = `${cardRect.height}px`;
             taskGhostNodeSlot.set(sourceClone);
 
-            taskDragStore.setState({
+            taskDragStore.setRaw({
               draggingTaskId: currentTask.id,
               draggingTaskHeight: cardRect.height,
               draggingTaskWidth: cardRect.width,
@@ -517,110 +598,34 @@ export function useIsColumnDropTarget(columnId: string) {
   );
 }
 
-type ColumnDropPlacement = {
-  index: number;
-  height: number;
-  width: number;
-};
-
-const placementCache = new Map<string, ColumnDropPlacement | null>();
-
 /**
  * Returns the placement of the drop placeholder inside this column, or
- * `null` when this column is not the active drop target. Cached per
- * column so the identity stays stable while the values do not change.
+ * `null` when this column is not the active drop target. Identity is
+ * stable across pointer moves that don't change geometry — the cache
+ * lives inside the snapshot, not in a module-level Map.
  */
 export function useColumnDropPlacement(
   columnId: string,
-): ColumnDropPlacement | null {
+): TaskDropPlacement | null {
   return useSyncExternalStore(
     taskDragStore.subscribe,
     () => {
       const snapshot = taskDragStore.getSnapshot();
-
-      if (
-        snapshot.previewColumnId !== columnId ||
-        snapshot.previewIndex === null
-      ) {
-        placementCache.delete(columnId);
-
-        return null;
-      }
-
-      const cached = placementCache.get(columnId);
-
-      if (
-        cached &&
-        cached.index === snapshot.previewIndex &&
-        cached.height === snapshot.draggingTaskHeight &&
-        cached.width === snapshot.draggingTaskWidth
-      ) {
-        return cached;
-      }
-
-      const next: ColumnDropPlacement = {
-        index: snapshot.previewIndex,
-        height: snapshot.draggingTaskHeight,
-        width: snapshot.draggingTaskWidth,
-      };
-
-      placementCache.set(columnId, next);
-
-      return next;
+      return snapshot.previewColumnId === columnId ? snapshot.placement : null;
     },
     () => null,
   );
 }
-
-type DragGhostSnapshot = {
-  taskId: string;
-  width: number;
-  height: number;
-} | null;
-
-const ghostSnapshotCache: { value: DragGhostSnapshot } = { value: null };
 
 /**
  * Snapshot consumed by the floating ghost component. Position is
  * intentionally excluded — the ghost reads pointer position
  * imperatively and never re-renders during pointer movement.
  */
-export function useDragGhostSnapshot(): DragGhostSnapshot {
+export function useDragGhostSnapshot(): TaskDragGhost | null {
   return useSyncExternalStore(
     taskDragStore.subscribe,
-    () => {
-      const snapshot = taskDragStore.getSnapshot();
-
-      if (
-        snapshot.draggingTaskId === null ||
-        snapshot.draggingTaskHeight === 0
-      ) {
-        ghostSnapshotCache.value = null;
-
-        return null;
-      }
-
-      const cached = ghostSnapshotCache.value;
-
-      if (
-        cached &&
-        cached.taskId === snapshot.draggingTaskId &&
-        cached.width === snapshot.draggingTaskWidth &&
-        cached.height === snapshot.draggingTaskHeight
-      ) {
-        return cached;
-      }
-
-      const next: DragGhostSnapshot = {
-        taskId: snapshot.draggingTaskId,
-        width: snapshot.draggingTaskWidth,
-        height: snapshot.draggingTaskHeight,
-      };
-
-      ghostSnapshotCache.value = next;
-
-      return next;
-    },
+    () => taskDragStore.getSnapshot().ghost,
     () => null,
   );
 }

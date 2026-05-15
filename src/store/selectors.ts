@@ -4,6 +4,11 @@ import { getVisibleTaskIds } from "@/utils/taskVisibility";
 
 export const selectSelectionMode = (state: AppStore) => state.selectionMode;
 
+export const selectColumnIds = (state: AppStore) =>
+  state.columns.map((column) => column.id);
+
+export const selectHasColumns = (state: AppStore) => state.columns.length > 0;
+
 export const selectSearchTerm = (state: AppStore) => state.searchTerm;
 
 export const selectActiveFilter = (state: AppStore) => state.activeFilter;

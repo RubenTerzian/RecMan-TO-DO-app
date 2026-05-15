@@ -24,7 +24,7 @@ function SearchInputComponent() {
         className={styles.searchInput}
         defaultValue={initialValue}
         onChange={onChange}
-        placeholder="Search tasks"
+        placeholder="Search task names or part of a name"
       />
       {hasValue ? (
         <button

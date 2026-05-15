@@ -1,4 +1,3 @@
-import { readTaskQueryState } from "@/features/TopBar/urlQuery";
 import { loadStoredState } from "./persistence";
 import type { StoreState } from "./types";
 
@@ -29,16 +28,23 @@ const SEED_TASKS: StoreState["tasks"] = [
   },
 ];
 
+/**
+ * Pure factory for the store's initial state. Reads only from
+ * `localStorage` (persisted columns/tasks) and falls back to seeds.
+ * Does NOT read from `window.location` — URL hydration of search /
+ * filter happens once at store-module load (see `store.ts`) so that
+ * `resetStore()` cleanly returns to factory defaults instead of
+ * snapping back to whatever query is currently in the URL.
+ */
 export function createInitialState(): StoreState {
   const persistedState = loadStoredState();
-  const queryState = readTaskQueryState();
 
   return {
     columns: persistedState?.columns ?? SEED_COLUMNS,
     tasks: persistedState?.tasks ?? SEED_TASKS,
     selectedTaskIds: [],
     selectionMode: false,
-    activeFilter: queryState.activeFilter,
-    searchTerm: queryState.searchTerm,
+    activeFilter: "all",
+    searchTerm: "",
   };
 }

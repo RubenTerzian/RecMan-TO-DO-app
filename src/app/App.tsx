@@ -25,6 +25,14 @@ export default function App() {
   return (
     <div className={styles.appShell}>
       <div className={styles.appFrame}>
+        <header className={styles.appHeader}>
+          <div className={styles.copy}>
+            <h1 className={styles.title}>RecMan TO-DO</h1>
+            <p className={styles.subtitle}>
+              Where messy hiring notes become neat little wins.
+            </p>
+          </div>
+        </header>
         <TopBar />
         <ColumnsGrid />
       </div>
