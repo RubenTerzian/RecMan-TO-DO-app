@@ -1,5 +1,5 @@
 import type { InputHTMLAttributes } from "react";
-import { memo, useEffect, useRef } from "react";
+import { memo, useLayoutEffect, useRef } from "react";
 import { clsx } from "@/utils/clsx";
 import styles from "./Checkbox.module.css";
 
@@ -30,7 +30,7 @@ function CheckboxComponent({
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   // The DOM-only `indeterminate` flag must be synced via an effect.
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (inputRef.current) {
       inputRef.current.indeterminate = indeterminate;
     }

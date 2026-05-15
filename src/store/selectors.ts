@@ -1,4 +1,6 @@
 import type { AppStore } from "./store";
+import { getTaskSelectionState } from "./storeHelpers";
+import { getVisibleTaskIds } from "@/utils/taskVisibility";
 
 export const selectSelectionMode = (state: AppStore) => state.selectionMode;
 
@@ -27,6 +29,18 @@ export const selectResetTaskFilters = (state: AppStore) =>
 export const selectHasActiveTaskFilters = (state: AppStore) =>
   state.activeFilter !== "all" || state.searchTerm.trim().length > 0;
 
+const selectVisibleTaskIds = (state: AppStore) =>
+  getVisibleTaskIds(state.tasks, {
+    activeFilter: state.activeFilter,
+    searchTerm: state.searchTerm,
+  });
+
+export const selectHasVisibleTasks = (state: AppStore) =>
+  selectVisibleTaskIds(state).length > 0;
+
+export const selectVisibleTaskSelectionState = (state: AppStore) =>
+  getTaskSelectionState(state.selectedTaskIds, selectVisibleTaskIds(state));
+
 export const selectToggleSelectionMode = (state: AppStore) =>
   state.toggleSelectionMode;
 
@@ -50,9 +64,26 @@ export function selectIsTaskSelected(taskId: string) {
   return (state: AppStore) => state.selectedTaskIds.includes(taskId);
 }
 
-export function selectTasksByColumnId(columnId: string) {
+export function selectVisibleTaskIdsByColumn(columnId: string) {
   return (state: AppStore) =>
-    state.tasks.filter((task) => task.columnId === columnId);
+    getVisibleTaskIds(state.tasks, {
+      columnId,
+      activeFilter: state.activeFilter,
+      searchTerm: state.searchTerm,
+    });
+}
+
+export function selectHasVisibleTasksByColumn(columnId: string) {
+  return (state: AppStore) =>
+    selectVisibleTaskIdsByColumn(columnId)(state).length > 0;
+}
+
+export function selectVisibleColumnTaskSelectionState(columnId: string) {
+  return (state: AppStore) =>
+    getTaskSelectionState(
+      state.selectedTaskIds,
+      selectVisibleTaskIdsByColumn(columnId)(state),
+    );
 }
 
 export function selectColumnTaskCount(columnId: string) {

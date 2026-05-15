@@ -3,6 +3,7 @@ import styles from "./SelectionActionBar.module.css";
 import { MoveSelectionControl } from "./MoveSelectionControl";
 import { SelectionCountPill } from "./SelectionCountPill";
 import { SelectionMutationButtons } from "./SelectionMutationButtons";
+import { SelectionToggleButton } from "./SelectionSelectAllButton";
 
 type SelectionActionBarProps = {
   className?: string;
@@ -16,7 +17,10 @@ export function SelectionActionBar({ className }: SelectionActionBarProps) {
           <h3 className={styles.title}>Bulk update</h3>
           <p className={styles.caption}>Apply changes to the selected tasks.</p>
         </div>
-        <SelectionCountPill />
+        <div className={styles.selectionContainer}>
+          <SelectionToggleButton />
+          <SelectionCountPill />
+        </div>
       </div>
 
       <div className={styles.content}>

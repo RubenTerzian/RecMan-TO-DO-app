@@ -1,6 +1,7 @@
 import type { StoreState } from "./types";
 
 export type AppSelectionState = Pick<StoreState, "tasks" | "selectedTaskIds">;
+export type TaskSelectionState = "none" | "partial" | "all";
 
 export function moveItem<TItem>(
   items: TItem[],
@@ -27,6 +28,51 @@ export function moveItem<TItem>(
 
 export function toggleIdInList(ids: string[], id: string) {
   return ids.includes(id) ? ids.filter((item) => item !== id) : [...ids, id];
+}
+
+export function getTaskSelectionState(
+  selectedTaskIds: string[],
+  taskIds: string[],
+): TaskSelectionState {
+  if (taskIds.length === 0) {
+    return "none";
+  }
+
+  const selectedTaskIdSet = new Set(selectedTaskIds);
+  let selectedVisibleCount = 0;
+
+  for (const taskId of taskIds) {
+    if (selectedTaskIdSet.has(taskId)) {
+      selectedVisibleCount += 1;
+    }
+  }
+
+  if (selectedVisibleCount === 0) {
+    return "none";
+  }
+
+  return selectedVisibleCount === taskIds.length ? "all" : "partial";
+}
+
+export function toggleTaskIdsSelection(
+  selectedTaskIds: string[],
+  taskIds: string[],
+) {
+  const selectionState = getTaskSelectionState(selectedTaskIds, taskIds);
+
+  if (selectionState === "none") {
+    return taskIds.length === 0
+      ? selectedTaskIds
+      : Array.from(new Set([...selectedTaskIds, ...taskIds]));
+  }
+
+  if (selectionState === "all") {
+    const toggledTaskIdSet = new Set(taskIds);
+
+    return selectedTaskIds.filter((taskId) => !toggledTaskIdSet.has(taskId));
+  }
+
+  return Array.from(new Set([...selectedTaskIds, ...taskIds]));
 }
 
 export function clearSelectionAfterTaskMutation<

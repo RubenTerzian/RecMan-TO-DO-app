@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import type { TaskFilter } from "@/features/TopBar/types";
 import { createUniquePrefixedId } from "@/utils/ids";
+import { getVisibleTaskIds } from "@/utils/taskVisibility";
 import { createInitialState } from "./initialState";
 import {
   clearSelectionAfterTaskMutation,
@@ -13,6 +14,7 @@ import {
   reorderTasksForCompletionChange,
   replaceTasksInColumn,
   toggleIdInList,
+  toggleTaskIdsSelection,
 } from "./storeHelpers";
 import type { StoreState } from "./types";
 
@@ -38,7 +40,8 @@ type Actions = {
   resetTaskFilters(): void;
   toggleSelectionMode(): void;
   toggleTaskSelection(taskId: string): void;
-  toggleAllTaskSelection(taskIds: string[]): void;
+  toggleAllColumnTaskSelection(columnId: string): void;
+  toggleAllVisibleTaskSelection(): void;
   toggleTaskCompletion(taskId: string): void;
   markSelectedTasksComplete(isComplete: boolean): void;
   deleteSelectedTasks(): void;
@@ -174,18 +177,32 @@ export const useStore = create<AppStore>()((set) => ({
       selectedTaskIds: toggleIdInList(state.selectedTaskIds, taskId),
     }));
   },
-  toggleAllTaskSelection(taskIds) {
+  toggleAllColumnTaskSelection(columnId) {
     set((state) => {
-      const allSelected =
-        taskIds.length > 0 &&
-        taskIds.every((taskId) => state.selectedTaskIds.includes(taskId));
+      const visibleTaskIds = getVisibleTaskIds(state.tasks, {
+        columnId,
+        activeFilter: state.activeFilter,
+        searchTerm: state.searchTerm,
+      });
 
       return {
-        selectedTaskIds: allSelected
-          ? state.selectedTaskIds.filter((taskId) => !taskIds.includes(taskId))
-          : Array.from(new Set([...state.selectedTaskIds, ...taskIds])),
+        selectedTaskIds: toggleTaskIdsSelection(
+          state.selectedTaskIds,
+          visibleTaskIds,
+        ),
       };
     });
+  },
+  toggleAllVisibleTaskSelection() {
+    set((state) => ({
+      selectedTaskIds: toggleTaskIdsSelection(
+        state.selectedTaskIds,
+        getVisibleTaskIds(state.tasks, {
+          activeFilter: state.activeFilter,
+          searchTerm: state.searchTerm,
+        }),
+      ),
+    }));
   },
   toggleTaskCompletion(taskId) {
     set((state) => {
