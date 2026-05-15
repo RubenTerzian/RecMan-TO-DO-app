@@ -7,10 +7,10 @@ function normalizeSearchValue(value: string) {
     .replace(/\s+/g, " ");
 }
 
+const SEARCH_TOKEN_PATTERN = /[\p{L}\p{N}]+/gu;
+
 function tokenizeSearchValue(value: string) {
-  return normalizeSearchValue(value)
-    .split(/[^a-z0-9]+/)
-    .filter(Boolean);
+  return normalizeSearchValue(value).match(SEARCH_TOKEN_PATTERN) ?? [];
 }
 
 function isSubsequenceMatch(candidate: string, query: string) {
